@@ -136,6 +136,16 @@ const config = async (env: Env): Promise<Configuration> => {
     };
   }
 
+  // 5. Size limits for webpack's performance warnings. webpack's default (244 KiB) is meant for web pages; this
+  //    plugin bundles what core shares internally but plugins can't import (uplot, @floating-ui, react-hook-form,
+  //    react-select, @grafana/i18n and the copied panel code), so module.js is about 250 KiB minified. Warn only well
+  //    above that.
+  baseConfig.performance = {
+    ...baseConfig.performance,
+    maxAssetSize: 400 * 1024,
+    maxEntrypointSize: 400 * 1024,
+  };
+
   return baseConfig;
 };
 

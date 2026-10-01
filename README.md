@@ -1,14 +1,15 @@
 # grafana-plugins
 
 pjan's Grafana plugins. Each plugin is an npm workspace in its own directory under `plugins/`, scaffolded by [`@grafana/create-plugin`](https://grafana.com/developers/plugin-tools) and following Grafana's own code conventions:
+
 - TypeScript;
 - React function components;
 - Emotion styles through `useStyles2`;
 - Jest tests next to the code.
 
-| Plugin | Type | What it is | Licence |
-|---|---|---|---|
-| [`pjan-statetimeline-panel`](plugins/pjan-statetimeline-panel/) | panel | Grafana's state timeline as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions (styling, per-row events) are planned, not built yet. | AGPL-3.0: it starts from Grafana's own state-timeline code (see its `UPSTREAM.md`) |
+| Plugin                                                          | Type  | What it is                                                                                                                                                      | Licence                                                                            |
+| --------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [`pjan-statetimeline-panel`](plugins/pjan-statetimeline-panel/) | panel | Grafana's state timeline as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions: per-row annotations (built); styling (planned). | AGPL-3.0: it starts from Grafana's own state-timeline code (see its `UPSTREAM.md`) |
 
 ## Working in the repo
 

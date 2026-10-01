@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports only.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props.
 import { useCallback, useMemo, useState } from 'react';
 
 import { DashboardCursorSync, type DataFrame, type PanelProps, useDataLinksContext } from '@grafana/data';
@@ -21,7 +21,8 @@ import {
 } from 'core/components/TimelineChart/utils';
 import { getFilterByGroupedLabels } from 'features/panel/filters/adhoc';
 
-import { AnnotationsPlugin } from '../timeseries/plugins/AnnotationsPlugin';
+// pjan-statetimeline-panel: per-row annotations (src/pjan/); renders core's AnnotationsPlugin unchanged when off.
+import { StateTimelineAnnotations } from '../../../pjan/rowAnnotations/StateTimelineAnnotations';
 import { OutsideRangePlugin } from '../timeseries/plugins/OutsideRangePlugin';
 import { getXAnnotationFrames } from '../timeseries/plugins/utils';
 import { getTimezones } from '../timeseries/utils';
@@ -169,7 +170,8 @@ export const StateTimelinePanel = ({
                 />
               )}
               {alignedFrame.fields[0].config.custom?.axisPlacement !== AxisPlacement.Hidden && (
-                <AnnotationsPlugin
+                // pjan-statetimeline-panel: was <AnnotationsPlugin>; the last three props are plugin-only.
+                <StateTimelineAnnotations
                   replaceVariables={replaceVariables}
                   options={options.annotations}
                   annotations={data.annotations}
@@ -178,6 +180,9 @@ export const StateTimelinePanel = ({
                   newRange={newAnnotationRange}
                   setNewRange={setNewAnnotationRange}
                   canvasRegionRendering={false}
+                  alignedFrame={alignedFrame}
+                  frames={frames}
+                  panelOptions={options}
                 />
               )}
               <OutsideRangePlugin config={builder} onChangeTimeRange={onChangeTimeRange} />

@@ -1,0 +1,831 @@
+{
+  "uid": "pjan-row-annotations",
+  "title": "Per-row annotations",
+  "editable": true,
+  "schemaVersion": 41,
+  "time": {
+    "from": "2025-10-01T00:00:00.000Z",
+    "to": "2025-10-01T06:00:00.000Z"
+  },
+  "timezone": "utc",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "pjan-statetimeline-panel",
+      "title": "Show on matching rows",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,web,media,tools\n1759278600000,1,1,1\n1759279200000,1,2,1\n1759279800000,1,2,1\n1759280400000,2,2,1\n1759281000000,2,3,2\n1759281600000,2,3,2\n1759282200000,3,1,2\n1759282800000,3,1,2\n1759283400000,1,2,3\n1759284000000,1,2,3\n1759284600000,2,2,3\n1759285200000,2,3,1\n1759285800000,3,3,1\n1759286400000,3,1,1\n1759287000000,1,1,1\n1759287600000,1,2,2\n1759288200000,1,2,2\n1759288800000,2,3,2\n1759289400000,2,3,3\n1759290000000,2,1,3\n1759290600000,3,1,3\n1759291200000,3,2,1\n1759291800000,3,2,1\n1759292400000,1,3,1\n1759293000000,1,3,2\n1759293600000,2,1,2\n1759294200000,2,1,2\n1759294800000,2,1,3\n1759295400000,3,2,3\n1759296000000,3,2,3\n1759296600000,1,3,1\n1759297200000,1,3,1\n1759297800000,2,1,1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "ok",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "warn",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "crit",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tools"
+            },
+            "properties": [
+              {
+                "id": "custom.annotationKey",
+                "value": "toolbox"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "rowAnnotations": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "pjan-statetimeline-panel",
+      "title": "Show on matching rows, clustering, row height 0.7",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,web,media,tools\n1759278600000,1,1,1\n1759279200000,1,2,1\n1759279800000,1,2,1\n1759280400000,2,2,1\n1759281000000,2,3,2\n1759281600000,2,3,2\n1759282200000,3,1,2\n1759282800000,3,1,2\n1759283400000,1,2,3\n1759284000000,1,2,3\n1759284600000,2,2,3\n1759285200000,2,3,1\n1759285800000,3,3,1\n1759286400000,3,1,1\n1759287000000,1,1,1\n1759287600000,1,2,2\n1759288200000,1,2,2\n1759288800000,2,3,2\n1759289400000,2,3,3\n1759290000000,2,1,3\n1759290600000,3,1,3\n1759291200000,3,2,1\n1759291800000,3,2,1\n1759292400000,1,3,1\n1759293000000,1,3,2\n1759293600000,2,1,2\n1759294200000,2,1,2\n1759294800000,2,1,3\n1759295400000,3,2,3\n1759296000000,3,2,3\n1759296600000,1,3,1\n1759297200000,1,3,1\n1759297800000,2,1,1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "ok",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "warn",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "crit",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tools"
+            },
+            "properties": [
+              {
+                "id": "custom.annotationKey",
+                "value": "toolbox"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.7,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "rowAnnotations": {
+          "enabled": true
+        },
+        "annotations": {
+          "clustering": 1
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "pjan-statetimeline-panel",
+      "title": "Option off [pjan-statetimeline-panel]",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 10,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,web,media,tools\n1759278600000,1,1,1\n1759279200000,1,2,1\n1759279800000,1,2,1\n1759280400000,2,2,1\n1759281000000,2,3,2\n1759281600000,2,3,2\n1759282200000,3,1,2\n1759282800000,3,1,2\n1759283400000,1,2,3\n1759284000000,1,2,3\n1759284600000,2,2,3\n1759285200000,2,3,1\n1759285800000,3,3,1\n1759286400000,3,1,1\n1759287000000,1,1,1\n1759287600000,1,2,2\n1759288200000,1,2,2\n1759288800000,2,3,2\n1759289400000,2,3,3\n1759290000000,2,1,3\n1759290600000,3,1,3\n1759291200000,3,2,1\n1759291800000,3,2,1\n1759292400000,1,3,1\n1759293000000,1,3,2\n1759293600000,2,1,2\n1759294200000,2,1,2\n1759294800000,2,1,3\n1759295400000,3,2,3\n1759296000000,3,2,3\n1759296600000,1,3,1\n1759297200000,1,3,1\n1759297800000,2,1,1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "ok",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "warn",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "crit",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "state-timeline",
+      "title": "Option off [state-timeline]",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 18,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,web,media,tools\n1759278600000,1,1,1\n1759279200000,1,2,1\n1759279800000,1,2,1\n1759280400000,2,2,1\n1759281000000,2,3,2\n1759281600000,2,3,2\n1759282200000,3,1,2\n1759282800000,3,1,2\n1759283400000,1,2,3\n1759284000000,1,2,3\n1759284600000,2,2,3\n1759285200000,2,3,1\n1759285800000,3,3,1\n1759286400000,3,1,1\n1759287000000,1,1,1\n1759287600000,1,2,2\n1759288200000,1,2,2\n1759288800000,2,3,2\n1759289400000,2,3,3\n1759290000000,2,1,3\n1759290600000,3,1,3\n1759291200000,3,2,1\n1759291800000,3,2,1\n1759292400000,1,3,1\n1759293000000,1,3,2\n1759293600000,2,1,2\n1759294200000,2,1,2\n1759294800000,2,1,3\n1759295400000,3,2,3\n1759296000000,3,2,3\n1759296600000,1,3,1\n1759297200000,1,3,1\n1759297800000,2,1,1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "ok",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "warn",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "crit",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "pjan-statetimeline-panel",
+      "title": "Pagination, 2 rows per page",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,web,media,tools\n1759278600000,1,1,1\n1759279200000,1,2,1\n1759279800000,1,2,1\n1759280400000,2,2,1\n1759281000000,2,3,2\n1759281600000,2,3,2\n1759282200000,3,1,2\n1759282800000,3,1,2\n1759283400000,1,2,3\n1759284000000,1,2,3\n1759284600000,2,2,3\n1759285200000,2,3,1\n1759285800000,3,3,1\n1759286400000,3,1,1\n1759287000000,1,1,1\n1759287600000,1,2,2\n1759288200000,1,2,2\n1759288800000,2,3,2\n1759289400000,2,3,3\n1759290000000,2,1,3\n1759290600000,3,1,3\n1759291200000,3,2,1\n1759291800000,3,2,1\n1759292400000,1,3,1\n1759293000000,1,3,2\n1759293600000,2,1,2\n1759294200000,2,1,2\n1759294800000,2,1,3\n1759295400000,3,2,3\n1759296000000,3,2,3\n1759296600000,1,3,1\n1759297200000,1,3,1\n1759297800000,2,1,1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "ok",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "warn",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "crit",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tools"
+            },
+            "properties": [
+              {
+                "id": "custom.annotationKey",
+                "value": "toolbox"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "rowAnnotations": {
+          "enabled": true
+        },
+        "perPage": 2
+      }
+    },
+    {
+      "id": 6,
+      "type": "pjan-statetimeline-panel",
+      "title": "Legend on the right",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 26,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,web,media,tools\n1759278600000,1,1,1\n1759279200000,1,2,1\n1759279800000,1,2,1\n1759280400000,2,2,1\n1759281000000,2,3,2\n1759281600000,2,3,2\n1759282200000,3,1,2\n1759282800000,3,1,2\n1759283400000,1,2,3\n1759284000000,1,2,3\n1759284600000,2,2,3\n1759285200000,2,3,1\n1759285800000,3,3,1\n1759286400000,3,1,1\n1759287000000,1,1,1\n1759287600000,1,2,2\n1759288200000,1,2,2\n1759288800000,2,3,2\n1759289400000,2,3,3\n1759290000000,2,1,3\n1759290600000,3,1,3\n1759291200000,3,2,1\n1759291800000,3,2,1\n1759292400000,1,3,1\n1759293000000,1,3,2\n1759293600000,2,1,2\n1759294200000,2,1,2\n1759294800000,2,1,3\n1759295400000,3,2,3\n1759296000000,3,2,3\n1759296600000,1,3,1\n1759297200000,1,3,1\n1759297800000,2,1,1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "ok",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "warn",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "crit",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tools"
+            },
+            "properties": [
+              {
+                "id": "custom.annotationKey",
+                "value": "toolbox"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "rowAnnotations": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "pjan-statetimeline-panel",
+      "title": "Media row hidden (hideFrom.viz)",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,web,media,tools\n1759278600000,1,1,1\n1759279200000,1,2,1\n1759279800000,1,2,1\n1759280400000,2,2,1\n1759281000000,2,3,2\n1759281600000,2,3,2\n1759282200000,3,1,2\n1759282800000,3,1,2\n1759283400000,1,2,3\n1759284000000,1,2,3\n1759284600000,2,2,3\n1759285200000,2,3,1\n1759285800000,3,3,1\n1759286400000,3,1,1\n1759287000000,1,1,1\n1759287600000,1,2,2\n1759288200000,1,2,2\n1759288800000,2,3,2\n1759289400000,2,3,3\n1759290000000,2,1,3\n1759290600000,3,1,3\n1759291200000,3,2,1\n1759291800000,3,2,1\n1759292400000,1,3,1\n1759293000000,1,3,2\n1759293600000,2,1,2\n1759294200000,2,1,2\n1759294800000,2,1,3\n1759295400000,3,2,3\n1759296000000,3,2,3\n1759296600000,1,3,1\n1759297200000,1,3,1\n1759297800000,2,1,1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "ok",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "warn",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "crit",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tools"
+            },
+            "properties": [
+              {
+                "id": "custom.annotationKey",
+                "value": "toolbox"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "media"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "rowAnnotations": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "pjan-statetimeline-panel",
+      "title": "Row key: label job",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 34,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "random_walk",
+          "seriesCount": 1,
+          "alias": "server-a",
+          "labels": "job=web",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "random_walk",
+          "seriesCount": 1,
+          "alias": "server-b",
+          "labels": "job=media",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "random_walk",
+          "seriesCount": 1,
+          "alias": "server-c",
+          "labels": "job=tools",
+          "min": 0,
+          "max": 100
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "rowAnnotations": {
+          "enabled": true,
+          "rowKey": "label",
+          "label": "job"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "pjan-statetimeline-panel",
+      "title": "Annotation field: text",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,web,media,tools\n1759278600000,1,1,1\n1759279200000,1,2,1\n1759279800000,1,2,1\n1759280400000,2,2,1\n1759281000000,2,3,2\n1759281600000,2,3,2\n1759282200000,3,1,2\n1759282800000,3,1,2\n1759283400000,1,2,3\n1759284000000,1,2,3\n1759284600000,2,2,3\n1759285200000,2,3,1\n1759285800000,3,3,1\n1759286400000,3,1,1\n1759287000000,1,1,1\n1759287600000,1,2,2\n1759288200000,1,2,2\n1759288800000,2,3,2\n1759289400000,2,3,3\n1759290000000,2,1,3\n1759290600000,3,1,3\n1759291200000,3,2,1\n1759291800000,3,2,1\n1759292400000,1,3,1\n1759293000000,1,3,2\n1759293600000,2,1,2\n1759294200000,2,1,2\n1759294800000,2,1,3\n1759295400000,3,2,3\n1759296000000,3,2,3\n1759296600000,1,3,1\n1759297200000,1,3,1\n1759297800000,2,1,1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "ok",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "warn",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "crit",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "rowAnnotations": {
+          "enabled": true,
+          "field": "text"
+        }
+      }
+    }
+  ]
+}

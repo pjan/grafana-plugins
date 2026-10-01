@@ -4,11 +4,8 @@
   "name": "State timeline (pjan)",
   "id": "pjan-statetimeline-panel",
   "info": {
-    "keywords": [
-      "panel",
-      "state timeline"
-    ],
-    "description": "Grafana's core state timeline as a panel plugin (drop-in replacement); opt-in additions are planned",
+    "keywords": ["panel", "state timeline"],
+    "description": "Grafana's core state timeline as a panel plugin (drop-in replacement); with opt-in annotations on matching rows",
     "author": {
       "name": "pjan"
     },

@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; panel suggestions (setSuggestionsSupplier/showDefaultSuggestion) left off; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options when switching from core state-timeline and otherwise calls timelinePanelChangedHandler).
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; panel suggestions (setSuggestionsSupplier/showDefaultSuggestion) left off; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options when switching from core state-timeline and otherwise calls timelinePanelChangedHandler); addRowAnnotationOptions(builder) after addAnnotationOptions and addAnnotationKeyFieldConfig(builder) after addAxisWidth, from src/pjan/ (per-row annotations).
 import {
   FieldColorModeId,
   FieldConfigProperty,
@@ -19,6 +19,8 @@ import { StateTimelinePanel } from './StateTimelinePanel';
 import { defaultFieldConfig, defaultOptions, type FieldConfig, type Options } from './panelcfg.gen';
 // pjan-statetimeline-panel: plugin-only panel-change handler (src/pjan/), wraps timelinePanelChangedHandler.
 import { panelChangedHandler } from '../../../pjan/panelChangedHandler';
+// pjan-statetimeline-panel: per-row annotation options and field option (src/pjan/), in the "Annotations" group.
+import { addAnnotationKeyFieldConfig, addRowAnnotationOptions } from '../../../pjan/rowAnnotations/options';
 
 export const plugin = new PanelPlugin<Options, FieldConfig>(StateTimelinePanel)
   .setPanelChangeHandler(panelChangedHandler)
@@ -97,6 +99,7 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(StateTimelinePanel)
         (placement) => placement === AxisPlacement.Auto || placement === AxisPlacement.Hidden
       );
       commonOptionsBuilder.addAxisWidth(builder);
+      addAnnotationKeyFieldConfig(builder); // pjan-statetimeline-panel
     },
   })
   .setPanelOptions((builder) => {
@@ -159,5 +162,6 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(StateTimelinePanel)
     commonOptionsBuilder.addLegendOptions(builder, false, true);
     commonOptionsBuilder.addTooltipOptions(builder);
     addAnnotationOptions(builder);
+    addRowAnnotationOptions(builder); // pjan-statetimeline-panel
   })
   .setDataSupport({ annotations: true });
