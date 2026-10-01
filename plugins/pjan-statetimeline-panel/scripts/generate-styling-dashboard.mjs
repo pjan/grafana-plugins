@@ -210,6 +210,16 @@ for (const zone of ['Europe/Brussels', 'Asia/Kolkata']) {
   );
 }
 addCase('pill', { options: { styling: { look: 'pill' } } });
+addCase(
+  'pill, line width 3',
+  { custom: { lineWidth: 3 }, options: { styling: { look: 'pill' } } },
+  { core: { custom: { lineWidth: 3 } } }
+);
+addCase(
+  'corner radius 4',
+  { custom: { lineWidth: 1 }, options: { styling: { cornerRadius: 4 } } },
+  { core: { custom: { lineWidth: 1 } } }
+);
 // Nothing set, for the panel editor checks.
 addCase('nothing set', {});
 // A plugin panel switched back to core by changing its type in the JSON: core's panel with the plugin's options.

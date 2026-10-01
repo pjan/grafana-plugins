@@ -4,6 +4,8 @@ import { plugin } from '../../plugins/panel/state-timeline/module';
 
 import { RowAnnotationsComboboxEditor } from '../rowAnnotations/RowAnnotationsComboboxEditor';
 
+import { ClearableSliderEditor } from './ClearableSliderEditor';
+
 import {
   getStylingColor,
   getStylingOptions,
@@ -75,9 +77,10 @@ describe('the styling options of the plugin', () => {
       'showValue',
       'styling.valueOverflow',
     ]);
-    expect(ids.slice(ids.indexOf('perPage'), ids.indexOf('perPage') + 6)).toEqual([
+    expect(ids.slice(ids.indexOf('perPage'), ids.indexOf('perPage') + 7)).toEqual([
       'perPage',
       'styling.look',
+      'styling.cornerRadius',
       'styling.gridColor',
       'styling.axisTextColor',
       'styling.dayBoundaries',
@@ -90,6 +93,15 @@ describe('the styling options of the plugin', () => {
     plugin.getPanelOptionsSupplier()(builder as never, { data: [] });
     const item = builder.getItems().find((i) => i.id === 'styling.valueOverflow')!;
     expect(item.editor).toBe(RowAnnotationsComboboxEditor);
+    expect(item.defaultValue).toBeUndefined();
+  });
+
+  it('Corner radius is a clearable slider from 0 to 12 px, with no default', () => {
+    const builder = new PanelOptionsEditorBuilder();
+    plugin.getPanelOptionsSupplier()(builder as never, { data: [] });
+    const item = builder.getItems().find((i) => i.id === 'styling.cornerRadius')!;
+    expect(item.editor).toBe(ClearableSliderEditor);
+    expect(item.settings).toEqual({ min: 0, max: 12, step: 1 });
     expect(item.defaultValue).toBeUndefined();
   });
 

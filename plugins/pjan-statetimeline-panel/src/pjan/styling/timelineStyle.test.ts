@@ -16,7 +16,13 @@ import { TimelineMode } from '../../core/components/TimelineChart/utils';
 import { getBestContrastText, toCanvasColor, toFillColor } from './canvasColors';
 import { getRelativeShadeColor } from './shades';
 import { LIGHT as theme, processFrame } from './testdata/fixtures';
-import { getTimelineStyleHooks, MIN_VALUE_ROW_HEIGHT, type TimelineStyleHooks } from './timelineStyle';
+import {
+  clampCornerRadius,
+  getPillLineWidth,
+  getTimelineStyleHooks,
+  MIN_VALUE_ROW_HEIGHT,
+  type TimelineStyleHooks,
+} from './timelineStyle';
 
 const config: FieldConfig = {
   mappings: [{ type: MappingType.ValueToText, options: { up: { color: 'green', index: 0 } } }],
@@ -77,7 +83,7 @@ describe('getTimelineStyleHooks', () => {
 
   it('the Pill look: an opaque fill and a 1 px line on every row, values that don’t fit hidden', () => {
     const hooks = getTimelineStyleHooks(frameWith({ defaults: {}, overrides: [] }), theme, { look: 'pill' })!;
-    expect(hooks.lineWidth).toBe(1);
+    expect(hooks.getLineWidth(0)).toBe(1);
     expect(hooks.getBoxColors(2, green)).toEqual({
       opaqueFill: shade('green', 'softer'),
       line: shade('green', 'base'),
@@ -100,6 +106,38 @@ const ctxMeasuring = (width: number, textAlign: CanvasTextAlign = 'left') =>
     measureText: (text: string) => ({ width: text.length * width }),
     textAlign,
   }) as unknown as CanvasRenderingContext2D;
+
+describe('Corner radius and the Pill line width', () => {
+  const none = { defaults: {}, overrides: [] };
+
+  it('the radius is scaled for the pixel ratio, and at most half the box’s width and height', () => {
+    expect(clampCornerRadius(4, 100, 100, 1)).toBe(4);
+    expect(clampCornerRadius(4, 100, 100, 2)).toBe(8);
+    expect(clampCornerRadius(12, 10, 100, 1)).toBe(5);
+    expect(clampCornerRadius(12, 100, 6, 2)).toBe(3);
+    expect(clampCornerRadius(0, 100, 100, 1)).toBe(0);
+    // timeline.ts's line inset can make a 1 px box negative
+    expect(clampCornerRadius(4, -1, 10, 1)).toBe(0);
+  });
+
+  it('Corner radius 0 or unset changes nothing; set, it rounds the hover highlight too', () => {
+    expect(getTimelineStyleHooks(frameWith(none), theme, { cornerRadius: 0 })).toBeUndefined();
+    const hooks = getTimelineStyleHooks(frameWith(none), theme, { cornerRadius: 4 })!;
+    expect(hooks.hoverRadius).toBe('4px');
+    expect(hooks.getBoxColors(1, green)).toBeUndefined();
+    expect(hooks.getLineWidth(2)).toBeUndefined();
+  });
+
+  it('Pill’s line: the row’s Line width when above 0, else 1 px (core saves 0 on new panels)', () => {
+    expect([undefined, 0, 1, 3].map(getPillLineWidth)).toEqual([1, 1, 1, 3]);
+    const pill = getTimelineStyleHooks(frameWith(none), theme, { look: 'pill' })!;
+    expect(pill.getLineWidth(0)).toBe(1);
+    expect(pill.getLineWidth(4)).toBe(4);
+    // Pill sets no radius
+    expect(pill.fillRect).toBeUndefined();
+    expect(pill.hoverRadius).toBeUndefined();
+  });
+});
 
 describe('Value overflow', () => {
   const hide = getTimelineStyleHooks(frameWith({ defaults: {}, overrides: [] }), theme, { valueOverflow: 'hide' })!;
@@ -249,6 +287,23 @@ describe('timeline.ts with the styling hooks', () => {
   it('looks up no more state colours than core when no row has a value colour', () => {
     const hooks = getTimelineStyleHooks(frameWith(override('b', 'fillColor', { mode: 'shade', shade: 'soft' })), theme);
     expect(draw(hooks).stateColorLookups).toBe(draw(undefined).stateColorLookups);
+  });
+
+  it('with Corner radius: every box’s fill and line rounded, the line inset by half its width', () => {
+    const roundRect = jest.fn();
+    const original = Path2D.prototype.roundRect;
+    Path2D.prototype.roundRect = roundRect;
+    try {
+      draw(getTimelineStyleHooks(frameWith({ defaults: {}, overrides: [] }), theme)!, 70, 2);
+      expect(roundRect).not.toHaveBeenCalled();
+      draw(getTimelineStyleHooks(frameWith({ defaults: {}, overrides: [] }), theme, { cornerRadius: 4 }), 70, 2);
+      // per box: the fill (radius 4), then the line inset by 1 px (radius 4 - 1)
+      expect(roundRect.mock.calls.map((call) => call[4])).toEqual([4, 3, 4, 3, 4, 3]);
+      const [fill, line] = roundRect.mock.calls;
+      expect(line.slice(0, 4)).toEqual([fill[0] + 1, fill[1] + 1, fill[2] - 2, fill[3] - 2]);
+    } finally {
+      Path2D.prototype.roundRect = original;
+    }
   });
 
   it('with the Pill look: opaque fills whatever the Fill opacity', () => {

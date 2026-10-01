@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling hooks (src/pjan/styling/): `styling` panel options, pjanStyle in the core options and its line width for the series, addAxisStyling after the axes.
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling hooks (src/pjan/styling/): `styling` panel options, pjanStyle in the core options and its line width for each series, addAxisStyling after the axes.
 import {
   type DataFrame,
   FALLBACK_COLOR,
@@ -260,7 +260,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
       pathBuilder: coreConfig.drawPaths,
       pointsBuilder: coreConfig.drawPoints,
       //colorMode,
-      lineWidth: pjanStyle?.lineWidth ?? customConfig.lineWidth, // pjan-statetimeline-panel: was customConfig.lineWidth
+      lineWidth: pjanStyle?.getLineWidth(customConfig.lineWidth) ?? customConfig.lineWidth, // pjan-statetimeline-panel: was customConfig.lineWidth
       fillOpacity: customConfig.fillOpacity,
       theme,
       show: !customConfig.hideFrom?.viz,

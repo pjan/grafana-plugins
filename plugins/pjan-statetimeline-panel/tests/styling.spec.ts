@@ -8,7 +8,7 @@ import { expect, test } from '@grafana/plugin-e2e';
 const UID = 'pjan-statetimeline-styling';
 const CORE = 'state-timeline';
 const PLUGIN = 'pjan-statetimeline-panel';
-const NOTHING_SET_ID = 32;
+const NOTHING_SET_ID = 36;
 const LABELS = ['running', 'degraded', 'down'];
 const HUES: Record<string, Hue> = { running: 'green', degraded: 'yellow', down: 'red' };
 /** The hue of a value's state, from its text (core truncates it) */
@@ -209,6 +209,13 @@ const hex = (rgb: number[]) =>
     .map((c) => c.toString(16).padStart(2, '0'))
     .join('');
 const channels = (color: string) => [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16));
+/** A canvas colour's channels and alpha (0-1): `#rrggbb` or `rgba(r, g, b, a)`. */
+const rgbaOf = (color: string): [number, number, number, number] => {
+  const m = /^rgba\((\d+), (\d+), (\d+), ([\d.]+)\)$/.exec(color);
+  return m
+    ? [Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4])]
+    : ([...channels(color), 1] as [number, number, number, number]);
+};
 const near = (a: string, b: string, tolerance = 1) =>
   channels(a).every((c, i) => Math.abs(c - channels(b)[i]) <= tolerance);
 
@@ -436,8 +443,116 @@ for (const [theme, scale] of [
         expect(core.draws.some(isBold)).toBe(false);
         expect(strokes(plugin).has(color)).toBe(true);
         expect(strokes(core).has(color)).toBe(false);
+        // The line is over the boxes: on each row, at the 00:00 label's x, the line's colour composited over the box
+        // (the box's colour a few pixels to the right). uPlot's grid line, under the boxes, wouldn't show there.
+        const [lr, lg, lb, la] = rgbaOf(color);
+        for (const name of plugin.draws.filter(isRowName)) {
+          for (const label of bold) {
+            // near the row's top edge, away from its values
+            let y = Math.round(name.y!);
+            while (at(plugin.pixels, label.x! + 4 * scale, y - 1)[3] > 0) {
+              y--;
+            }
+            y += 2 * scale;
+            const box = at(plugin.pixels, label.x! + 4 * scale, y);
+            const drawn = at(plugin.pixels, label.x!, y);
+            const a = la + (box[3] / 255) * (1 - la);
+            const expected = [lr, lg, lb].map((c, i) => Math.round((c * la + box[i] * (box[3] / 255) * (1 - la)) / a));
+            const message = `${name.text} at ${label.text}: ${drawn} over box ${box}`;
+            expect(Math.abs(drawn[3] - Math.round(a * 255)), message).toBeLessThanOrEqual(2);
+            expect(
+              drawn.slice(0, 3).every((c, i) => Math.abs(c - expected[i]) <= 2),
+              message
+            ).toBe(true);
+          }
+        }
       });
     }
+
+    test('Corner radius: the boxes’ corners rounded, the rest as core', async ({ page }) => {
+      const core = await drawn(page, `corner radius 4 [${CORE}]`);
+      const plugin = await drawn(page, `corner radius 4 [${PLUGIN}]`);
+      const r = 4 * scale;
+      // The rows (painted runs at a column inside the plot) and, along each row's middle, where boxes meet
+      const names = core.draws.filter(isRowName);
+      const column = Math.round(core.pixels.width * 0.6);
+      const rows = names.map((name) => {
+        let top = Math.round(name.y!);
+        while (at(core.pixels, column, top - 1)[3] > 0) {
+          top--;
+        }
+        let bottom = Math.round(name.y!);
+        while (at(core.pixels, column, bottom + 1)[3] > 0) {
+          bottom++;
+        }
+        const edges: number[] = [];
+        let previous = '';
+        for (let x = Math.ceil(name.x!) + 1; x < core.pixels.width; x++) {
+          const px = at(core.pixels, x, name.y!);
+          // the line (1 px) at a box edge differs from the fill: an edge is where the colour changes
+          const key = px.join();
+          if (px[3] > 0 && key !== previous) {
+            edges.push(x);
+          }
+          previous = px[3] > 0 ? key : '';
+        }
+        return { top, bottom, edges };
+      });
+      expect(rows.every((row) => row.edges.length > 2)).toBe(true);
+      // the first box of each row: core's corner painted, the plugin's corner not
+      for (const row of rows) {
+        expect(at(core.pixels, row.edges[0], row.top)[3]).toBeGreaterThan(0);
+        // (antialiased: the corner pixel itself is barely covered)
+        expect(at(plugin.pixels, row.edges[0], row.top)[3]).toBeLessThan(at(core.pixels, row.edges[0], row.top)[3] / 4);
+      }
+      // every differing pixel is near a box corner
+      const nearCorner = (x: number, y: number) =>
+        rows.some(
+          (row) =>
+            y >= row.top - 1 &&
+            y <= row.bottom + 1 &&
+            (y <= row.top + r || y >= row.bottom - r) &&
+            row.edges.some((edge) => Math.abs(x - edge) <= r + 1)
+        );
+      const far: string[] = [];
+      let differing = 0;
+      for (let y = 0; y < core.pixels.height; y++) {
+        for (let x = 0; x < core.pixels.width; x++) {
+          const i = (y * core.pixels.width + x) * 4;
+          if ([0, 1, 2, 3].some((c) => core.pixels.data[i + c] !== plugin.pixels.data[i + c])) {
+            differing++;
+            if (!nearCorner(x, y) && far.length < 5) {
+              far.push(`${x},${y}`);
+            }
+          }
+        }
+      }
+      expect(differing).toBeGreaterThan(0);
+      expect(far).toEqual([]);
+    });
+
+    test('Pill with Line width 3: a 3 px line in the base shade', async ({ page }) => {
+      const plugin = await drawn(page, `pill, line width 3 [${PLUGIN}]`);
+      const values = plugin.draws.filter(isValue);
+      expect(values.length).toBeGreaterThan(0);
+      const width = 3 * scale;
+      let checked = 0;
+      for (const value of values) {
+        const shades = colors[hueOf(value.text!)];
+        // left of the text: 2 px padding (the fill), then the line, `width` pixels wide, at the box's edge
+        const padding = hex(at(plugin.pixels, value.x! - 1, value.y!));
+        const line = Array.from({ length: width }, (_, i) => hex(at(plugin.pixels, value.x! - 3 - i, value.y!)));
+        if (value.x! - 2 - width < 0 || !near(padding, shades.softer)) {
+          continue; // a box that starts before the plot: its line is off the plot
+        }
+        expect(
+          line.every((c) => near(c, shades.base)),
+          `${value.text}: ${line}`
+        ).toBe(true);
+        checked++;
+      }
+      expect(checked).toBeGreaterThan(0);
+    });
 
     test('Pill: softest fill, 1 px line in the base shade, strongest value text with the guard, no truncation', async ({
       page,
@@ -534,7 +649,7 @@ test.describe('saved JSON', () => {
   });
 
   test('a new panel saves no styling options', async ({ panelEditPage, page }) => {
-    await panelEditPage.setVisualization('State timeline (pjan)');
+    await panelEditPage.setVisualization('State timeline ++');
     await expect.poll(async () => (await savedPanel(page, /.*/))?.type).toBe(PLUGIN);
     const saved = (await savedPanel(page, /.*/))!;
     expect(saved.options).not.toHaveProperty('styling');
@@ -618,6 +733,20 @@ test.describe('saved JSON', () => {
     await expect
       .poll(async () => (await savedPanel(page, title))?.options.styling ?? {})
       .not.toHaveProperty('gridColor');
+
+    // Corner radius: a clearable slider
+    const radius = page.getByTestId('data-testid State timeline Corner radius field property editor');
+    await radius.scrollIntoViewIfNeeded();
+    const radiusInput = radius.getByRole('textbox').or(radius.getByRole('spinbutton')).first();
+    await radiusInput.fill('4');
+    await radiusInput.blur();
+    await expect
+      .poll(async () => ((await savedPanel(page, title))?.options.styling as Record<string, unknown>)?.cornerRadius)
+      .toBe(4);
+    await radius.getByRole('button', { name: 'Clear value' }).click();
+    await expect
+      .poll(async () => (await savedPanel(page, title))?.options.styling ?? {})
+      .not.toHaveProperty('cornerRadius');
 
     // A radio: saved once used
     await page.mouse.move(0, 0); // the colour picker closes when the pointer leaves it (Escape would leave the editor)

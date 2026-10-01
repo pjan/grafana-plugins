@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/timeline.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling hooks (pjanStyle, src/pjan/styling/): box fill and line colours, value colour and overflow.
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/timeline.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling hooks (pjanStyle, src/pjan/styling/): box fill and line colours, rounded corners, value colour and overflow, the hover highlight's radius.
 import uPlot, { type Series } from 'uplot';
 
 import { type GrafanaTheme2, type TimeRange, colorManipulator } from '@grafana/data';
@@ -168,6 +168,9 @@ export function getConfig(opts: TimelineCoreOptions) {
     // pjan-statetimeline-panel: opt-in box colours of the row's own field (seriesIdx + 1); undefined: core's
     const boxColors = pjanStyle?.getBoxColors(seriesIdx + 1, valueColor);
     const fillColor = boxColors?.opaqueFill ?? getFillColor(fieldConfig, boxColors?.fill ?? valueColor);
+    // pjan-statetimeline-panel: opt-in rounded corners (Corner radius); core's rect without them
+    const fillRect = pjanStyle?.fillRect ?? rect;
+    const strokeRect = pjanStyle?.getStrokeRect?.(strokeWidth) ?? rect;
 
     boxRectsBySeries[seriesIdx][valueIdx] = {
       x: round(left - xOff),
@@ -188,7 +191,7 @@ export function getConfig(opts: TimelineCoreOptions) {
         fillPaths.set(fillStyle, (fillPath = new Path2D()));
       }
 
-      rect(fillPath, left, top, boxWidth, boxHeight);
+      fillRect(fillPath, left, top, boxWidth, boxHeight); // pjan-statetimeline-panel: was rect
 
       if (strokeWidth) {
         let strokeStyle = boxColors?.line ?? valueColor; // pjan-statetimeline-panel
@@ -198,7 +201,7 @@ export function getConfig(opts: TimelineCoreOptions) {
           strokePaths.set(strokeStyle, (strokePath = new Path2D()));
         }
 
-        rect(
+        strokeRect( // pjan-statetimeline-panel: was rect
           strokePath,
           left + strokeWidth / 2,
           top + strokeWidth / 2,
@@ -208,13 +211,14 @@ export function getConfig(opts: TimelineCoreOptions) {
       }
     } else {
       ctx.beginPath();
-      rect(ctx, left, top, boxWidth, boxHeight);
+      fillRect(ctx, left, top, boxWidth, boxHeight); // pjan-statetimeline-panel: was rect
       ctx.fillStyle = fillColor;
       ctx.fill();
 
       if (strokeWidth) {
         ctx.beginPath();
-        rect(ctx, left + strokeWidth / 2, top + strokeWidth / 2, boxWidth - strokeWidth, boxHeight - strokeWidth);
+        // pjan-statetimeline-panel: was rect
+        strokeRect(ctx, left + strokeWidth / 2, top + strokeWidth / 2, boxWidth - strokeWidth, boxHeight - strokeWidth);
         ctx.strokeStyle = boxColors?.line ?? valueColor; // pjan-statetimeline-panel
         ctx.lineWidth = strokeWidth;
         ctx.stroke();
@@ -413,7 +417,7 @@ export function getConfig(opts: TimelineCoreOptions) {
     pxPerChar += 2.5;
 
     u.root.querySelectorAll<HTMLDivElement>('.u-cursor-pt').forEach((el) => {
-      el.style.borderRadius = '0';
+      el.style.borderRadius = pjanStyle?.hoverRadius ?? '0'; // pjan-statetimeline-panel: was '0'
     });
   };
 

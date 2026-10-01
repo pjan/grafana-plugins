@@ -106,8 +106,8 @@ function getRowNameColorFn(
  * - Grid and axis text: replaces the axes' stroke functions at `init` (uPlot styles whole axes).
  * - Row names: uPlot draws and lays out every name in the axis colour; a `drawAxes` hook clears the names that have a
  *   colour and draws them again in it, at uPlot's position and in its font.
- * - Day boundaries: the 00:00 ticks lose their grid line and label in uPlot's pass, and a `drawAxes` hook draws them
- *   again, the line in the stronger colour and the label bold, at uPlot's label position.
+ * - Day boundaries: the 00:00 ticks lose their grid line and label in uPlot's pass; a `drawAxes` hook draws the label
+ *   again, bold, at uPlot's label position, and a `draw` hook draws the line in the stronger colour over the boxes.
  */
 export function addAxisStyling(
   builder: UPlotConfigBuilder,
@@ -172,7 +172,8 @@ export function addAxisStyling(
   }
 
   if (dayBoundaries) {
-    builder.addHook('drawAxes', (u: uPlot) => drawDayBoundaries(u, midnights, dayBoundaryColor));
+    builder.addHook('drawAxes', (u: uPlot) => drawDayBoundaryLabels(u, midnights));
+    builder.addHook('draw', (u: uPlot) => drawDayBoundaryLines(u, midnights, dayBoundaryColor));
   }
 }
 
@@ -221,8 +222,8 @@ function redrawRowNames(u: uPlot, colorFns: Array<RowNameColorFn | undefined>) {
   ctx.restore();
 }
 
-/** The 00:00 grid lines (as uPlot's `drawOrthoLines` draws them) and their labels, bold (as uPlot's `drawAxesGrid`). */
-function drawDayBoundaries(u: uPlot, midnights: Map<number, string>, color: string) {
+/** The 00:00 labels, bold, at uPlot's position for a bottom axis (`drawAxesGrid`). */
+function drawDayBoundaryLabels(u: uPlot, midnights: Map<number, string>) {
   const axisIdx = u.axes.findIndex((a) => a.scale === 'x');
   const axis = u.axes[axisIdx] as unknown as InternalAxis;
   if (!midnights.size || !axis?.show) {
@@ -230,9 +231,34 @@ function drawDayBoundaries(u: uPlot, midnights: Map<number, string>, color: stri
   }
   const ctx = u.ctx;
   const pxRatio = uPlot.pxRatio;
+  // below the ticks and the gap
+  const tickSize = axis.ticks.show ? Math.round(axis.ticks.size * pxRatio) : 0;
+  const top = Math.round(axis._pos * pxRatio) + tickSize + Math.round(axis.gap * pxRatio);
   ctx.save();
-  const width = Math.round((axis.grid.width ?? 1) * pxRatio * 1000) / 1000;
+  ctx.font = `${DAY_BOUNDARY_FONT_WEIGHT} ${axis.font[0]}`;
+  ctx.fillStyle = axis.stroke(u, axisIdx);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  midnights.forEach((text, v) => ctx.fillText(text, Math.round(u.valToPos(v, 'x', true)), top));
+  ctx.restore();
+}
+
+/**
+ * The 00:00 lines over the boxes (a `draw` hook, after the series), across the plot's height, with the grid's width
+ * and pixel alignment (uPlot's `drawOrthoLines`).
+ */
+function drawDayBoundaryLines(u: uPlot, midnights: Map<number, string>, color: string) {
+  const axis = u.axes.find((a) => a.scale === 'x') as unknown as InternalAxis | undefined;
+  if (!midnights.size || !axis?.show) {
+    return;
+  }
+  const ctx = u.ctx;
+  const width = Math.round((axis.grid.width ?? 1) * uPlot.pxRatio * 1000) / 1000;
   const offset = (width % 2) / 2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(u.bbox.left, u.bbox.top, u.bbox.width, u.bbox.height);
+  ctx.clip();
   ctx.translate(offset, offset);
   ctx.lineWidth = width;
   ctx.strokeStyle = color;
@@ -243,14 +269,5 @@ function drawDayBoundaries(u: uPlot, midnights: Map<number, string>, color: stri
     ctx.lineTo(px, u.bbox.top + u.bbox.height);
   });
   ctx.stroke();
-  ctx.translate(-offset, -offset);
-  // A bottom axis: below the ticks and the gap
-  const tickSize = axis.ticks.show ? Math.round(axis.ticks.size * pxRatio) : 0;
-  const top = Math.round(axis._pos * pxRatio) + tickSize + Math.round(axis.gap * pxRatio);
-  ctx.font = `${DAY_BOUNDARY_FONT_WEIGHT} ${axis.font[0]}`;
-  ctx.fillStyle = axis.stroke(u, axisIdx);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  midnights.forEach((text, v) => ctx.fillText(text, Math.round(u.valToPos(v, 'x', true)), top));
   ctx.restore();
 }

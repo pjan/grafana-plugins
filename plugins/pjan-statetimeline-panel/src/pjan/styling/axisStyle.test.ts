@@ -171,11 +171,16 @@ describe('addAxisStyling', () => {
     fillText.mockImplementation(() => fonts.push(ctx.font));
     const strokes: string[] = [];
     jest.spyOn(ctx, 'stroke').mockImplementation(() => strokes.push(String(ctx.strokeStyle)));
+    // the label with the axes, under the boxes
     hooks.drawAxes.forEach((hook) => hook(u));
     expect(fillText).toHaveBeenCalledTimes(1);
     expect(fillText.mock.calls[0][0]).toBe(`t${midnight}`);
     expect(fonts[0]).toMatch(new RegExp(`^${DAY_BOUNDARY_FONT_WEIGHT} `));
+    expect(strokes).toEqual([]);
+    // the line after the series, over the boxes
+    hooks.draw.forEach((hook) => hook(u));
     expect(strokes).toEqual(['#ff780a']); // orange, as the canvas keeps it
+    expect(fillText).toHaveBeenCalledTimes(1);
   });
 
   it('Row name color: an override on row 2 redraws row 2 only', () => {

@@ -12,6 +12,7 @@ import {
   type RowAnnotationsComboboxSettings,
 } from '../rowAnnotations/RowAnnotationsComboboxEditor';
 
+import { ClearableSliderEditor, type ClearableSliderSettings } from './ClearableSliderEditor';
 import { RELATIVE_SHADES, type RelativeShade } from './shades';
 import { StylingColorEditor, type StylingColorEditorSettings } from './StylingColorEditor';
 
@@ -25,6 +26,8 @@ export type ValueOverflow = 'truncate' | 'hide';
 export interface TimelineStylingOptions {
   /** Unset is `grafana` */
   look?: TimelineLook;
+  /** In CSS pixels; unset or 0: square boxes, as core */
+  cornerRadius?: number;
   /** Unset is `truncate` (core), unless the look sets it */
   valueOverflow?: ValueOverflow;
   gridColor?: string;
@@ -185,7 +188,10 @@ export function addValueOverflowOption<T>(builder: PanelOptionsEditorBuilder<T>)
   });
 }
 
-/** "Look", the grid, axis text and day-boundary options, registered right after core's "Page size". */
+/** The largest Corner radius, in CSS pixels. */
+export const MAX_CORNER_RADIUS = 12;
+
+/** "Look", "Corner radius", the grid, axis text and day-boundary options, registered right after core's "Page size". */
 export function addStylingOptions<T>(builder: PanelOptionsEditorBuilder<T>) {
   const category = getCategory();
   builder
@@ -194,7 +200,7 @@ export function addStylingOptions<T>(builder: PanelOptionsEditorBuilder<T>) {
       name: t('pjan.styling.look-name', 'Look'),
       description: t(
         'pjan.styling.look-desc',
-        'Pill: the softest shade as fill, a 1 px line in the base shade, and the value in the strongest shade. It draws its own line and an opaque fill, so Line width and Fill opacity don’t apply. A look only sets the options left unset'
+        'Pill: the softest shade as fill, a line in the base shade, and the value in the strongest shade. Its fill is opaque, so Fill opacity doesn’t apply; its line is 1 px unless Line width is set above 0. A look only sets the options left unset'
       ),
       category,
       settings: {
@@ -203,6 +209,18 @@ export function addStylingOptions<T>(builder: PanelOptionsEditorBuilder<T>) {
           { value: 'pill', label: t('pjan.styling.look-pill', 'Pill') },
         ],
       },
+    })
+    .addCustomEditor<ClearableSliderSettings, number>({
+      id: 'styling.cornerRadius',
+      path: 'styling.cornerRadius',
+      name: t('pjan.styling.corner-radius-name', 'Corner radius'),
+      description: t(
+        'pjan.styling.corner-radius-desc',
+        'Rounds every box and its line, in pixels (at most half the box’s width and height). Not set or 0: square'
+      ),
+      category,
+      editor: ClearableSliderEditor,
+      settings: { min: 0, max: MAX_CORNER_RADIUS, step: 1 },
     })
     .addColorPicker({
       path: 'styling.gridColor',

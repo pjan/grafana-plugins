@@ -21,6 +21,9 @@ export interface BoxColors {
   line?: string;
 }
 
+/** uPlot's rect function, as `uPlot.orient` passes it to timeline.ts: adds a box to a path or the context. */
+export type BoxRect = (path: Path2D | CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => void;
+
 /** A box as timeline.ts keeps it for its value: canvas pixels, x relative to the plot. */
 export interface ValueBox {
   x: number;
@@ -33,8 +36,20 @@ export interface ValueBox {
  * `sidx`). Core's `getFieldConfig` reads the field before it (see UPSTREAM.md), so these don't reuse it.
  */
 export interface TimelineStyleHooks {
-  /** Line width of every row in CSS pixels, set by the look; undefined: each row's Line width */
-  lineWidth?: number;
+  /**
+   * A row's line width in CSS pixels, from its Line width (`custom.lineWidth`): the Pill look's 1 px where Line width
+   * is 0 (core's default, which core saves on new panels) or not set; undefined: the row's Line width, as core
+   */
+  getLineWidth: (lineWidth: number | undefined) => number | undefined;
+  /** With Corner radius: adds a box's fill with rounded corners (uPlot's rect arguments); undefined: square */
+  fillRect?: BoxRect;
+  /**
+   * With Corner radius: the stroke rect for a line of `strokeWidth` canvas pixels, given (as timeline.ts does) the box
+   * inset by half the line width; undefined: square
+   */
+  getStrokeRect?: (strokeWidth: number) => BoxRect;
+  /** The CSS border radius of the hover highlight (uPlot's cursor points); undefined: core's square */
+  hoverRadius?: string;
   /** Undefined: core's colours for the box */
   getBoxColors: (fieldIdx: number, valueColor: string) => BoxColors | undefined;
   /**
@@ -67,13 +82,18 @@ export function getTimelineStyleHooks(
 ): TimelineStyleHooks | undefined {
   const pill = isPillLook(styling);
   const hideOverflow = (styling.valueOverflow ?? (pill ? 'hide' : 'truncate')) === 'hide';
+  const radius = styling.cornerRadius ?? 0;
   const rows = frame.fields.map((field, i) => (i === 0 ? undefined : getRowStyle(field, theme, styling)));
-  if (!pill && !hideOverflow && !rows.some(Boolean)) {
+  if (!pill && !hideOverflow && radius <= 0 && !rows.some(Boolean)) {
     return undefined;
   }
+  const corners = radius > 0 ? getRoundedBoxRects(radius) : undefined;
 
   return {
-    lineWidth: pill ? PILL_LINE_WIDTH : undefined,
+    getLineWidth: (lineWidth) => (pill ? getPillLineWidth(lineWidth) : undefined),
+    fillRect: corners?.fillRect,
+    getStrokeRect: corners?.getStrokeRect,
+    hoverRadius: radius > 0 ? `${radius}px` : undefined,
 
     getBoxColors: (fieldIdx, valueColor) => {
       const row = rows[fieldIdx];
@@ -114,4 +134,50 @@ export function getTimelineStyleHooks(
       return fits ? text : null;
     },
   };
+}
+
+/**
+ * The Pill look's line width: a row's Line width when it is above 0, otherwise Pill's 1 px. Core's Line width defaults
+ * to 0 and core saves that 0 on every new panel, so 0 counts as unset: under Pill, a line can't be turned off.
+ */
+export function getPillLineWidth(lineWidth: number | undefined): number {
+  return lineWidth != null && lineWidth > 0 ? lineWidth : PILL_LINE_WIDTH;
+}
+
+/**
+ * The corner radius of a box in canvas pixels: Corner radius scaled for the pixel ratio, at most half the box's width
+ * and height.
+ */
+export function clampCornerRadius(radius: number, width: number, height: number, pxRatio = uPlot.pxRatio): number {
+  return Math.max(0, Math.min(radius * pxRatio, width / 2, height / 2));
+}
+
+const addBox = (path: Path2D | CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
+  // roundRect is in every browser Grafana 13 supports; square where it is missing
+  if (r > 0 && typeof path.roundRect === 'function') {
+    path.roundRect(x, y, w, h, r);
+  } else {
+    path.rect(x, y, w, h);
+  }
+};
+
+/**
+ * Rounded boxes for timeline.ts's fill and line. The fill gets the clamped radius; the line, which timeline.ts strokes
+ * inset by half its width, gets that radius less half the line width, so it follows the fill's edge.
+ */
+function getRoundedBoxRects(radius: number) {
+  const fillRect: BoxRect = (path, x, y, w, h) => addBox(path, x, y, w, h, clampCornerRadius(radius, w, h));
+  const strokeRects = new Map<number, BoxRect>();
+  const getStrokeRect = (strokeWidth: number) => {
+    let strokeRect = strokeRects.get(strokeWidth);
+    if (!strokeRect) {
+      strokeRect = (path, x, y, w, h) => {
+        const outer = clampCornerRadius(radius, w + strokeWidth, h + strokeWidth);
+        addBox(path, x, y, w, h, Math.max(0, outer - strokeWidth / 2));
+      };
+      strokeRects.set(strokeWidth, strokeRect);
+    }
+    return strokeRect;
+  };
+  return { fillRect, getStrokeRect };
 }
