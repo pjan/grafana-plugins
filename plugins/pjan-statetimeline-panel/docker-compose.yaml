@@ -1,0 +1,10 @@
+services:
+  grafana:
+    extends:
+      file: .config/docker-compose-base.yaml
+      service: grafana
+    build:
+      args:
+        # The OSS image and version Atlas runs, so the comparison with the core panel is like for like.
+        grafana_image: grafana
+        grafana_version: 13.2.3

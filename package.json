@@ -1,0 +1,17 @@
+{
+  "name": "grafana-plugins",
+  "private": true,
+  "description": "pjan's Grafana plugins, one npm workspace per plugin under plugins/",
+  "workspaces": [
+    "plugins/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test:ci --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
