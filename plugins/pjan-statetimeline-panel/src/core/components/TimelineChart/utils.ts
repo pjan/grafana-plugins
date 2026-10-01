@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports only.
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling hooks (src/pjan/styling/): `styling` panel options, pjanStyle in the core options and its line width for the series, addAxisStyling after the axes.
 import {
   type DataFrame,
   FALLBACK_COLOR,
@@ -39,6 +39,10 @@ import { FIXED_UNIT, UPlotConfigBuilder, type UPlotConfigPrepFn, type VizLegendI
 import { preparePlotData2, getStackingGroups } from 'packages/grafana-ui/internal';
 
 import { getConfig, type TimelineCoreOptions } from './timeline';
+// pjan-statetimeline-panel: opt-in styling (src/pjan/styling/).
+import { addAxisStyling } from '../../../pjan/styling/axisStyle';
+import { type TimelineStylingOptions } from '../../../pjan/styling/options';
+import { getTimelineStyleHooks } from '../../../pjan/styling/timelineStyle';
 
 /**
  * @internal
@@ -55,6 +59,7 @@ interface UPlotConfigOptions {
   getValueColor: (frameIdx: number, fieldIdx: number, value: unknown) => string;
   hoverMulti: boolean;
   axisWidth?: number;
+  styling?: TimelineStylingOptions; // pjan-statetimeline-panel
 }
 
 /**
@@ -95,6 +100,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
   getValueColor,
   hoverMulti,
   xAxisConfig,
+  styling, // pjan-statetimeline-panel
 }) => {
   const builder = new UPlotConfigBuilder(timeZones[0]);
 
@@ -117,6 +123,8 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
 
     return FALLBACK_COLOR;
   };
+
+  const pjanStyle = getTimelineStyleHooks(frame, theme, styling); // pjan-statetimeline-panel
 
   const opts: TimelineCoreOptions = {
     mode: mode!,
@@ -141,6 +149,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
     // hardcoded formatter for state values
     formatValue: (seriesIdx, value) => formattedValueToString(frame.fields[seriesIdx].display!(value)),
     hoverMulti,
+    pjanStyle, // pjan-statetimeline-panel
   };
 
   const coreConfig = getConfig(opts);
@@ -225,6 +234,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
     size: yAxisHidden ? 0 : yAxisWidth,
     theme,
   });
+  addAxisStyling(builder, frame, theme, styling, timeZones[0], getTimeRange); // pjan-statetimeline-panel
 
   let seriesIndex = 0;
 
@@ -250,7 +260,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
       pathBuilder: coreConfig.drawPaths,
       pointsBuilder: coreConfig.drawPoints,
       //colorMode,
-      lineWidth: customConfig.lineWidth,
+      lineWidth: pjanStyle?.lineWidth ?? customConfig.lineWidth, // pjan-statetimeline-panel: was customConfig.lineWidth
       fillOpacity: customConfig.fillOpacity,
       theme,
       show: !customConfig.hideFrom?.viz,

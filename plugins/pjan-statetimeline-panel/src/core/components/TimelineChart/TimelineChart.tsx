@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/TimelineChart.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports only.
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/TimelineChart.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; 'styling' in propsToDiff (opt-in styling).
 import { useCallback } from 'react';
 
 import { type DataFrame, FALLBACK_COLOR, FieldType, type TimeRange } from '@grafana/data';
@@ -37,6 +37,7 @@ const propsToDiff = [
   'paginationRev',
   'annotationLanes',
   'theme',
+  'styling', // pjan-statetimeline-panel: opt-in styling panel options
 ];
 
 export const TimelineChart = (props: TimelineProps) => {

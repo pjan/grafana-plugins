@@ -32,6 +32,8 @@ test('shows the same legend as the core state timeline', async ({ gotoDashboardP
   const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD });
   const dashboardPage = await gotoDashboardPage(dashboard);
   const legend = (title: string) => dashboardPage.getPanelByTitle(title).locator.locator('[data-testid^="data-testid VizLegend series"]');
+  // both legends rendered (the panels load independently)
+  await expect(legend(CORE).first()).toBeVisible();
   await expect(legend(PLUGIN).first()).toBeVisible();
   expect(await legend(PLUGIN).allInnerTexts()).toEqual(await legend(CORE).allInnerTexts());
 });

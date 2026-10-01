@@ -1,11 +1,11 @@
 # State timeline (pjan)
 
-Grafana's state timeline, as a separate panel plugin. With nothing configured, it looks and behaves like the core **State timeline** panel of Grafana 13.2.3: same options, defaults, rendering, tooltip, legend, annotations, shared crosshair, and drag to zoom. It starts from Grafana's own code. Additions are opt-in (off by default): this version has one, [annotations on matching rows](#annotations-on-matching-rows).
+Grafana's state timeline, as a separate panel plugin. With nothing configured, it looks and behaves like the core **State timeline** panel of Grafana 13.2.3: same options, defaults, rendering, tooltip, legend, annotations, shared crosshair, and drag to zoom. It starts from Grafana's own code. Additions are opt-in (off by default): [annotations on matching rows](#annotations-on-matching-rows) and [styling](#styling).
 
 ## Using it
 
 - **Convert an existing state timeline:** change the panel's `type` from `state-timeline` to `pjan-statetimeline-panel` in the dashboard JSON (lossless), or pick **State timeline (pjan)** in the panel editor (options, field config and overrides carry over).
-- **Go back:** change `type` back to `state-timeline`.
+- **Go back:** change `type` back to `state-timeline`. Core keeps this plugin's panel options in the JSON (and ignores them), but drops its field options when it loads the panel: **Annotation key**, **Line color**, **Fill color**, **Value color** and **Row name color**, in the field defaults and in overrides. Changing `type` to `pjan-statetimeline-panel` again brings back what the panel options set (such as **Look**), not the field options.
 - **Annotations:** shown as in the core panel. Users who may add annotations can Ctrl/Cmd-click or Ctrl/Cmd-drag on empty plot space to add one, and edit or delete it from its tooltip.
 
 ## Annotations on matching rows
@@ -30,6 +30,28 @@ Limits in Grafana 13.2.3 (not worked around by this plugin):
 - **Annotation transformations on classic dashboards:** a transformation set to "Apply transformation to: Annotation data" loses that setting when Grafana converts a dashboard stored as classic JSON (for example a provisioned file) on load (`transformPanelTransformations` in `apps/dashboard/pkg/migration/conversion/v1_to_v2alpha1.go`), and then runs on the query results instead. Saving such a dashboard from the UI stores it without the setting. Dashboards saved in the new (v2) format keep it.
 - **Tooltip links:** a dashboard author can't add data links or actions to annotation tooltips: the panel's links and overrides don't apply to annotations, and annotation queries have no link settings.
 - **Data source columns:** an annotation query's "Field mapping" carries only Grafana's annotation fields (time, end time, title, text, tags, id, and a few more); any other column of the query reaches the panel only when mapped into title, text or tags.
+
+## Styling
+
+Colours and looks beyond core's, set with Grafana's own colours: colour names, which the theme resolves (so they follow light and dark mode and theme plugins), and the colour picker. With nothing set, the panel looks like the core panel, and nothing is saved in the dashboard until an option is used.
+
+- **Options** (group **State timeline**, next to core's options; the panel options come first in the group, then the field options):
+  - **Look** (panel): **Grafana** (as core, when not set) or **Pill**: the softest shade of each state's colour as an opaque fill, a 1 px line in its base shade, and the value in its strongest shade; values that don't fit are hidden. Pill draws its own line and fill, so **Line width** and **Fill opacity** don't apply. It only sets the options left unset: a **Fill color**, **Line color**, **Value color** or **Value overflow** of your own wins.
+  - **Value overflow** (panel, after **Show values**): **Truncate** (core's) or **Hide**: a value that doesn't fit its box whole, or that would reach past the plot's edges where **Align values** puts it, is left out; so are all values on rows lower than 16 px. Not set (clear the select): as the look, so hide with Pill and truncate otherwise.
+  - **Line color** (field, after **Line width**): a shade of the state colour, or a fixed colour. Drawn when **Line width** is set (or with Pill).
+  - **Fill color** (field, after **Fill opacity**): a shade of the state colour. **Fill opacity** still applies.
+  - **Value color** (field): **Best contrast** (black or white, whichever contrasts more with the box), a shade of the state colour, or a fixed colour. A shade or a fixed colour is used only where it reaches a contrast of 4.5:1 with the box as drawn (with its fill opacity, over the panel background); elsewhere best contrast. Not set: core's automatic contrast. The weight stays core's.
+  - **Row name color** (field): a fixed colour, or **Current state color**: the colour of the row's state at its last value in the time range (ignoring empty values), in the softest shade of that colour that reaches 4.5:1 against the panel background; with none, the row name keeps the axis colour.
+  - **Grid line color**, **Axis text color** (panel): fixed colours for the time grid and ticks, and for the time labels and row names.
+  - **Day boundaries** (panel): **On** draws the grid line at 00:00 (in the dashboard's or panel's time zone) stronger, and its time label bold. **Day boundary color** sets that line's colour (the theme's strong border colour when not set). With a time axis whose every label is a day, nothing is set apart.
+- **Per row:** the field options apply to every row, or to some rows with an override (such as "Fields with name"). Each row uses its own field's options.
+- **Shades:** **Softer**, **Soft**, **Base**, **Strong**, **Stronger**. They are the five shades of the state colour's hue (`super-light-green`, `light-green`, `green`, `semi-dark-green`, `dark-green`), ranked by their contrast with the panel background in the active theme: softer is the shade nearest the background, stronger the farthest. So **Softer** is a light shade in a light theme and a dark one in a dark theme, and it means the same in any theme that defines the five names. The rank doesn't depend on which shade the state itself uses: a state in `semi-dark-green` gets the same softer shade as one in `green`.
+- **Colours without a name:** a shade needs the state colour to be a Grafana colour name with five shades (from a value mapping, thresholds, the fixed colour, booleans, or the classic palette). Otherwise (a hex colour such as `#8e8e8e`, a continuous scheme such as the default "Green-Yellow-Red (by value)" for unmapped values, a palette of hex colours such as the Atlas theme's classic palette, `text`, `transparent`):
+  - **Fill color** and **Line color** use the state colour;
+  - **Value color** uses best contrast;
+  - **Row name color** "Current state color" uses the state colour itself if it reaches 4.5:1 against the panel background, otherwise the axis colour.
+- **Legend and tooltip:** their swatches show the fill drawn (without fill opacity, as core's show the state colour). The legend has one entry per state for all rows: with **Fill color** set per row, an entry shows the fill of the first row whose colours include that state.
+- **Theme plugins:** the colours the styling sets are drawn as `rgb()` colours (a **Fill color** shade with **Fill opacity** applied is drawn as core draws its fills), which theme plugins that recolour Grafana's own canvas colours (such as the Atlas theme plugin) don't recognise, so they stay as set. The colours left unset are still Grafana's, and such a plugin recolours them as in the core panel.
 
 ## Differences from the core panel
 

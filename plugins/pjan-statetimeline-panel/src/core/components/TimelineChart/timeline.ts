@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/timeline.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports only.
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/timeline.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling hooks (pjanStyle, src/pjan/styling/): box fill and line colours, value colour and overflow.
 import uPlot, { type Series } from 'uplot';
 
 import { type GrafanaTheme2, type TimeRange, colorManipulator } from '@grafana/data';
@@ -10,6 +10,8 @@ import { type FieldConfig as StateTimeLineFieldConfig } from 'plugins/panel/stat
 import { type FieldConfig as StatusHistoryFieldConfig } from 'plugins/panel/status-history/panelcfg.gen';
 
 import { TimelineMode } from './utils';
+// pjan-statetimeline-panel: opt-in styling (src/pjan/styling/).
+import { type TimelineStyleHooks } from '../../../pjan/styling/timelineStyle';
 
 const { round, min, ceil } = Math;
 
@@ -55,6 +57,8 @@ export interface TimelineCoreOptions {
   formatValue?: (seriesIdx: number, value: unknown) => string;
   getFieldConfig: (seriesIdx: number) => StateTimeLineFieldConfig | StatusHistoryFieldConfig;
   hoverMulti: boolean;
+  /** pjan-statetimeline-panel: opt-in styling; undefined when nothing is set */
+  pjanStyle?: TimelineStyleHooks;
 }
 
 /**
@@ -101,6 +105,7 @@ export function getConfig(opts: TimelineCoreOptions) {
     getValueColor,
     getFieldConfig,
     hoverMulti,
+    pjanStyle, // pjan-statetimeline-panel
   } = opts;
 
   let qt: Quadtree;
@@ -160,7 +165,9 @@ export function getConfig(opts: TimelineCoreOptions) {
 
     const valueColor = getValueColor(seriesIdx + 1, value);
     const fieldConfig = getFieldConfig(seriesIdx);
-    const fillColor = getFillColor(fieldConfig, valueColor);
+    // pjan-statetimeline-panel: opt-in box colours of the row's own field (seriesIdx + 1); undefined: core's
+    const boxColors = pjanStyle?.getBoxColors(seriesIdx + 1, valueColor);
+    const fillColor = boxColors?.opaqueFill ?? getFillColor(fieldConfig, boxColors?.fill ?? valueColor);
 
     boxRectsBySeries[seriesIdx][valueIdx] = {
       x: round(left - xOff),
@@ -184,7 +191,7 @@ export function getConfig(opts: TimelineCoreOptions) {
       rect(fillPath, left, top, boxWidth, boxHeight);
 
       if (strokeWidth) {
-        let strokeStyle = valueColor;
+        let strokeStyle = boxColors?.line ?? valueColor; // pjan-statetimeline-panel
         let strokePath = strokePaths.get(strokeStyle);
 
         if (strokePath == null) {
@@ -208,7 +215,7 @@ export function getConfig(opts: TimelineCoreOptions) {
       if (strokeWidth) {
         ctx.beginPath();
         rect(ctx, left + strokeWidth / 2, top + strokeWidth / 2, boxWidth - strokeWidth, boxHeight - strokeWidth);
-        ctx.strokeStyle = valueColor;
+        ctx.strokeStyle = boxColors?.line ?? valueColor; // pjan-statetimeline-panel
         ctx.lineWidth = strokeWidth;
         ctx.stroke();
       }
@@ -361,6 +368,13 @@ export function getConfig(opts: TimelineCoreOptions) {
                   }
 
                   let txt = formatValue(sidx, dataY[ix]);
+                  // pjan-statetimeline-panel: opt-in value overflow; without the styling, core's truncation
+                  const label = pjanStyle
+                    ? pjanStyle.getValueLabel(u.ctx, txt, maxChars, boxRect, xDim, strokeWidth)
+                    : txt.slice(0, maxChars);
+                  if (label === null) {
+                    continue;
+                  }
 
                   // center-aligned
                   let x = round(boxRect.x + xOff + boxRect.w / 2);
@@ -373,8 +387,11 @@ export function getConfig(opts: TimelineCoreOptions) {
                   }
 
                   // TODO: cache by fillColor to avoid setting ctx for label
-                  u.ctx.fillStyle = theme.colors.getContrastText(boxRect.fillColor, 3);
-                  u.ctx.fillText(txt.slice(0, maxChars), x, y);
+                  // pjan-statetimeline-panel: opt-in value colour of the row's own field (sidx); undefined: core's
+                  u.ctx.fillStyle =
+                    pjanStyle?.getValueTextColor(sidx, () => getValueColor(sidx, yVal), boxRect.fillColor) ??
+                    theme.colors.getContrastText(boxRect.fillColor, 3);
+                  u.ctx.fillText(label, x, y); // pjan-statetimeline-panel: was txt.slice(0, maxChars)
                 }
               }
             }

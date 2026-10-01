@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelineTooltip.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports only.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelineTooltip.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling (src/pjan/styling/): `styling` prop, the swatches show the colours drawn.
 import { type ReactNode } from 'react';
 
 import { FieldType, type TimeRange, usePluginContext } from '@grafana/data';
@@ -15,12 +15,16 @@ import {
 } from '@grafana/ui';
 import { findNextStateIndex, fmtDuration } from 'core/components/TimelineChart/utils';
 
+// pjan-statetimeline-panel: opt-in styling (src/pjan/styling/); the swatches show the colours drawn.
+import { type TimelineStylingOptions } from '../../../pjan/styling/options';
+import { useFieldsWithDrawnColors } from '../../../pjan/styling/swatches';
 import { getFieldActions } from '../status-history/utils';
 import { type TimeSeriesTooltipProps } from '../timeseries/TimeSeriesTooltip';
 
 interface StateTimelineTooltipProps extends TimeSeriesTooltipProps {
   timeRange: TimeRange;
   withDuration: boolean;
+  styling?: TimelineStylingOptions; // pjan-statetimeline-panel
 }
 
 export const StateTimelineTooltip = ({
@@ -37,8 +41,10 @@ export const StateTimelineTooltip = ({
   replaceVariables,
   dataLinks,
   filterByGroupedLabels,
+  styling, // pjan-statetimeline-panel
 }: StateTimelineTooltipProps) => {
   const pluginContext = usePluginContext();
+  const fields = useFieldsWithDrawnColors(series, styling); // pjan-statetimeline-panel
   const xField = series.fields[0];
 
   const dataIdx = seriesIdx != null ? dataIdxs[seriesIdx] : dataIdxs.find((idx) => idx != null);
@@ -47,7 +53,8 @@ export const StateTimelineTooltip = ({
 
   mode = isPinned ? TooltipDisplayMode.Single : mode;
 
-  const contentItems = getFieldDisplayItems(series.fields, xField, dataIdxs, seriesIdx, mode, sortOrder);
+  // pjan-statetimeline-panel: `fields` was series.fields
+  const contentItems = getFieldDisplayItems(fields, xField, dataIdxs, seriesIdx, mode, sortOrder);
   let endTime = null;
 
   // append duration in single mode

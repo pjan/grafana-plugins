@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props; opt-in styling (src/pjan/styling/): legend items and tooltip swatches in the colours drawn.
 import { useCallback, useMemo, useState } from 'react';
 
 import { DashboardCursorSync, type DataFrame, type PanelProps, useDataLinksContext } from '@grafana/data';
@@ -23,6 +23,9 @@ import { getFilterByGroupedLabels } from 'features/panel/filters/adhoc';
 
 // pjan-statetimeline-panel: per-row annotations (src/pjan/); renders core's AnnotationsPlugin unchanged when off.
 import { StateTimelineAnnotations } from '../../../pjan/rowAnnotations/StateTimelineAnnotations';
+// pjan-statetimeline-panel: opt-in styling (src/pjan/styling/); the legend shows the colours drawn.
+import { getStylingOptions } from '../../../pjan/styling/options';
+import { getLegendItemsWithDrawnColors } from '../../../pjan/styling/swatches';
 import { OutsideRangePlugin } from '../timeseries/plugins/OutsideRangePlugin';
 import { getXAnnotationFrames } from '../timeseries/plugins/utils';
 import { getTimezones } from '../timeseries/utils';
@@ -81,9 +84,17 @@ export const StateTimelinePanel = ({
     options.perPage
   );
 
+  const styling = getStylingOptions(options); // pjan-statetimeline-panel
   const legendItems = useMemo(
-    () => prepareTimelineLegendItems(paginatedFrames, options.legend, theme),
-    [paginatedFrames, options.legend, theme]
+    // pjan-statetimeline-panel: was prepareTimelineLegendItems(paginatedFrames, options.legend, theme)
+    () =>
+      getLegendItemsWithDrawnColors(
+        prepareTimelineLegendItems(paginatedFrames, options.legend, theme),
+        paginatedFrames,
+        theme,
+        styling
+      ),
+    [paginatedFrames, options.legend, theme, styling] // pjan-statetimeline-panel: styling added
   );
 
   const timezones = useMemo(() => getTimezones(options.timezone, timeZone), [options.timezone, timeZone]);
@@ -163,6 +174,7 @@ export const StateTimelinePanel = ({
                         dataLinks={dataLinks}
                         filterByGroupedLabels={getFilterByGroupedLabelsModel(alignedFrame, seriesIdx)}
                         canExecuteActions={userCanExecuteActions}
+                        styling={styling} // pjan-statetimeline-panel
                       />
                     );
                   }}

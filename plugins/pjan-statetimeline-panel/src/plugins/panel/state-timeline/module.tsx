@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; panel suggestions (setSuggestionsSupplier/showDefaultSuggestion) left off; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options when switching from core state-timeline and otherwise calls timelinePanelChangedHandler); addRowAnnotationOptions(builder) after addAnnotationOptions and addAnnotationKeyFieldConfig(builder) after addAxisWidth, from src/pjan/ (per-row annotations).
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; panel suggestions (setSuggestionsSupplier/showDefaultSuggestion) left off; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options when switching from core state-timeline and otherwise calls timelinePanelChangedHandler); addRowAnnotationOptions(builder) after addAnnotationOptions and addAnnotationKeyFieldConfig(builder) after addAxisWidth, from src/pjan/ (per-row annotations); the opt-in styling options from src/pjan/styling/, inserted after Line width, Fill opacity, Show values and Page size (builder chains split there).
 import {
   FieldColorModeId,
   FieldConfigProperty,
@@ -21,6 +21,13 @@ import { defaultFieldConfig, defaultOptions, type FieldConfig, type Options } fr
 import { panelChangedHandler } from '../../../pjan/panelChangedHandler';
 // pjan-statetimeline-panel: per-row annotation options and field option (src/pjan/), in the "Annotations" group.
 import { addAnnotationKeyFieldConfig, addRowAnnotationOptions } from '../../../pjan/rowAnnotations/options';
+// pjan-statetimeline-panel: opt-in styling options (src/pjan/styling/), in the "State timeline" group.
+import {
+  addFillAndTextColorFieldConfig,
+  addLineColorFieldConfig,
+  addStylingOptions,
+  addValueOverflowOption,
+} from '../../../pjan/styling/options';
 
 export const plugin = new PanelPlugin<Options, FieldConfig>(StateTimelinePanel)
   .setPanelChangeHandler(panelChangedHandler)
@@ -56,7 +63,9 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(StateTimelinePanel)
             max: 10,
             step: 1,
           },
-        })
+        });
+      addLineColorFieldConfig(builder); // pjan-statetimeline-panel
+      builder
         .addSliderInput({
           path: 'fillOpacity',
           name: t('state-timeline.name-fill-opacity', 'Fill opacity'),
@@ -67,7 +76,9 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(StateTimelinePanel)
             max: 100,
             step: 1,
           },
-        })
+        });
+      addFillAndTextColorFieldConfig(builder); // pjan-statetimeline-panel
+      builder
         .addCustomEditor<NullEditorSettings, boolean>({
           id: 'spanNulls',
           path: 'spanNulls',
@@ -123,7 +134,9 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(StateTimelinePanel)
           ],
         },
         defaultValue: defaultOptions.showValue,
-      })
+      });
+    addValueOverflowOption(builder); // pjan-statetimeline-panel
+    builder
       .addRadio({
         path: 'alignValue',
         name: t('state-timeline.name-align-values', 'Align values'),
@@ -158,6 +171,7 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(StateTimelinePanel)
           integer: true,
         },
       });
+    addStylingOptions(builder); // pjan-statetimeline-panel
 
     commonOptionsBuilder.addLegendOptions(builder, false, true);
     commonOptionsBuilder.addTooltipOptions(builder);

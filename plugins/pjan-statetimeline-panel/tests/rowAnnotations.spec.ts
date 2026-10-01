@@ -77,13 +77,20 @@ test.describe('per-row annotations', () => {
       };
       const core = await panelOf('state-timeline');
       const plugin = await panelOf('pjan-statetimeline-panel');
-      await expect(core.getByLabel(/^Annotation/)).toHaveCount(6);
+      // Both panels drawn, with their markers, before comparing them
+      for (const panel of [core, plugin]) {
+        await expect(panel.locator('canvas').first()).toBeVisible();
+        await expect(panel.getByLabel(/^Annotation/)).toHaveCount(6);
+      }
 
       await expect
-        .poll(async () => {
-          const [a, b] = await Promise.all([fingerprint(core), fingerprint(plugin)]);
-          return a === b ? 'identical' : { core: a, plugin: b };
-        })
+        .poll(
+          async () => {
+            const [a, b] = await Promise.all([fingerprint(core), fingerprint(plugin)]);
+            return a === b ? 'identical' : { core: a, plugin: b };
+          },
+          { timeout: 15_000 }
+        )
         .toBe('identical');
     });
   }
@@ -535,7 +542,10 @@ const rowOf = (plot: Plot, y: number) => plot.rows.findIndex((r) => y >= r.top -
 // Width, height, a hash of the RGBA bytes of the canvas, and the positions of the annotation markers.
 const fingerprint = (panel: Locator) =>
   panel.evaluate((el) => {
-    const canvas = el.querySelector('canvas')!;
+    const canvas = el.querySelector('canvas');
+    if (!canvas) {
+      return 'no canvas (yet)';
+    }
     const data = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data;
     let hash = 0x811c9dc5;
     for (let i = 0; i < data.length; i++) {
