@@ -1,0 +1,87 @@
+name: Release
+
+# A tag <plugin-id>/v<version> (for example pjan-statetimeline-panel/v1.0.0) releases that plugin: the version must
+# equal the plugin's package.json version, and its CHANGELOG.md must have a "## <version>" section, which becomes
+# the release notes. The release gets <plugin-id>-<version>.zip (the built dist/ in a <plugin-id>/ directory, without
+# source maps) and its SHA-256 checksum.
+on:
+  push:
+    tags:
+      - '*/v*'
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Build and release the tagged plugin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Read the plugin and version from the tag
+        id: tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          plugin="${TAG%/v*}"
+          version="${TAG##*/v}"
+          dir="plugins/$plugin"
+          test -f "$dir/package.json" || { echo "::error::No plugin directory $dir"; exit 1; }
+          package_version="$(jq -r .version "$dir/package.json")"
+          test "$package_version" = "$version" || { echo "::error::Tag version $version, package.json $package_version"; exit 1; }
+          awk -v v="$version" '$0 ~ "^## " v "( |$)" {found = 1; next} /^## / && found {exit} found' "$dir/CHANGELOG.md" > "$RUNNER_TEMP/notes.md"
+          test -s "$RUNNER_TEMP/notes.md" || { echo "::error::No '## $version' section in $dir/CHANGELOG.md"; exit 1; }
+          {
+            echo "plugin=$plugin"
+            echo "version=$version"
+            echo "dir=$dir"
+          } >> "$GITHUB_OUTPUT"
+      - name: Install dependencies
+        run: npm ci
+      - name: Check types
+        run: npm run typecheck -w "${{ steps.tag.outputs.dir }}"
+      - name: Lint
+        run: npm run lint -w "${{ steps.tag.outputs.dir }}"
+      - name: Unit tests
+        run: npm run test:ci -w "${{ steps.tag.outputs.dir }}"
+      - name: Build
+        run: npm run build -w "${{ steps.tag.outputs.dir }}"
+      - name: Package
+        id: package
+        env:
+          PLUGIN: ${{ steps.tag.outputs.plugin }}
+          VERSION: ${{ steps.tag.outputs.version }}
+          DIR: ${{ steps.tag.outputs.dir }}
+        run: |
+          test "$(jq -r .info.version "$DIR/dist/plugin.json")" = "$VERSION"
+          staging="$RUNNER_TEMP/package"
+          mkdir -p "$staging"
+          cp -R "$DIR/dist" "$staging/$PLUGIN"
+          find "$staging/$PLUGIN" -name '*.map' -delete
+          zip="$PLUGIN-$VERSION.zip"
+          (cd "$staging" && zip -qr -X "$GITHUB_WORKSPACE/$zip" "$PLUGIN")
+          sha256sum "$zip" > "$zip.sha256"
+          cat "$zip.sha256"
+          echo "zip=$zip" >> "$GITHUB_OUTPUT"
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          PLUGIN: ${{ steps.tag.outputs.plugin }}
+          VERSION: ${{ steps.tag.outputs.version }}
+          ZIP: ${{ steps.package.outputs.zip }}
+        run: |
+          gh release create "$TAG" "$ZIP" "$ZIP.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$PLUGIN $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --verify-tag

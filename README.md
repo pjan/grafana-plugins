@@ -30,6 +30,14 @@ pjan's Grafana plugins. Each plugin is an npm workspace in its own directory und
    - Code that uses the automatic JSX runtime (no `import React`, as in Grafana's own code) also needs `"jsx": "react-jsx"` in `tsconfig.json`, a root `webpack.config.ts` that extends `.config/webpack/webpack.config.ts` and sets the swc rule's `jsc.transform.react.runtime` to `'automatic'` (with `build`/`dev` in `package.json` pointing at it), and the same swc setting in `jest.config.js`. Never edit `.config/`; `create-plugin update` overwrites it, and also resets the `build`/`dev` scripts.
 6. Add it to the table above, with its licence.
 
+## Releasing
+
+A tag `<plugin-id>/v<version>` releases one plugin (`.github/workflows/release.yml`):
+
+1. Set `version` in the plugin's `package.json` (Grafana reads it into `plugin.json`) and add a `## <version> (<date>)` section to its `CHANGELOG.md`. Every change to a built plugin needs a new version: Grafana's plugin URLs carry the version, so browsers otherwise keep the previous build cached.
+2. Commit, then tag and push: `git tag pjan-statetimeline-panel/v1.0.0 && git push origin main pjan-statetimeline-panel/v1.0.0`.
+3. The workflow checks that the tag, `package.json`, and the changelog agree, runs the plugin's checks, builds it, and creates a GitHub release with `<plugin-id>-<version>.zip` (the built plugin in a `<plugin-id>/` directory, without source maps) and its `.sha256`.
+
 ## Deployment
 
-Not decided yet; until then the plugins run only in a local test Grafana. The built `dist/` of a plugin is what Grafana loads, from `/var/lib/grafana/plugins/<plugin-id>`. The plugins are unsigned, so Grafana needs `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=<plugin-id>`.
+Grafana loads a plugin from `/var/lib/grafana/plugins/<plugin-id>`: unzip a release there. The plugins are unsigned, so Grafana needs `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=<plugin-id>`.

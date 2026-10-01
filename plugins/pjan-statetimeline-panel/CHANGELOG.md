@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 (unreleased)
+## 1.0.0 (2026-10-01)
 
 - Named **State timeline ++** in Grafana (was "State timeline (pjan)"); the plugin id stays `pjan-statetimeline-panel`.
 - **Corner radius** (panel option, 0–12 px, not set by default): rounds every box and its line, clamped to half the box's width and height, and the hover highlight. Pill sets no radius; the two combine.

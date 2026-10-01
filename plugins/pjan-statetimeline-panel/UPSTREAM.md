@@ -15,8 +15,7 @@ zoom. `tests/parity.spec.ts` checks the rendering pixel by pixel against the cor
   time: name, version, licence and licence text of every npm package bundled into the chunks; see "Plugin build
   configuration").
 - **Source offer (AGPL-3.0 section 13):** `src/plugin.json` (`info.links`, "Source code") and `src/README.md` point at
-  `https://github.com/pjan/grafana-plugins`. **TODO:** that URL is a placeholder. It must be the real public
-  repository before the plugin is shared with anyone.
+  `https://github.com/pjan/grafana-plugins`, the public repository each release is built from.
 
 Every copied file starts with a one-line header:
 `// Copied from grafana/grafana v13.2.3: <upstream path>. <license>. Changes: <...>.`
@@ -200,8 +199,7 @@ one row in core as well. Not fixed here (drop-in parity).
 ## plugin.json
 
 Kept the scaffold's id; the name is "State timeline ++" (it was the scaffold's "State timeline (pjan)"); the description mentions the opt-in per-row annotations and styling. From core's `plugin.json`: the
-`img/timeline.svg` logo and the documentation link. Added a "Source code" link (AGPL source offer; placeholder URL, see
-the TODO above). Not applicable to an external panel: `"suggestions": true` (left off), the "Raise issue" link
+`img/timeline.svg` logo and the documentation link. Added a "Source code" link (AGPL source offer, the public repository). Not applicable to an external panel: `"suggestions": true` (left off), the "Raise issue" link
 (Grafana's tracker). Core has no `skipDataQuery`, `keywords` or `hideFromList`.
 
 `grafanaDependency` is `^13.2.0`: the copied code, and the public `@grafana/*` APIs it relies on, are those of Grafana
