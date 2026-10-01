@@ -10,6 +10,7 @@ pjan's Grafana plugins. Each plugin is an npm workspace in its own directory und
 | Plugin                                                          | Type  | What it is                                                                                                                                                                           | Licence                                                                            |
 | --------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | [`pjan-statetimeline-panel`](plugins/pjan-statetimeline-panel/) | panel | **State timeline ++**: Grafana's state timeline as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions: per-row annotations and styling (both built). | AGPL-3.0: it starts from Grafana's own state-timeline code (see its `UPSTREAM.md`) |
+| [`pjan-stat-panel`](plugins/pjan-stat-panel/)                   | panel | **Stat ++**: Grafana's stat panel as a plugin: a drop-in replacement that behaves like the core panel (port done, parity verified). Opt-in additions to follow.                      | AGPL-3.0: it starts from Grafana's own stat code (see its `UPSTREAM.md`)           |
 
 Code shared by several plugins lives in workspace packages under `packages/`, which the plugins bundle from source:
 

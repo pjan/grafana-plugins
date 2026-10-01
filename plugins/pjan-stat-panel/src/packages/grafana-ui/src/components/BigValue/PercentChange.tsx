@@ -1,0 +1,33 @@
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/BigValue/PercentChange.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Icon imported from the public @grafana/ui export.
+import { type IconName } from '@grafana/data';
+import { Icon } from '@grafana/ui';
+
+import { type PercentChangeStyles } from './BigValueLayout';
+
+export interface Props {
+  percentChange: number;
+  styles: PercentChangeStyles;
+}
+
+export const PercentChange = ({ percentChange, styles }: Props) => {
+  let percentChangeIcon: IconName | undefined = undefined;
+  if (percentChange > 0) {
+    percentChangeIcon = 'arrow-up';
+  } else if (percentChange < 0) {
+    percentChangeIcon = 'arrow-down';
+  }
+
+  return (
+    <div style={styles.containerStyles}>
+      {percentChangeIcon && (
+        <Icon name={percentChangeIcon} height={styles.iconSize} width={styles.iconSize} viewBox="6 6 12 12" />
+      )}
+      {percentChangeString(percentChange)}
+    </div>
+  );
+};
+
+// percentChange is expected to be a value between 0-100
+export const percentChangeString = (percentChange: number) => {
+  return (percentChange / 100).toLocaleString(undefined, { style: 'percent', maximumSignificantDigits: 3 });
+};
