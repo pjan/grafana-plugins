@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { type DataFrame, type Field, FieldType, type GrafanaTheme2 } from '@grafana/data';
 import { useTheme2, type VizLegendItem } from '@grafana/ui';
+import { getColorNameLookup } from '@pjan/grafana-styling';
 
-import { getColorNameLookup } from './colorNames';
 import { type TimelineStylingOptions } from './options';
 import { getRowStyle, type RowStyle } from './rowStyle';
 

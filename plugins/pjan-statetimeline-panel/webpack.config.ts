@@ -7,11 +7,27 @@ import { Compilation, type Compiler, type Configuration, type Module, type RuleS
 import grafanaConfig, { type Env } from './.config/webpack/webpack.config';
 
 const NOTICES_FILE = 'THIRD_PARTY_NOTICES.txt';
+// The repository's shared workspace packages (packages/<name>): bundled from source, so they are not under node_modules.
+const WORKSPACE_PACKAGES_DIR = path.resolve(__dirname, '../../packages');
+
+/** The first directory of `file` below `dir`, if `file` is inside `dir`. */
+function topDirBelow(dir: string, file: string): string | undefined {
+  const relative = path.relative(dir, file);
+  if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) {
+    return undefined;
+  }
+  return path.join(dir, relative.split(path.sep)[0]);
+}
 
 /**
  * Writes dist/THIRD_PARTY_NOTICES.txt: name, version, licence and licence file(s) of every npm package with code in
- * the emitted chunks. It walks the modules of every chunk, including the modules webpack concatenates into one
- * (license-webpack-plugin 4.0.2 only sees the root module of those, and missed most packages here).
+ * the emitted chunks, including the repository's shared workspace packages (`packages/<name>`). It walks the modules of
+ * every chunk, including the modules webpack concatenates into one (license-webpack-plugin 4.0.2 only sees the root
+ * module of those, and missed most packages here).
+ *
+ * The build fails when a bundled file is neither the plugin's own, in a package under node_modules, nor in a workspace
+ * package; when a workspace package has no licence; and when one package is bundled from two directories (two
+ * copies, for example of the bundled @grafana/i18n, whose second copy would never be initialised by `module.ts`).
  */
 class ThirdPartyNoticesPlugin {
   apply(compiler: Compiler) {
@@ -20,13 +36,23 @@ class ThirdPartyNoticesPlugin {
         { name: 'ThirdPartyNoticesPlugin', stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL },
         () => {
           const packageDirs = new Set<string>();
+          const workspacePackageDirs = new Set<string>();
           const visit = (module: Module) => {
             const inner = (module as Module & { modules?: Module[] }).modules;
             inner?.forEach(visit);
             const resource = (module as Module & { resource?: string }).resource;
-            const match = resource?.match(/^(.*[\\/]node_modules[\\/](?:@[^\\/]+[\\/])?[^\\/]+)/);
+            if (!resource) {
+              return; // webpack's runtime and virtual modules
+            }
+            const match = resource.match(/^(.*[\\/]node_modules[\\/](?:@[^\\/]+[\\/])?[^\\/]+)/);
+            const workspacePackage = topDirBelow(WORKSPACE_PACKAGES_DIR, resource);
             if (match) {
               packageDirs.add(match[1]);
+            } else if (workspacePackage) {
+              workspacePackageDirs.add(workspacePackage);
+              packageDirs.add(workspacePackage);
+            } else if (!topDirBelow(__dirname, resource)) {
+              throw new Error(`ThirdPartyNoticesPlugin: ${resource} is bundled but belongs to no package`);
             }
           };
           for (const chunk of compilation.chunks) {
@@ -45,7 +71,14 @@ class ThirdPartyNoticesPlugin {
               .sort();
             const texts = licenceFiles.map((file) => fs.readFileSync(path.join(dir, file), 'utf8').trim());
             const licence = typeof pkg.license === 'string' ? pkg.license : JSON.stringify(pkg.license ?? pkg.licenses);
+            if (workspacePackageDirs.has(dir) && (licenceFiles.length === 0 || typeof pkg.license !== 'string')) {
+              throw new Error(
+                `ThirdPartyNoticesPlugin: workspace package ${pkg.name} needs a LICENSE file and a license`
+              );
+            }
             return {
+              name: pkg.name as string,
+              dir,
               key: `${pkg.name}@${pkg.version}`,
               text: [
                 `${pkg.name} ${pkg.version}`,
@@ -54,6 +87,13 @@ class ThirdPartyNoticesPlugin {
               ].join('\n\n'),
             };
           });
+          const dirsByName = new Map<string, string[]>();
+          entries.forEach(({ name, dir }) => dirsByName.set(name, [...(dirsByName.get(name) ?? []), dir]));
+          const duplicates = [...dirsByName].filter(([, dirs]) => dirs.length > 1);
+          if (duplicates.length > 0) {
+            const list = duplicates.map(([name, dirs]) => `${name} (${dirs.join(', ')})`).join('; ');
+            throw new Error(`ThirdPartyNoticesPlugin: packages bundled from more than one directory: ${list}`);
+          }
           const unique = [...new Map(entries.map((entry) => [entry.key, entry])).values()].sort((a, b) =>
             a.key.localeCompare(b.key)
           );

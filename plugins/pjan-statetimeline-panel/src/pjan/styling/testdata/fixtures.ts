@@ -1,37 +1,19 @@
-// Test helpers for the styling: themes, fields with Grafana's display processor, and frames processed with the
+// Test helpers for the styling: the shared package's themes and fields (re-exported), and frames processed with the
 // plugin's own field config registry (so field options and overrides apply as in Grafana).
 import {
   applyFieldOverrides,
   createDataFrame,
-  createTheme,
   type DataFrame,
   type Field,
   type FieldConfigSource,
   FieldType,
-  getDisplayProcessor,
   type GrafanaTheme2,
   standardEditorsRegistry,
 } from '@grafana/data';
 
 import { plugin } from '../../../plugins/panel/state-timeline/module';
 
-import { createAtlasTheme } from './atlasTheme';
-
-export const THEMES: Record<string, GrafanaTheme2> = {
-  'Grafana light': createTheme({ colors: { mode: 'light' } }),
-  'Grafana dark': createTheme({ colors: { mode: 'dark' } }),
-  'Atlas light': createAtlasTheme('light'),
-  'Atlas dark': createAtlasTheme('dark'),
-};
-
-export const LIGHT = THEMES['Grafana light'];
-
-/** A state field with Grafana's display processor, as the panel gets it. */
-export function makeField(theme: GrafanaTheme2, field: Partial<Field>): Field {
-  const f: Field = { name: 'state', type: FieldType.string, values: [], config: {}, state: {}, ...field };
-  f.display = getDisplayProcessor({ field: f, theme });
-  return f;
-}
+export { LIGHT, makeField, THEMES } from '@pjan/grafana-styling/src/testdata/themes';
 
 // Grafana fills the editor registry at startup; processing the plugin's options only needs the ids to exist.
 const EDITORS = ['slider', 'boolean', 'radio', 'number', 'select', 'text', 'color', 'unit', 'multi-select'];

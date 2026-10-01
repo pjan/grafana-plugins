@@ -9,11 +9,9 @@ import {
   type TimeRange,
 } from '@grafana/data';
 import { FIXED_UNIT, UPlotConfigBuilder } from '@grafana/ui';
+import { getColorNameLookup, getSoftestReadableShadeColor, toCanvasColor } from '@pjan/grafana-styling';
 
 import { addAxisStyling, DAY_BOUNDARY_FONT_WEIGHT, getCurrentStateValue, getRowNameStateColor } from './axisStyle';
-import { toCanvasColor } from './canvasColors';
-import { getColorNameLookup } from './colorNames';
-import { getSoftestReadableShadeColor } from './shades';
 import { type TimelineStylingOptions } from './options';
 import { LIGHT as theme, makeField, processFrame } from './testdata/fixtures';
 

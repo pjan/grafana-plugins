@@ -8,7 +8,7 @@ import {
   toCanvasColor,
   toFillColor,
 } from './canvasColors';
-import { LIGHT, THEMES } from './testdata/fixtures';
+import { LIGHT, THEMES } from './testdata/themes';
 
 describe('toCanvasColor', () => {
   it('draws set colours as rgb() without spaces, so exact-string theme remaps never match', () => {

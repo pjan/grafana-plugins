@@ -1,9 +1,14 @@
 import { type FieldColorModeId, FieldType, type GrafanaTheme2, MappingType, type ValueMapping } from '@grafana/data';
+import {
+  getBestContrastText,
+  getRelativeShadeColor,
+  getTextContrast,
+  MIN_TEXT_CONTRAST,
+  toCanvasColor,
+} from '@pjan/grafana-styling';
 
-import { getBestContrastText, getTextContrast, MIN_TEXT_CONTRAST, toCanvasColor } from './canvasColors';
 import { type FieldConfigWithStyling, type TimelineStylingOptions } from './options';
 import { getRowStyle } from './rowStyle';
-import { getRelativeShadeColor } from './shades';
 import { LIGHT, makeField, THEMES } from './testdata/fixtures';
 
 const mappings: ValueMapping[] = [

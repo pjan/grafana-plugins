@@ -1,8 +1,9 @@
 {
   "name": "grafana-plugins",
   "private": true,
-  "description": "pjan's Grafana plugins, one npm workspace per plugin under plugins/",
+  "description": "pjan's Grafana plugins, one npm workspace per plugin under plugins/ and per shared package under packages/",
   "workspaces": [
+    "packages/*",
     "plugins/*"
   ],
   "scripts": {

@@ -32,7 +32,8 @@ Copied files mirror their upstream path under `src/`:
   for package entry points that a plugin cannot use at runtime (see below).
 - `src/pjan/` is plugin-authored code (not from grafana/grafana): the panel-change handler, and the opt-in
   additions (`rowAnnotations/`: per-row annotations; `styling/`: opt-in styling). It gets the scaffold's normal lint
-  rules (see "Plugin build configuration").
+  rules (see "Plugin build configuration"). The colour helpers it shares with the other plugins of the repository are
+  in the workspace package `@pjan/grafana-styling` (`packages/grafana-styling/`, Apache-2.0, bundled from source).
 - `src/module.ts` is the plugin entry: it initialises `@grafana/i18n` for this plugin and re-exports `plugin` from
   `src/plugins/panel/state-timeline/module.tsx`.
 - `src/img/timeline.svg` is core's `public/app/plugins/panel/state-timeline/img/timeline.svg` (the panel logo).
@@ -172,7 +173,8 @@ one row in core as well. Not fixed here (drop-in parity).
   - copies `LICENSE_APACHE2`, `UPSTREAM.md` and `NOTICE.md` into `dist/` (the scaffold already copies `LICENSE`);
   - writes `dist/THIRD_PARTY_NOTICES.txt` with a small plugin (`ThirdPartyNoticesPlugin`) that walks every chunk's
     modules, including the ones webpack concatenates. `license-webpack-plugin` 4.0.2 was tried first and only saw 7 of
-    the 20 bundled packages (it reads only the root module of a concatenated module);
+    the 20 bundled packages (it reads only the root module of a concatenated module). The repository's shared workspace
+    packages (`packages/<name>`, bundled from source, so not under `node_modules`) are listed too;
   - replaces the scaffold's Terser instance with the same settings plus an explicit licence-comment condition
     (`/^\**!|@preserve|@license|@cc_on/i`), extracted to `<asset>.LICENSE.txt`. None of the bundled code has such a
     comment today (uPlot's header is a plain `/** */` block), so no `.LICENSE.txt` file is emitted; its MIT notice is
@@ -195,6 +197,7 @@ one row in core as well. Not fixed here (drop-in parity).
   positioning), `react-hook-form` 7.62.0 (annotation editor form), `react-select` 5.10.2 (tag picker components passed
   to `@grafana/ui`'s `MultiSelect`), `tinycolor2` 1.6.0, `micro-memoize` 4.2.0, `react-use` 17.6.1, plus
   `@grafana/schema` and `@grafana/i18n` 13.2.3. `lodash` 4.18.1 is a shared external at runtime.
+  The workspace package `@pjan/grafana-styling` is bundled from source and uses the plugin's copies of these.
 
 ## plugin.json
 
@@ -242,8 +245,10 @@ markers, and the option-off pass-through), and `styling/*.test.ts(x)` (colour na
 ranking in the stock and Atlas themes, colour resolution and its fallbacks, the 4.5:1 guards, the Pill look, value
 overflow, per-row options on row 2 and 3 with neighbours unaffected, what `timeline.ts` draws with and without the
 hooks, the axis hooks, the row-name current-state rule, legend and tooltip swatches, the options' placement and that
-none has a default, the editor). `testdata/atlas-theme.json` is a copy of the Atlas theme plugin's file
-(atlas-theme-app 3.0.2) for these tests, outside `src/` so the build doesn't copy it into `dist/`.
+none has a default). The tests of the shared colour helpers (colour names for every colour source, shade ranking in
+the stock and Atlas themes, the contrast helpers, the editors) moved with them to `packages/grafana-styling/`, which
+also holds the copy of the Atlas theme plugin's file (atlas-theme-app 3.0.2) they use;
+`src/pjan/styling/colorNames.test.ts` keeps the case that needs this plugin's `prepareTimelineFields`.
 
 End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.yaml`):
 
@@ -334,7 +339,11 @@ Opt-in ("Show on matching rows", off by default; user documentation in `src/READ
 
 ## Plugin addition: opt-in styling
 
-Opt-in (nothing set draws as core; user documentation in `src/README.md`). Code in `src/pjan/styling/`.
+Opt-in (nothing set draws as core; user documentation in `src/README.md`). Code in `src/pjan/styling/`, and the colour
+helpers shared with the other plugins in the workspace package `@pjan/grafana-styling` (`packages/grafana-styling/`:
+the colour-option model and `getStylingColor`, `colorNames.ts`, `shades.ts`, `canvasColors.ts`,
+`StylingColorEditor.tsx`, `ClearableSliderEditor.tsx`). It is Apache-2.0 and bundled from source;
+`THIRD_PARTY_NOTICES.txt` lists it (see "Plugin build configuration").
 
 - **Options** (`options.ts`, in core's "State timeline" category, so they join core's group):
   - panel options under one top-level object, `styling.{look, cornerRadius, valueOverflow, gridColor, axisTextColor,

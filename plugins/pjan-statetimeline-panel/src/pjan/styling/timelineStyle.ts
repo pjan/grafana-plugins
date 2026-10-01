@@ -1,8 +1,8 @@
 import uPlot from 'uplot';
 
 import { type DataFrame, type GrafanaTheme2 } from '@grafana/data';
+import { toFillColor } from '@pjan/grafana-styling';
 
-import { toFillColor } from './canvasColors';
 import { type TimelineStylingOptions } from './options';
 import { getRowStyle, isPillLook, PILL_LINE_WIDTH } from './rowStyle';
 

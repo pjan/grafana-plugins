@@ -1,13 +1,12 @@
 import { FieldType, getPanelOptionsWithDefaults, PanelOptionsEditorBuilder } from '@grafana/data';
+import { ClearableSliderEditor } from '@pjan/grafana-styling';
 
 import { plugin } from '../../plugins/panel/state-timeline/module';
 
 import { RowAnnotationsComboboxEditor } from '../rowAnnotations/RowAnnotationsComboboxEditor';
 
-import { ClearableSliderEditor } from './ClearableSliderEditor';
-
 import {
-  getStylingColor,
+  FILL_COLOR_MODES,
   getStylingOptions,
   LINE_COLOR_MODES,
   ROW_NAME_COLOR_MODES,
@@ -16,33 +15,6 @@ import {
 import './testdata/fixtures'; // fills Grafana's editor registry, which the plugin's options need
 
 const STYLING_FIELD_OPTIONS = ['custom.lineColor', 'custom.fillColor', 'custom.valueColor', 'custom.rowNameColor'];
-
-describe('getStylingColor', () => {
-  it('keeps a complete value of an allowed mode', () => {
-    expect(getStylingColor({ mode: 'shade', shade: 'soft' }, LINE_COLOR_MODES)).toEqual({
-      mode: 'shade',
-      shade: 'soft',
-    });
-    expect(getStylingColor({ mode: 'fixed', fixedColor: 'red' }, LINE_COLOR_MODES)).toEqual({
-      mode: 'fixed',
-      fixedColor: 'red',
-    });
-    expect(getStylingColor({ mode: 'contrast' }, VALUE_COLOR_MODES)).toEqual({ mode: 'contrast' });
-    expect(getStylingColor({ mode: 'state' }, ROW_NAME_COLOR_MODES)).toEqual({ mode: 'state' });
-  });
-
-  it.each([
-    [undefined, LINE_COLOR_MODES],
-    [{ mode: 'fixed' }, LINE_COLOR_MODES],
-    [{ mode: 'shade' }, LINE_COLOR_MODES],
-    [{ mode: 'shade', shade: 'darkest' }, LINE_COLOR_MODES],
-    [{ mode: 'contrast' }, LINE_COLOR_MODES],
-    [{ mode: 'state' }, VALUE_COLOR_MODES],
-    ['red', ROW_NAME_COLOR_MODES],
-  ])('counts %o as unset', (value, modes) => {
-    expect(getStylingColor(value, modes)).toBeUndefined();
-  });
-});
 
 describe('the styling options of the plugin', () => {
   const fieldOptions = () => plugin.fieldConfigRegistry.list().map((item) => item.id);
@@ -69,6 +41,14 @@ describe('the styling options of the plugin', () => {
       expect(item.shouldApply({ type: FieldType.time } as never)).toBe(false);
       expect(item.shouldApply({ type: FieldType.string } as never)).toBe(true);
     }
+  });
+
+  it('each colour field option offers the modes of its constant (the shared editor shows what it is given)', () => {
+    const modesOf = (id: string) => (plugin.fieldConfigRegistry.get(id).settings as { modes: unknown }).modes;
+    expect(modesOf('custom.lineColor')).toEqual(LINE_COLOR_MODES);
+    expect(modesOf('custom.fillColor')).toEqual(FILL_COLOR_MODES);
+    expect(modesOf('custom.valueColor')).toEqual(VALUE_COLOR_MODES);
+    expect(modesOf('custom.rowNameColor')).toEqual(ROW_NAME_COLOR_MODES);
   });
 
   it('panel options: Value overflow after Show values, the rest after Page size', () => {

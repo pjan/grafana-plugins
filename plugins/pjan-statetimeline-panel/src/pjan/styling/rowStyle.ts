@@ -1,17 +1,21 @@
 import { type Field, type GrafanaTheme2 } from '@grafana/data';
+import {
+  getBestContrastText,
+  getColorNameLookup,
+  getReadableText,
+  getRelativeShadeColor,
+  getStylingColor,
+  type StylingColor,
+  toCanvasColor,
+} from '@pjan/grafana-styling';
 
-import { getBestContrastText, getReadableText, toCanvasColor } from './canvasColors';
-import { getColorNameLookup } from './colorNames';
 import {
   FILL_COLOR_MODES,
   type FieldConfigWithStyling,
-  getStylingColor,
   LINE_COLOR_MODES,
-  type StylingColor,
   type TimelineStylingOptions,
   VALUE_COLOR_MODES,
 } from './options';
-import { getRelativeShadeColor } from './shades';
 
 type BoxColorOptions = Required<Pick<FieldConfigWithStyling, 'fillColor' | 'lineColor' | 'valueColor'>>;
 

@@ -2,8 +2,9 @@ name: Release
 
 # A tag <plugin-id>/v<version> (for example pjan-statetimeline-panel/v1.0.0) releases that plugin: the version must
 # equal the plugin's package.json version, and its CHANGELOG.md must have a "## <version>" section, which becomes
-# the release notes. The release gets <plugin-id>-<version>.zip (the built dist/ in a <plugin-id>/ directory, without
-# source maps) and its SHA-256 checksum.
+# the release notes. The plugin's checks run, and those of the shared packages under packages/ (bundled from
+# source). The release gets <plugin-id>-<version>.zip (the built dist/ in a <plugin-id>/ directory, without source
+# maps) and its SHA-256 checksum.
 on:
   push:
     tags:
@@ -53,6 +54,14 @@ jobs:
         run: npm run lint -w "${{ steps.tag.outputs.dir }}"
       - name: Unit tests
         run: npm run test:ci -w "${{ steps.tag.outputs.dir }}"
+      - name: Check the shared packages
+        # The plugin bundles them from source, and its own tsc doesn't report errors inside them (packages/*/README.md).
+        run: |
+          for dir in packages/*/; do
+            npm run typecheck -w "$dir"
+            npm run lint -w "$dir"
+            npm run test:ci -w "$dir"
+          done
       - name: Build
         run: npm run build -w "${{ steps.tag.outputs.dir }}"
       - name: Package

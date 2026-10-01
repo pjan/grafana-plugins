@@ -6,15 +6,19 @@ import {
 } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import { VisibilityMode } from '@grafana/schema';
+import {
+  ClearableSliderEditor,
+  type ClearableSliderSettings,
+  type StylingColor,
+  StylingColorEditor,
+  type StylingColorEditorSettings,
+  type StylingColorMode,
+} from '@pjan/grafana-styling';
 
 import {
   RowAnnotationsComboboxEditor,
   type RowAnnotationsComboboxSettings,
 } from '../rowAnnotations/RowAnnotationsComboboxEditor';
-
-import { ClearableSliderEditor, type ClearableSliderSettings } from './ClearableSliderEditor';
-import { RELATIVE_SHADES, type RelativeShade } from './shades';
-import { StylingColorEditor, type StylingColorEditorSettings } from './StylingColorEditor';
 
 export type TimelineLook = 'grafana' | 'pill';
 export type ValueOverflow = 'truncate' | 'hide';
@@ -40,21 +44,6 @@ export interface OptionsWithStyling {
   styling?: TimelineStylingOptions;
 }
 
-/**
- * - `shade`: a relative shade of the state colour (`shade`);
- * - `fixed`: a colour from Grafana's colour picker (`fixedColor`);
- * - `contrast`: black or white, whichever contrasts more with the box (value text only);
- * - `state`: the row's current state colour (row names only).
- */
-export type StylingColorMode = 'shade' | 'fixed' | 'contrast' | 'state';
-
-/** A colour option of the styling. Like Grafana's own field colour, a mode and what that mode needs. */
-export interface StylingColor {
-  mode: StylingColorMode;
-  shade?: RelativeShade;
-  fixedColor?: string;
-}
-
 /** Field options of the styling (custom field config), set per row with overrides. */
 export interface FieldConfigWithStyling {
   fillColor?: StylingColor;
@@ -73,25 +62,6 @@ const NO_STYLING: TimelineStylingOptions = Object.freeze({});
 /** The panel's styling options; the same object while they don't change, so it can be a memo dependency. */
 export const getStylingOptions = (options: unknown): TimelineStylingOptions =>
   (options as OptionsWithStyling | undefined)?.styling ?? NO_STYLING;
-
-/**
- * The option if it is complete and one of the allowed modes; otherwise undefined, which counts as unset. The editor
- * saves `{ mode: 'fixed' }` until a colour is picked, for example.
- */
-export function getStylingColor(value: unknown, modes: StylingColorMode[]): StylingColor | undefined {
-  const color = value as StylingColor | undefined;
-  if (!color || !modes.includes(color.mode)) {
-    return undefined;
-  }
-  switch (color.mode) {
-    case 'shade':
-      return color.shade && RELATIVE_SHADES.includes(color.shade) ? color : undefined;
-    case 'fixed':
-      return color.fixedColor ? color : undefined;
-    default:
-      return color;
-  }
-}
 
 const getCategory = () => [t('state-timeline.category-state-timeline', 'State timeline')];
 const notTime = (field: { type: FieldType }) => field.type !== FieldType.time;

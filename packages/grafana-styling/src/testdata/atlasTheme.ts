@@ -4,7 +4,7 @@
 // that plugin's file.
 import { createTheme, type GrafanaTheme2 } from '@grafana/data';
 
-import atlas from '../../../../testdata/atlas-theme.json';
+import atlas from '../../testdata/atlas-theme.json';
 
 type Mode = 'light' | 'dark';
 type Json = string | number | boolean | null | Json[] | { [key: string]: Json };

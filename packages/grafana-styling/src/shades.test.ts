@@ -2,7 +2,7 @@ import { type GrafanaTheme2 } from '@grafana/data';
 
 import { getHueOfColorName, getRelativeShadeColor, getSoftestReadableShadeColor, rankHue } from './shades';
 import { ATLAS_EXTRA_HUES } from './testdata/atlasTheme';
-import { THEMES as themes } from './testdata/fixtures';
+import { THEMES as themes } from './testdata/themes';
 const GRAFANA_HUES = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
 const NATURAL = ['super-light-', 'light-', '', 'semi-dark-', 'dark-'];
 

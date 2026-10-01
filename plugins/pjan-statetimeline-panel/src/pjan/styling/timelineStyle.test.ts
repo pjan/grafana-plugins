@@ -9,12 +9,11 @@ import {
   MappingType,
 } from '@grafana/data';
 import { VisibilityMode } from '@grafana/schema';
+import { getBestContrastText, getRelativeShadeColor, toCanvasColor, toFillColor } from '@pjan/grafana-styling';
 
 import { getConfig, type TimelineCoreOptions } from '../../core/components/TimelineChart/timeline';
 import { TimelineMode } from '../../core/components/TimelineChart/utils';
 
-import { getBestContrastText, toCanvasColor, toFillColor } from './canvasColors';
-import { getRelativeShadeColor } from './shades';
 import { LIGHT as theme, processFrame } from './testdata/fixtures';
 import {
   clampCornerRadius,

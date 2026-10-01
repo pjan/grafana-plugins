@@ -2,13 +2,18 @@ import { render, screen } from '@testing-library/react';
 
 import { type StandardEditorsRegistryItem } from '@grafana/data';
 
-import { LINE_COLOR_MODES, ROW_NAME_COLOR_MODES, type StylingColor, VALUE_COLOR_MODES } from './options';
+import { type StylingColor, type StylingColorMode } from './stylingColor';
 import {
   getStylingColorOptions,
   StylingColorEditor,
   type StylingColorEditorSettings,
   toStylingColor,
 } from './StylingColorEditor';
+
+// The mode lists State timeline ++ gives its line, value and row-name colours.
+const LINE_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
+const VALUE_COLOR_MODES: StylingColorMode[] = ['contrast', 'shade', 'fixed'];
+const ROW_NAME_COLOR_MODES: StylingColorMode[] = ['state', 'fixed'];
 
 // Choosing in the select and clearing it are covered end to end (tests/styling.spec.ts): Combobox's virtualised menu
 // doesn't render in jsdom.

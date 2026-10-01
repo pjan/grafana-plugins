@@ -3,11 +3,10 @@ import { type ReactNode } from 'react';
 
 import { type FieldConfig, FieldMatcherID, type FieldConfigSource, MappingType, ThemeContext } from '@grafana/data';
 import { type VizLegendItem } from '@grafana/ui';
+import { getRelativeShadeColor, toCanvasColor } from '@pjan/grafana-styling';
 
 import { prepareTimelineLegendItems } from '../../core/components/TimelineChart/utils';
 
-import { toCanvasColor } from './canvasColors';
-import { getRelativeShadeColor } from './shades';
 import { getLegendItemsWithDrawnColors, useFieldsWithDrawnColors } from './swatches';
 import { LIGHT as theme, processFrame } from './testdata/fixtures';
 

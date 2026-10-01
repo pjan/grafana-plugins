@@ -3,16 +3,16 @@ import uPlot from 'uplot';
 import { type DataFrame, dateTimeFormat, type Field, type GrafanaTheme2, type TimeRange } from '@grafana/data';
 import { type TimeZone } from '@grafana/schema';
 import { FIXED_UNIT, type UPlotConfigBuilder } from '@grafana/ui';
-
-import { getTextContrast, MIN_TEXT_CONTRAST, toCanvasColor } from './canvasColors';
-import { getColorNameLookup } from './colorNames';
 import {
-  type FieldConfigWithStyling,
+  getColorNameLookup,
+  getSoftestReadableShadeColor,
   getStylingColor,
-  ROW_NAME_COLOR_MODES,
-  type TimelineStylingOptions,
-} from './options';
-import { getSoftestReadableShadeColor } from './shades';
+  getTextContrast,
+  MIN_TEXT_CONTRAST,
+  toCanvasColor,
+} from '@pjan/grafana-styling';
+
+import { type FieldConfigWithStyling, ROW_NAME_COLOR_MODES, type TimelineStylingOptions } from './options';
 
 /** The weight of the 00:00 labels with "Day boundaries" on. */
 export const DAY_BOUNDARY_FONT_WEIGHT = 700;

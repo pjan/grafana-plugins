@@ -4,7 +4,7 @@ import { type GrafanaTheme2, type StandardEditorProps } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import { ColorPicker, Combobox, type ComboboxOption, useStyles2, useTheme2 } from '@grafana/ui';
 
-import { type StylingColor, type StylingColorMode } from './options';
+import { type StylingColor, type StylingColorMode } from './stylingColor';
 import { RELATIVE_SHADES, type RelativeShade } from './shades';
 
 export interface StylingColorEditorSettings {

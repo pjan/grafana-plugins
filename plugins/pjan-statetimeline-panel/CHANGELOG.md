@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The shared colour helpers (shades, colour names, contrast, the colour and slider editors) moved to the workspace package `@pjan/grafana-styling`, shared with the other plugins in the repository. No change in behaviour. `THIRD_PARTY_NOTICES.txt` lists the package.
+
 ## 1.0.0 (2026-10-01)
 
 - Named **State timeline ++** in Grafana (was "State timeline (pjan)"); the plugin id stays `pjan-statetimeline-panel`.

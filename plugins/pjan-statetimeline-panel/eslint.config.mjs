@@ -44,6 +44,26 @@ export default defineConfig([
     },
   },
   {
+    // Plugin code imports the shared package through its entry point only; its src/testdata/ is for tests. Keeps
+    // Grafana's own `moment` restriction (@grafana/eslint-config), which this rule would otherwise replace.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.{ts,tsx}', 'src/**/testdata/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: ['moment'],
+          patterns: [
+            {
+              group: ['@pjan/grafana-styling/*'],
+              message: 'Import from @pjan/grafana-styling (its src/index.ts); its src/testdata/ is for tests.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Only the tree mirrored from grafana/grafana (see UPSTREAM.md). It is kept as close to upstream as possible, so
     // rules that Grafana's own lint setup does not enforce on this code are relaxed here instead of rewriting it.
     // Plugin-authored code lives in src/pjan/ and keeps the scaffold's rules: do not add it to this list.

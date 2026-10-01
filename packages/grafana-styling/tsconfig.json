@@ -1,0 +1,10 @@
+{
+  "extends": "@grafana/tsconfig",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    // npm workspaces hoist @types/* to the repository root.
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"]
+  },
+  "include": ["src", "types"]
+}
