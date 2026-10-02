@@ -271,6 +271,12 @@ test.describe('saved JSON', () => {
           })
         );
       await expect(preview.getByText('second')).toBeVisible();
+      // The percent change arrows load asynchronously: an icon is an empty <svg> until then
+      await expect
+        .poll(() =>
+          preview.evaluate((root) => Array.from(root.querySelectorAll('svg')).every((svg) => svg.childElementCount > 0))
+        )
+        .toBe(true);
       const coreTiles = await tiles();
 
       await panelEditPage.setVisualization('Stat ++');

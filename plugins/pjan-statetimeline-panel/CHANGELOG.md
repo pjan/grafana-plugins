@@ -2,7 +2,9 @@
 
 ## Unreleased
 
+- Corner radius: tabbing through the unset slider no longer saves 0 (Grafana's slider reports its value when its text box loses focus; the shared slider editor now ignores the value it only shows while the option is unset).
 - The shared colour helpers (shades, colour names, contrast, the colour and slider editors) moved to the workspace package `@pjan/grafana-styling`, shared with the other plugins in the repository. No change in behaviour. `THIRD_PARTY_NOTICES.txt` lists the package.
+- The text contrast guards (Value color, Row name color "Current state color") take their minimum from the shared `getMinTextContrast(fontSize, fontWeight)` (WCAG 2 AA: 3:1 for large text, 4.5:1 otherwise) instead of a fixed 4.5:1. All of this panel's text is 12 px, so it stays 4.5:1: no change in behaviour.
 
 ## 1.0.0 (2026-10-01)
 

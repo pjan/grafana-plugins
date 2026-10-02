@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/BigValue/BigValueLayout.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: getTextColorForAlphaBackground, calculateFontSize and Sparkline imported from the public @grafana/ui exports.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/BigValue/BigValueLayout.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: getTextColorForAlphaBackground, calculateFontSize and Sparkline imported from the public @grafana/ui exports; Color mode Custom hooks (props.pjanStyling, src/pjan/styling/): the tile's background, the name's, value's (at its suffix's size) and percent change's colours, and the sparkline's colours and line width.
 import { type CSSProperties, type JSX } from 'react';
 import * as React from 'react';
 import tinycolor from 'tinycolor2';
@@ -15,6 +15,8 @@ import { calculateFontSize, getTextColorForAlphaBackground, Sparkline } from '@g
 
 import { BigValueColorMode, type Props, BigValueJustifyMode, BigValueTextMode } from './BigValueTypes';
 import { percentChangeString } from './PercentChange';
+// pjan-stat-panel: Color mode Custom (src/pjan/styling/): colours from props.pjanStyling.
+import { getSmallestValueFontSize, type TileStyling } from '../../../../../pjan/styling/tileStyling';
 
 const LINE_HEIGHT = 1.2;
 const MAX_TITLE_SIZE = 30;
@@ -81,6 +83,15 @@ export abstract class BigValueLayout {
       styles.color = getTextColorForAlphaBackground(this.valueColor, this.props.theme.isDark);
     }
 
+    // pjan-stat-panel: Color mode Custom: the name's colour (the panel's own weight, 400)
+    const pjanStyling: TileStyling | undefined = this.props.pjanStyling;
+    if (pjanStyling) {
+      const color = pjanStyling.getTextColor('name', this.titleFontSize, 400);
+      if (color) {
+        styles.color = color;
+      }
+    }
+
     return styles;
   }
 
@@ -108,6 +119,16 @@ export abstract class BigValueLayout {
       case BigValueColorMode.None:
         styles.color = this.props.theme.colors.text.primary;
         break;
+    }
+
+    // pjan-stat-panel: Color mode Custom: the value's colour
+    if (this.props.pjanStyling) {
+      // at the smallest size it is drawn at: FormattedValueDisplay draws a unit suffix smaller
+      styles.color = this.props.pjanStyling.getTextColor(
+        'value',
+        getSmallestValueFontSize(this.valueFontSize, this.textValues.suffix),
+        VALUE_FONT_WEIGHT
+      );
     }
 
     return styles;
@@ -173,6 +194,16 @@ export abstract class BigValueLayout {
       iconSize = containerStyles.fontSize * 0.8;
     }
 
+    // pjan-stat-panel: Color mode Custom: on a background, percent change follows the text colour (as core's Background
+    // modes do); without one, it keeps its own color mode
+    if (this.props.pjanStyling?.hasBackground) {
+      containerStyles.color = this.props.pjanStyling.getTextColor(
+        'percent',
+        Number(containerStyles.fontSize),
+        VALUE_FONT_WEIGHT
+      );
+    }
+
     return {
       containerStyles,
       iconSize,
@@ -228,6 +259,11 @@ export abstract class BigValueLayout {
         break;
     }
 
+    // pjan-stat-panel: Color mode Custom: the tile's background ('transparent' without one, as core's Value mode)
+    if (this.props.pjanStyling) {
+      panelStyles.background = this.props.pjanStyling.background;
+    }
+
     if (this.justifyCenter) {
       panelStyles.alignItems = 'center';
       panelStyles.flexDirection = 'row';
@@ -260,11 +296,18 @@ export abstract class BigValueLayout {
         break;
     }
 
+    // pjan-stat-panel: Color mode Custom: the sparkline's colours and line width
+    let lineWidth = 1;
+    if (this.props.pjanStyling) {
+      const sparkline = this.props.pjanStyling.getSparkline(this.getValueStyles().color);
+      ({ fillColor, lineColor, lineWidth } = sparkline);
+    }
+
     // The graph field configuration applied to Y values
     const config: FieldConfig<GraphFieldConfig> = {
       custom: {
         drawStyle: GraphDrawStyle.Line,
-        lineWidth: 1,
+        lineWidth, // pjan-stat-panel: was 1
         fillColor,
         lineColor,
       },

@@ -2,11 +2,29 @@ import tinycolor from 'tinycolor2';
 
 import { colorManipulator, type GrafanaTheme2 } from '@grafana/data';
 
-/** The contrast a text colour of the styling must reach against what it is drawn on (WCAG AA for normal text). */
-export const MIN_TEXT_CONTRAST = 4.5;
+/** WCAG 2 AA: 4.5:1 for normal text, 3:1 for large text. */
+const MIN_CONTRAST_NORMAL_TEXT = 4.5;
+const MIN_CONTRAST_LARGE_TEXT = 3;
+// Large text: 18 pt, or 14 pt bold (WCAG 2), in CSS pixels (1 pt = 4/3 px)
+const LARGE_TEXT_PX = 24;
+const LARGE_BOLD_TEXT_PX = 18.66;
+const BOLD = 700;
+
+/**
+ * The contrast a text colour of the styling must reach against what it is drawn on, for text of this size and weight
+ * (WCAG 2 AA): 3:1 for large text (at least 24 px, or 18.66 px at weight 700 and above), 4.5:1 otherwise.
+ */
+export function getMinTextContrast(fontSize: number, fontWeight: number | string = 400): number {
+  const weight = typeof fontWeight === 'number' ? fontWeight : fontWeight === 'bold' ? BOLD : Number(fontWeight) || 400;
+  const large = fontSize >= LARGE_TEXT_PX || (fontSize >= LARGE_BOLD_TEXT_PX && weight >= BOLD);
+  return large ? MIN_CONTRAST_LARGE_TEXT : MIN_CONTRAST_NORMAL_TEXT;
+}
 
 const BLACK = 'rgb(0,0,0)';
 const WHITE = 'rgb(255,255,255)';
+
+/** Best contrast's two text colours by default: white and black (State timeline ++). */
+export const BLACK_AND_WHITE: readonly string[] = [WHITE, BLACK];
 
 /**
  * A colour the styling sets, as drawn on the canvas: `rgb()`/`rgba()` without spaces (Fill color shades excepted, see
@@ -41,17 +59,78 @@ function asRgba(color: string): string {
     : color;
 }
 
-/** The contrast of a text colour on a fill, with a translucent fill composited over the panel background. */
-export function getTextContrast(theme: GrafanaTheme2, text: string, fill: string): number {
-  return colorManipulator.getContrastRatio(text, asRgba(fill), theme.colors.background.primary);
+/** `top` drawn over the opaque `bottom`: the opaque `rgb()` colour you see, rounded to whole channels as drawn. */
+function composite(top: string, bottom: string): string {
+  const t = colorManipulator.decomposeColor(top).values;
+  const b = colorManipulator.decomposeColor(bottom).values;
+  const a = t.length === 4 ? t[3] : 1;
+  return colorManipulator.recomposeColor({
+    type: 'rgb',
+    values: [0, 1, 2].map((i) => Math.round(t[i] * a + b[i] * (1 - a))),
+  });
 }
 
-/** "Best contrast": black or white, whichever contrasts more with the fill (composited over the panel background). */
-export function getBestContrastText(theme: GrafanaTheme2, fill: string): string {
-  return getTextContrast(theme, WHITE, fill) >= getTextContrast(theme, BLACK, fill) ? WHITE : BLACK;
+const isTranslucent = (color: string) => {
+  const parts = colorManipulator.decomposeColor(color);
+  return parts.values.length === 4 && parts.values[3] < 1;
+};
+
+/**
+ * The contrast of a text colour on a fill, as drawn: a translucent fill composited over the panel background, and a
+ * translucent text over that fill. `background` is what is behind the fill (the panel background unless given; a
+ * transparent panel shows the dashboard's canvas).
+ */
+export function getTextContrast(
+  theme: GrafanaTheme2,
+  text: string,
+  fill: string,
+  background: string = theme.colors.background.primary
+): number {
+  const textRgba = asRgba(text);
+  if (!isTranslucent(textRgba)) {
+    // Grafana's own composition of the fill over the background (getLuminance), unchanged
+    return colorManipulator.getContrastRatio(text, asRgba(fill), background);
+  }
+  const fillRgba = asRgba(fill);
+  const behind = isTranslucent(fillRgba) ? composite(fillRgba, background) : fillRgba;
+  return colorManipulator.getContrastRatio(composite(textRgba, behind), behind);
 }
 
-/** A text colour if it reaches MIN_TEXT_CONTRAST on the fill; otherwise best contrast. */
-export function getReadableText(theme: GrafanaTheme2, text: string | undefined, fill: string): string {
-  return text && getTextContrast(theme, text, fill) >= MIN_TEXT_CONTRAST ? text : getBestContrastText(theme, fill);
+/**
+ * "Best contrast": of the candidate text colours (black and white unless given), the one that contrasts most with the
+ * fill (composited over the panel background); the first on a tie.
+ */
+export function getBestContrastText(
+  theme: GrafanaTheme2,
+  fill: string,
+  candidates: readonly string[] = BLACK_AND_WHITE,
+  background?: string
+): string {
+  let best = candidates[0];
+  let bestContrast = getTextContrast(theme, best, fill, background);
+  for (const candidate of candidates.slice(1)) {
+    const contrast = getTextContrast(theme, candidate, fill, background);
+    if (contrast > bestContrast) {
+      best = candidate;
+      bestContrast = contrast;
+    }
+  }
+  return best;
+}
+
+/**
+ * A text colour if it reaches `minContrast` on the fill (see `getMinTextContrast`); otherwise best contrast of the
+ * candidates.
+ */
+export function getReadableText(
+  theme: GrafanaTheme2,
+  text: string | undefined,
+  fill: string,
+  minContrast: number,
+  candidates: readonly string[] = BLACK_AND_WHITE,
+  background?: string
+): string {
+  return text && getTextContrast(theme, text, fill, background) >= minContrast
+    ? text
+    : getBestContrastText(theme, fill, candidates, background);
 }

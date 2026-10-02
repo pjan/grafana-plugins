@@ -9,10 +9,15 @@ const UID = 'pjan-stat-parity';
 const ONE_LINK = 430;
 const TWO_LINKS = 440;
 
-const open = async (page: Page, gotoDashboardPage: (args: { uid: string }) => Promise<unknown>, id: number) => {
+// Loads the dashboard once per test (a second load of the same dashboard in one test timed out under load)
+const open = async (page: Page, gotoDashboardPage: (args: { uid: string }) => Promise<unknown>) => {
   await gotoDashboardPage({ uid: UID });
+};
+
+// Scrolls to a case's two panels (core, plugin) and waits until they are drawn
+const show = async (page: Page, id: number) => {
   for (const panelId of [id, id + 1]) {
-    await panelContent(page, panelId).scrollIntoViewIfNeeded();
+    await page.locator(`[data-viz-panel-key="panel-${panelId}"]`).scrollIntoViewIfNeeded();
     await expect(panelContent(page, panelId).locator('canvas')).toBeVisible({ timeout: 30_000 });
   }
 };
@@ -52,7 +57,8 @@ for (const [type, offset] of [
   test.describe(`data links (${type} panel)`, () => {
     test('one link: the tile is a link', async ({ gotoDashboardPage, page }) => {
       const id = ONE_LINK + offset;
-      await open(page, gotoDashboardPage, ONE_LINK);
+      await open(page, gotoDashboardPage);
+      await show(page, ONE_LINK);
       const link = panelContent(page, id).getByRole('link');
       await expect(link).toHaveCount(1);
       await expect(link).toHaveAttribute('href', 'https://example.com/details');
@@ -61,7 +67,8 @@ for (const [type, offset] of [
 
     test('two links: clicking the tile opens the links menu', async ({ gotoDashboardPage, page }) => {
       const id = TWO_LINKS + offset;
-      await open(page, gotoDashboardPage, TWO_LINKS);
+      await open(page, gotoDashboardPage);
+      await show(page, TWO_LINKS);
       await panelContent(page, id).getByRole('button').click();
       await expect(page.getByRole('menuitem', { name: 'Details' })).toBeVisible();
       await expect(page.getByRole('menuitem', { name: 'Runbook' })).toBeVisible();
@@ -73,14 +80,15 @@ for (const [type, offset] of [
       gotoDashboardPage,
       page,
     }) => {
-      await open(page, gotoDashboardPage, ONE_LINK);
+      await open(page, gotoDashboardPage);
+      await show(page, ONE_LINK);
       expect(await tabIntoContent(page, ONE_LINK + offset)).toMatchObject({
         tag: 'a',
         href: 'https://example.com/details',
         focusVisible: true,
       });
 
-      await open(page, gotoDashboardPage, TWO_LINKS);
+      await show(page, TWO_LINKS);
       expect(await tabIntoContent(page, TWO_LINKS + offset)).toMatchObject({ tag: 'button', focusVisible: true });
       await page.keyboard.press('Enter');
       await expect(page.getByRole('menuitem', { name: 'Runbook' })).toBeVisible();
@@ -89,8 +97,9 @@ for (const [type, offset] of [
 }
 
 test('the focus ring of the plugin tiles is core’s', async ({ gotoDashboardPage, page }) => {
+  await open(page, gotoDashboardPage);
   for (const id of [ONE_LINK, TWO_LINKS]) {
-    await open(page, gotoDashboardPage, id);
+    await show(page, id);
     const core = await tabIntoContent(page, id);
     const plugin = await tabIntoContent(page, id + 1);
     expect(plugin).toEqual(core);

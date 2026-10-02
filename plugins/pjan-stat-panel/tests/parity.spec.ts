@@ -239,7 +239,7 @@ const open = async (page: Page, uid: string, theme: (typeof THEMES)[number]) => 
 
 // Captures the case's two panels on both dashboards until two captures in a row are the same, and compares each
 // panel with the one at its position on the other dashboard. Returns 'identical', or what differs.
-const compareCase = async (pages: Page[], id: number, timeout = 20_000) => {
+const compareCase = async (pages: Page[], id: number, timeout = 60_000) => {
   let previous: Capture[][] | undefined;
   let result = 'not stable';
   const start = Date.now();

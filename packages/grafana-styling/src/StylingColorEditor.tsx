@@ -52,6 +52,18 @@ export function getStylingColorOptions(modes: StylingColorMode[]): Array<Combobo
         return shades.map((option) => ({ ...option, group: shadeGroup }));
       case 'state':
         return [{ value: 'state', label: t('pjan.styling.current-state-color', 'Current state color') }];
+      case 'value':
+        return [
+          {
+            value: 'value',
+            label: t('pjan.styling.value', 'Value'),
+            description: t('pjan.styling.value-desc', 'The value’s color (thresholds, value mappings, color scheme)'),
+          },
+        ];
+      case 'text':
+        return [{ value: 'text', label: t('pjan.styling.same-as-text', 'Same as text') }];
+      case 'none':
+        return [{ value: 'none', label: t('pjan.styling.none', 'None') }];
       case 'fixed':
         return [{ value: 'fixed', label: t('pjan.styling.fixed-color', 'Fixed color') }];
     }

@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/stat/StatPanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; renders the copied BigValue (packages/grafana-ui/src/components/BigValue/BigValue) instead of @grafana/ui's; DataLinksContextMenuApi from the public @grafana/ui export instead of @grafana/ui/internal; onFieldConfigChange passed to useApplyFieldConfigChangedInPlace (src/pjan/), which applies the field config again after the panel-change handler restored its colour.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/stat/StatPanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; renders the copied BigValue (packages/grafana-ui/src/components/BigValue/BigValue) instead of @grafana/ui's; DataLinksContextMenuApi from the public @grafana/ui export instead of @grafana/ui/internal; Color mode Custom: pjanStyling (src/pjan/styling/) passed to BigValue; onFieldConfigChange passed to useApplyFieldConfigChangedInPlace (src/pjan/), which applies the field config again after the panel-change handler restored its colour.
 import { isNumber } from 'lodash';
 import { memo, useCallback, type JSX } from 'react';
 
@@ -26,6 +26,9 @@ import { BigValue } from 'packages/grafana-ui/src/components/BigValue/BigValue';
 import { type Options } from './panelcfg.gen';
 // pjan-stat-panel: applies the field config again after the panel-change handler restored its colour (src/pjan/).
 import { useApplyFieldConfigChangedInPlace } from '../../../pjan/fieldConfigRefresh';
+// pjan-stat-panel: Color mode Custom (src/pjan/styling/)
+import { isCustomColorMode, type OptionsWithStyling } from '../../../pjan/styling/options';
+import { getStatTileStyling } from '../../../pjan/styling/tileStyling';
 
 export const StatPanel = memo(
   ({
@@ -40,6 +43,7 @@ export const StatPanel = memo(
     width,
     renderCounter,
     onFieldConfigChange, // pjan-stat-panel
+    transparent, // pjan-stat-panel: Color mode Custom measures contrast against what is behind a transparent panel
   }: PanelProps<Options>) => {
     const theme = useTheme2();
     useApplyFieldConfigChangedInPlace(fieldConfig, onFieldConfigChange); // pjan-stat-panel
@@ -83,10 +87,16 @@ export const StatPanel = memo(
             className={targetClassName}
             disableWideLayout={!options.wideLayout}
             percentChangeColorMode={options.percentChangeColorMode}
+            pjanStyling={
+              // pjan-stat-panel: Color mode Custom: the tile's colours (undefined with every core mode)
+              isCustomColorMode(options.colorMode)
+                ? getStatTileStyling(theme, value, (options as OptionsWithStyling).styling, transparent)
+                : undefined
+            }
           />
         );
       },
-      [theme, timeRange, options, getTextMode]
+      [theme, timeRange, options, getTextMode, transparent] // pjan-stat-panel: transparent added
     );
 
     const renderValue = useCallback(

@@ -44,6 +44,37 @@ describe('getStylingColorOptions', () => {
   });
 });
 
+describe('getStylingColorOptions for Stat ++', () => {
+  it('offers None, Value and Same as text where asked, in the order given', () => {
+    expect(getStylingColorOptions(['none', 'value', 'shade', 'fixed']).map((o) => o.label)).toEqual([
+      'None',
+      'Value',
+      'Softer',
+      'Soft',
+      'Base',
+      'Strong',
+      'Stronger',
+      'Fixed color',
+    ]);
+    expect(getStylingColorOptions(['value', 'shade', 'text', 'fixed']).map((o) => o.value)).toEqual([
+      'value',
+      'softer',
+      'soft',
+      'base',
+      'strong',
+      'stronger',
+      'text',
+      'fixed',
+    ]);
+  });
+
+  it('maps them to option values', () => {
+    expect(toStylingColor('none', undefined)).toEqual({ mode: 'none' });
+    expect(toStylingColor('value', undefined)).toEqual({ mode: 'value' });
+    expect(toStylingColor('text', undefined)).toEqual({ mode: 'text' });
+  });
+});
+
 describe('toStylingColor', () => {
   it('maps a choice to the option value', () => {
     expect(toStylingColor('strong', undefined)).toEqual({ mode: 'shade', shade: 'strong' });

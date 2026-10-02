@@ -383,7 +383,8 @@ dayBoundaries, dayBoundaryColor}`; `'styling'` is in `TimelineChart`'s `propsToD
     within the box less the line width and `timeline.ts`'s 2 px text padding at either end, and within the plot; no
     values below a 16 px row. `getValueTextColor` replaces core's `getContrastText` where a value colour is set; it
     gets the state colour as a function, called only for rows with a value colour (no extra display-processor call
-    per label otherwise). The 4.5:1 guard composites the fill over the panel background; a fill core's Fill opacity
+    per label otherwise). The 4.5:1 guard (`getMinTextContrast(12, 500)` from the shared package: values are 12 px at
+    weight 500; row names use `getMinTextContrast(UPLOT_AXIS_FONT_SIZE, 400)`, also 4.5:1) composites the fill over the panel background; a fill core's Fill opacity
     made `rgb(r, g, b, a)` is read as `rgba` first (colorManipulator composites only `rgba`).
 - **Axes** (`axisStyle.ts`, `addAxisStyling` after the y axis in utils.ts): adds plot hooks only for what is set. Grid
   and axis text replace the axes' stroke functions at `init`; row names and day boundaries are redrawn in `drawAxes`

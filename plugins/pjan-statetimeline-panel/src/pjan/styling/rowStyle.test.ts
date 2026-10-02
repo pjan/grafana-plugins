@@ -1,9 +1,10 @@
 import { type FieldColorModeId, FieldType, type GrafanaTheme2, MappingType, type ValueMapping } from '@grafana/data';
+import { UPLOT_AXIS_FONT_SIZE } from '@grafana/ui';
 import {
   getBestContrastText,
+  getMinTextContrast,
   getRelativeShadeColor,
   getTextContrast,
-  MIN_TEXT_CONTRAST,
   toCanvasColor,
 } from '@pjan/grafana-styling';
 
@@ -31,6 +32,9 @@ const shade = (theme: GrafanaTheme2, name: string, s: Parameters<typeof getRelat
   toCanvasColor(theme, getRelativeShadeColor(theme, name, s)!);
 
 const PILL: TimelineStylingOptions = { look: 'pill' };
+
+// Values are 12 px at weight 500: getMinTextContrast gives 4.5:1, as before it existed.
+const VALUE_MIN_CONTRAST = 4.5;
 
 describe('getRowStyle', () => {
   it('is undefined when neither the row nor the look sets a box colour', () => {
@@ -104,7 +108,7 @@ describe('getRowStyle', () => {
             : toCanvasColor(theme, valueColor.fixedColor);
         for (const fill of fills) {
           const text = row.getValueText(green, fill);
-          const readable = getTextContrast(theme, wanted!, fill) >= MIN_TEXT_CONTRAST;
+          const readable = getTextContrast(theme, wanted!, fill) >= VALUE_MIN_CONTRAST;
           expect(text).toBe(readable ? wanted : getBestContrastText(theme, fill));
         }
       }
@@ -121,7 +125,7 @@ describe('getRowStyle', () => {
       expect(row.getLine(green)).toBe(shade(theme, 'green', 'base'));
       const fill = row.getFill(green)!;
       const stronger = shade(theme, 'green', 'stronger')!;
-      const readable = getTextContrast(theme, stronger, fill) >= MIN_TEXT_CONTRAST;
+      const readable = getTextContrast(theme, stronger, fill) >= VALUE_MIN_CONTRAST;
       expect(row.getValueText(green, fill)).toBe(readable ? stronger : getBestContrastText(theme, fill));
 
       const own = getRowStyle(
@@ -175,5 +179,13 @@ describe('getRowStyle', () => {
     const color = field.display!('a').color!;
     expect(color).toBe(theme.visualization.palette[1]);
     expect(getRowStyle(field, theme, {})!.getFill(color)).toBeUndefined();
+  });
+});
+
+describe('text contrast of the timeline (getMinTextContrast)', () => {
+  it('needs 4.5:1 for all its text, as before: values, row names and the bold 00:00 labels are 12 px', () => {
+    expect(getMinTextContrast(12, 500)).toBe(VALUE_MIN_CONTRAST);
+    expect(getMinTextContrast(UPLOT_AXIS_FONT_SIZE, 400)).toBe(4.5);
+    expect(getMinTextContrast(UPLOT_AXIS_FONT_SIZE, 700)).toBe(4.5);
   });
 });

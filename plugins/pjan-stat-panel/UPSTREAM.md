@@ -33,7 +33,7 @@ Copied files mirror their upstream path under `src/`:
   `src/packages/grafana-ui/src/components/BigValue/BigValueLayout.tsx`).
 - `src/packages/grafana-data/internal.ts` stands in for `@grafana/data/internal`, which a plugin cannot use at runtime
   (see below).
-- `src/pjan/` is plugin-authored code (not from grafana/grafana): the panel-change handler (with `fieldConfigRefresh.ts`) and the plugin's own tests.
+- `src/pjan/` is plugin-authored code (not from grafana/grafana): the panel-change handler (with `fieldConfigRefresh.ts`), Color mode Custom (`styling/`), and the plugin's own tests.
   It gets the scaffold's normal lint rules (see "Plugin build configuration").
 - `src/module.ts` is the plugin entry: it initialises `@grafana/i18n` for this plugin and re-exports `plugin` from
   `src/plugins/panel/stat/module.tsx`.
@@ -93,17 +93,20 @@ There are no stand-ins for core app modules at runtime. The tests use one partia
 
 ## Changes beyond import rewrites
 
-| File                                | Change                                                                                                                                                                                                                           | Reason                                                                                                                                                                                                                                               |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `plugins/panel/stat/module.tsx`     | `.setSuggestionsSupplier(statSuggestionsSupplier)` and its import left off.                                                                                                                                                      | Deliberate, see "Pruned and left off".                                                                                                                                                                                                               |
-| `plugins/panel/stat/module.tsx`     | `.setPanelChangeHandler(panelChangedHandler)` from `src/pjan/panelChangedHandler.ts` instead of `statPanelChangedHandler`; its import replaces `statPanelChangedHandler`'s (plugin-only, marked `pjan-stat-panel:` in the code). | Switching a core `stat` panel to this plugin in the panel editor keeps every option and the colour mode. Any other previous panel type goes to core's `statPanelChangedHandler` unchanged (`StatMigrations.ts` itself is unmodified). Details below. |
-| `plugins/panel/stat/StatPanel.tsx`  | `BigValue` from the copied `packages/grafana-ui/src/components/BigValue/BigValue` instead of `@grafana/ui` (marked `pjan-stat-panel:`).                                                                                          | The panel renders the copied tile renderer, so later additions hook into code the parity suite has verified.                                                                                                                                         |
-| `plugins/panel/stat/StatPanel.tsx`  | Takes `onFieldConfigChange` from its props and calls `useApplyFieldConfigChangedInPlace(fieldConfig, onFieldConfigChange)` from `src/pjan/fieldConfigRefresh.ts` (plugin-only, marked).                                          | After the panel-change handler restored a colour in place, the panel applies its field config again; see "Panel type switch". Does nothing otherwise.                                                                                                |
-| `plugins/panel/stat/suggestions.ts` | Partial copy: `MAX_STAT_PREVIEW_SERIES` and `STAT_CARD_OPTIONS` only.                                                                                                                                                            | `presets.ts` uses them for the preset cards. The suggestions supplier (and its `app/features/panel/suggestions/utils` import, `defaultNumericVizOptions`) is left off.                                                                               |
+| File                                                             | Change                                                                                                                                                                                                                                                                                                                                                                                                                                          | Reason                                                                                                                                                                                                                                               |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `plugins/panel/stat/module.tsx`                                  | `.setSuggestionsSupplier(statSuggestionsSupplier)` and its import left off.                                                                                                                                                                                                                                                                                                                                                                     | Deliberate, see "Pruned and left off".                                                                                                                                                                                                               |
+| `plugins/panel/stat/module.tsx`                                  | `.setPanelChangeHandler(panelChangedHandler)` from `src/pjan/panelChangedHandler.ts` instead of `statPanelChangedHandler`; its import replaces `statPanelChangedHandler`'s (plugin-only, marked `pjan-stat-panel:` in the code).                                                                                                                                                                                                                | Switching a core `stat` panel to this plugin in the panel editor keeps every option and the colour mode. Any other previous panel type goes to core's `statPanelChangedHandler` unchanged (`StatMigrations.ts` itself is unmodified). Details below. |
+| `plugins/panel/stat/StatPanel.tsx`                               | `BigValue` from the copied `packages/grafana-ui/src/components/BigValue/BigValue` instead of `@grafana/ui` (marked `pjan-stat-panel:`).                                                                                                                                                                                                                                                                                                         | The panel renders the copied tile renderer, so later additions hook into code the parity suite has verified.                                                                                                                                         |
+| `plugins/panel/stat/StatPanel.tsx`                               | Takes `onFieldConfigChange` from its props and calls `useApplyFieldConfigChangedInPlace(fieldConfig, onFieldConfigChange)` from `src/pjan/fieldConfigRefresh.ts` (plugin-only, marked).                                                                                                                                                                                                                                                         | After the panel-change handler restored a colour in place, the panel applies its field config again; see "Panel type switch". Does nothing otherwise.                                                                                                |
+| `plugins/panel/stat/module.tsx`                                  | Color mode gets a fifth choice, Custom (`getCustomColorModeOption()`); `.addCustomEditor(backgroundColorOption())` and `textColorOption()` chained after Color mode, and the four sparkline options (`sparklineColorOption()` …) after Graph mode, one marked line each, so core's builder calls are unchanged; `useFieldConfig({ useCustomConfig: addStylingFieldConfig })` instead of `useFieldConfig()`; their import (plugin-only, marked). | Color mode Custom, see "Plugin addition: Color mode Custom". With every core mode the new options are hidden and nothing is drawn differently.                                                                                                       |
+| `plugins/panel/stat/StatPanel.tsx`                               | Takes `transparent` from its props (also in `renderComponent`'s dependencies) and passes `pjanStyling={getStatTileStyling(theme, value, options.styling, transparent)}` to `BigValue` with Color mode Custom, `undefined` otherwise; its imports (plugin-only, marked).                                                                                                                                                                         | Color mode Custom: the tile's colours.                                                                                                                                                                                                               |
+| `packages/grafana-ui/src/components/BigValue/BigValueTypes.ts`   | An optional `pjanStyling` prop (marked).                                                                                                                                                                                                                                                                                                                                                                                                        | Color mode Custom.                                                                                                                                                                                                                                   |
+| `packages/grafana-ui/src/components/BigValue/BigValueLayout.tsx` | With `props.pjanStyling` (only set with Custom): the name's colour in `getTitleStyles`, the value's in `getValueStyles`, the tile's background in `getPanelStyles`, percent change's colour on a background in `getPercentChangeStyles` (after its font size is final), and the sparkline's colours and line width in `renderChart` (core's `lineWidth: 1` became a variable); its import (marked).                                             | Color mode Custom. Each element's colour is computed at the font size and weight the layout computed for it.                                                                                                                                         |
+| `plugins/panel/stat/suggestions.ts`                              | Partial copy: `MAX_STAT_PREVIEW_SERIES` and `STAT_CARD_OPTIONS` only.                                                                                                                                                                                                                                                                                                                                                                           | `presets.ts` uses them for the preset cards. The suggestions supplier (and its `app/features/panel/suggestions/utils` import, `defaultNumericVizOptions`) is left off.                                                                               |
 
-Nothing else in the copied files differs from upstream: `BigValue.tsx`, `BigValueLayout.tsx`, `PercentChange.tsx`,
-`BigValueTypes.ts`, `common.ts`, `StatMigrations.ts`, `panelcfg.gen.ts` and `presets.ts` are upstream's apart from the
-import lines listed above.
+Nothing else in the copied files differs from upstream: `BigValue.tsx`, `PercentChange.tsx`, `common.ts`,
+`StatMigrations.ts`, `panelcfg.gen.ts` and `presets.ts` are upstream's apart from the import lines listed above.
 
 ### Panel type switch (`src/pjan/panelChangedHandler.ts`)
 
@@ -145,6 +148,77 @@ re-application, the matching tests fail.
 **Renaming `type` from `stat` to `pjan-stat-panel` in the dashboard JSON stays the lossless conversion** (and the only
 one for library panels and provisioned dashboards). Switching back in the editor's picker goes through core's handler,
 which keeps only `reduceOptions` and `orientation`; renaming `type` back keeps everything.
+
+## Plugin addition: Color mode Custom
+
+Opt-in (with every core Color mode nothing changes, and a panel that doesn't pick Custom saves nothing new; user
+documentation in `src/README.md`). Design agreed by pjan on 2026-10-02 (`plans/atlas-stat-panel.md`, "Styling
+addition"), after the spike `spike/stat-styling`. Code in `src/pjan/styling/`, with the colour helpers shared with
+State timeline ++ in the workspace package `@pjan/grafana-styling` (`packages/grafana-styling/`, Apache-2.0, bundled
+from source; `THIRD_PARTY_NOTICES.txt` lists it).
+
+- **Options** (`options.ts`): Color mode's fifth choice, `colorMode: "custom"`. Only with it do these show (`showIf`),
+  in "Stat styles", right under the option they refine: Background color and Text color after Color mode; Sparkline
+  color, Sparkline line opacity, Sparkline fill opacity and Sparkline line width after Graph mode, and only with Graph
+  mode Area. Panel options under one object, `styling.{backgroundColor, textColor, sparklineColor,
+sparklineLineOpacity, sparklineFillOpacity, sparklineLineWidth}`.
+  - None has a default value: the colours use the shared `StylingColorEditor` (a clearable `Combobox`, with Grafana's
+    `ColorPicker` for a fixed colour) and the numbers the shared `ClearableSliderEditor` (its `unsetValue` shows where
+    the panel draws an unset option: 100, 20, 1). A cleared option loses its key.
+  - Each is also a field option with the same name (`custom.*`), `hideFromDefaults` (only in the overrides menu), with
+    `override`, `process` and a `shouldApply` that skips time fields. The names don't reuse the time series' `custom`
+    keys (`fillColor`, `lineColor`, `lineWidth`, `fillOpacity`). A new panel saves no `custom` (no defaults).
+- **Per tile** (`tileStyling.ts`, `getStatTileStyling`): the settings are the series' override (`tile.field.custom`)
+  over the panel option; an incomplete or out-of-range value counts as unset. The colour name behind the tile's colour
+  comes from `getColorNameLookup` on the tile's field (`view.dataFrame.fields[colIndex]`), as the spike showed:
+  thresholds (absolute and percentage), value mappings, the fixed colour, classic palette slots (by the series index
+  `applyFieldOverrides` set), All values and no value.
+- **What Custom draws** (`getTileStyling`):
+  - **Unset parts follow core's Value mode without a background, core's Background Solid with one** (pjan, 2026-10-02,
+    option A; each unset part on its own). Without a Background color (or with None): text and sparkline line in the
+    value colour, the name in the panel's text colour, the fill at 20 % of the line colour; nothing set at all is core's
+    Value mode, exactly. With a Background color (Value, a shade, Fixed): unset Text is core's light/dark text for the
+    drawn background (`getTextColorForAlphaBackground`), an unset Sparkline color the drawn background brightened by 40
+    (`tinycolor(...).brighten(40)`, the formula core's `renderChart` applies to the tile colour), and an unset Sparkline
+    fill opacity core's `rgba(255,255,255,0.4)`, even with a Sparkline color set. In both cases an unset line opacity
+    is opaque and an unset line width 1.
+  - Background: None (no fill, as not set), Value (solid), a relative shade of the value colour, or a fixed colour.
+    No gradient (core's Background Gradient covers it).
+  - Text, for the value and the name: Best contrast, Value, a shade, or a fixed colour. Each element must reach
+    `getMinTextContrast(fontSize, fontWeight)` (WCAG 2 AA: 3:1 from 24 px, or 18.66 px at weight 700; 4.5:1 otherwise)
+    at the size the layout computed for it (value weight 500, name 400, percent change 500), against what it is drawn
+    on (the background, or what is behind the panel without one); otherwise best contrast.
+    - The value is guarded at the smallest size it is drawn at: `FormattedValueDisplay` (@grafana/ui 13.2.3) draws a
+      non-empty unit suffix at 0.9× below 20 px, 0.8× from 20 px and 0.6× from 26 px (`getSmallestValueFontSize`,
+      re-implemented from that behaviour). The prefix is drawn at the full size.
+    - Behind the panel: the panel background, or for a transparent panel (`PanelProps.transparent`, a marked change in
+      `StatPanel.tsx`) the dashboard's canvas (`theme.colors.background.canvas`), which is what Grafana 13.2.3 shows
+      there (`tests/styling.spec.ts` checks the pixel). A translucent background is composited over it.
+    - A translucent text colour is composited over what it is drawn on before measuring (the shared
+      `getTextContrast`; Grafana's `getContrastRatio` ignores the text's alpha).
+    - A value without a colour is drawn in CSS gray, as core does; as `#808080`, which draws the same and which the
+      contrast helpers can read. Best contrast is the one of
+      core's two text colours, `rgb(32, 34, 38)` and `rgb(247, 248, 250)`, with the higher WCAG contrast.
+  - Percent change: with a background, the resolved text colour at its own size (as core does on coloured backgrounds);
+    without one, its own color mode (Same as value follows the value's colour as drawn).
+  - Sparkline: Value, a shade, Same as text (the value's colour as drawn, after its contrast fallback), or a fixed
+    colour; line opacity, fill opacity (set: the line's colour at that alpha) and line width; unset as above. Grafana's public
+    `Sparkline` draws exactly the `lineColor`, `fillColor` and `lineWidth` it is given (spike, and `tests/styling.spec.ts`).
+  - Colours without a name (hex colours, continuous schemes, a palette of hex colours such as Atlas's): a Background
+    or Sparkline shade falls back to the value colour, a Text shade to best contrast.
+- **Back to core:** picking Stat in the editor goes through core's handler: Color mode goes back to its default
+  (Value), the `styling` options and the field options are dropped. Renaming `type` to `stat` in the JSON keeps
+  `colorMode: "custom"` and `styling`; core has no Custom, so its `BigValueLayout` draws the tiles without a background
+  and with the text in the panel's text colour (no case of its switches matches) and the sparkline in the value
+  colour, until a core mode is picked (`tests/stylingEditor.spec.ts`).
+- **Override-only field options** say "(Color mode Custom only)" at the end of their description: the overrides menu
+  doesn't show the panel's Color mode.
+- **Shared package changes** (same commit series): `getMinTextContrast`, `getReadableText` taking the minimum and
+  best-contrast candidates (and what is behind the panel), `getTextContrast` compositing a translucent text colour,
+  the `value`, `text` and `none` colour modes, and the slider's `unsetValue`. The slider ignores its unset value while
+  the option is unset: Grafana's `Slider` reports its value again when its text input loses focus, so tabbing through
+  an unset slider would otherwise save it (100, 20, 1; State timeline ++'s Corner radius saved 0 that way). State timeline
+  ++ takes its 4.5:1 from `getMinTextContrast` (its text is 12 px: no change).
 
 ## `pluginVersion` and the single-stat migration
 
@@ -204,11 +278,11 @@ links menu), keyboard focus, and the native `title` tooltips.
   automatic JSX runtime on the scaffold's swc-loader rule (`src/pjan/buildConfig.test.ts` fails if the `build`/`dev`
   scripts stop using this file), `LICENSE_APACHE2`, `UPSTREAM.md` and `NOTICE.md` copied into `dist/`,
   `dist/THIRD_PARTY_NOTICES.txt` written by `ThirdPartyNoticesPlugin`, Terser with an explicit licence-comment
-  condition, and webpack's size warnings at 150 KiB (module.js is about 60 KiB). Same setup as State timeline ++ (see
+  condition, and webpack's size warnings at 150 KiB (module.js is about 71 KiB). Same setup as State timeline ++ (see
   its `UPSTREAM.md` for the reasons), including its `ThirdPartyNoticesPlugin` checks: the build fails when a bundled
   file belongs to no package (neither the plugin's own, under `node_modules`, nor a workspace package under
   `packages/`), when a workspace package has no licence, and when one package is bundled from two directories. Stat ++
-  does not use a workspace package yet.
+  bundles the workspace package `@pjan/grafana-styling` (Color mode Custom), which the notices list.
 - `jest.config.js`: the scaffold's swc transform with the automatic JSX runtime; `TZ = 'Pacific/Easter'` as in
   grafana/grafana's `jest.config.js`.
 - `jest-setup.js`: `jest-canvas-mock` (core's `setupFiles`; the copied `StatPanel.test.tsx` draws a sparkline), and
@@ -217,7 +291,8 @@ links menu), keyboard focus, and the native `title` tooltips.
 - `eslint.config.mjs`: `react/react-in-jsx-scope` off for `src/` (automatic runtime). For the mirrored tree only
   (`src/{core,features,packages,plugins}/**`): `react-hooks/refs`, `react-hooks/set-state-in-effect`,
   `@typescript-eslint/array-type`, `no-redeclare` off and unused disable directives not reported. `src/pjan/**` keeps
-  the scaffold's rules. Two `@typescript-eslint/no-deprecated` warnings remain in the test-only copies
+  the scaffold's rules. Plugin code imports `@pjan/grafana-styling` through its entry point only (its `src/testdata/`
+  is for tests), as in State timeline ++. Two `@typescript-eslint/no-deprecated` warnings remain in the test-only copies
   `NumberInput.tsx` (`onKeyPress`) and `select.tsx` (`Select`), as upstream.
 - i18n: `t()` comes from the bundled `@grafana/i18n` (scaffold default). `src/module.ts` calls
   `await initPluginTranslations(pluginJson.id)`. The plugin ships no translations, so every string renders its
@@ -226,7 +301,7 @@ links menu), keyboard focus, and the native `title` tooltips.
   `commonOptionsBuilder`.
 - Runtime dependencies bundled (not shared by Grafana), pinned to the versions in grafana/grafana v13.2.3's
   `yarn.lock`: `tinycolor2` 1.6.0 (`BigValueLayout`'s gradient and sparkline colours), plus `@grafana/schema` and
-  `@grafana/i18n` 13.2.3. `lodash` 4.18.1 is a dependency for the types and a shared external at runtime (Grafana's
+  `@grafana/i18n` 13.2.3, and the workspace package `@pjan/grafana-styling` (from source). `lodash` 4.18.1 is a dependency for the types and a shared external at runtime (Grafana's
   copy). Dev dependencies: `@types/lodash` 4.17.20 and `@types/tinycolor2` 1.4.6 (as in grafana/grafana), and `pngjs`
   7.0.0 (in grafana/grafana's `yarn.lock`) with `@types/pngjs` 6.0.5 for the end-to-end pixel comparisons.
 
@@ -270,6 +345,17 @@ config changed in place is applied again once, others never), `module.test.ts` (
 the copied `module.tsx`: core's migration handler, the plugin's panel-change handler, no padding, core's presets, no
 suggestions) and `buildConfig.test.ts` (JSX runtime regression guard).
 
+Color mode Custom (`src/pjan/styling/`): `options.test.ts` (the fifth choice; the "Stat styles" list in the plan's
+order; `showIf` with Custom, and Graph mode Area for the sparkline options; no defaults; the editors and their
+settings; the field options hidden from the defaults, with override, process and `shouldApply`; no reuse of the time
+series' `custom` keys; no `custom` defaults), `tileStyling.test.ts` (resolution order, each mode and its fallbacks,
+the contrast guard per element size and weight, best contrast of core's two colours, pjan's black-tile example,
+sparkline colours, opacities and width, colour names behind tiles: thresholds, overrides, classic palette slots in
+Grafana's and the Atlas theme), `bigValueLayout.test.tsx` (the copied layout's hooks: nothing set equals Value mode,
+each element at its own size, percent change on and off a background, the sparkline config), `statPanel.test.tsx`
+(with every core mode, styling options and overrides change nothing; with Custom, panel option and override). The
+shared package has its own tests for `getMinTextContrast`, the new modes and the slider's `unsetValue`.
+
 End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.yaml`):
 
 - `tests/panel.spec.ts` with `provisioning/dashboards/dashboard.json`: one core/plugin pair (two series, defaults);
@@ -302,7 +388,9 @@ End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.ya
   - the native tooltips (`title` attributes).
     Each screenshot must be at least 5 % painted (pixels that differ from the panel background) and each canvas at least
     5 % non-transparent, so empty renders can't pass. Captures wait for `document.fonts.ready` and for every icon (the
-    percent change arrow loads asynchronously) and repeat until two in a row are the same.
+    percent change arrow loads asynchronously) and repeat until two in a row are the same, within 60 s per case (each
+    capture is four screenshots on two pages; on a busy machine 20 s ran out with nothing different, see the
+    Playwright timeouts in `playwright.config.ts`).
   - **Compared at the same place on the page.** Chrome's rasterisation of the same CSS depends on where it is drawn: the
     Background Gradient (`linear-gradient`) is dithered differently at different page positions (two core panels with
     the same configuration in different places differed in about 7,000 of 43,350 pixels, each by one level). So
@@ -319,6 +407,21 @@ End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.ya
     percent change case on pixels; an extra attribute on `BigValue`'s tile (`role`, no visible change) fails every
     case on the attribute comparison; without the colour restore, the removal of an adapted colour, or the
     re-application after a restore, the matching editor switch tests fail.
+- `tests/styling.spec.ts` with `provisioning/dashboards/styling.json` (generated by
+  `scripts/generate-styling-dashboard.mjs`): Color mode Custom, in the light and the dark theme at pixel ratio 1 and 2.
+  Four series mapped to words in green, yellow, red and dark blue. Per case and tile: the background (inline style
+  and a pixel of the tile's padding in the screenshot), the value's, the name's and percent change's colours at the
+  font sizes the layout computed, and the sparkline's stroke, fill and line width as set on its canvas (recorded), all
+  against the rules computed in the test with the shared package's contrast and shade helpers. Cases: each
+  Background color mode, each Text color mode, each Sparkline color mode with opacities and widths, the Atlas look
+  (soft, best contrast, sparkline as text 45/18), pjan's example (black tiles, text in the state colour; small tiles,
+  so dark blue falls back to best contrast), an override on one series, percent change on and off a background, a
+  continuous scheme (shades fall back). "Nothing set" is compared with core's Value mode pixel by pixel. Negative
+  controls: without the contrast guard, or without percent change following the text, the matching cases fail.
+- `tests/stylingEditor.spec.ts`: the "Stat styles" list in the editor and its `showIf`; selecting Custom saves only
+  `colorMode`; a value set is saved and a cleared one loses its key (colour, shade, slider); opening the editor of a
+  Custom panel writes nothing (3 seconds); renamed to `stat`, the panel keeps `colorMode: "custom"` and core draws
+  plain tiles; picking Stat in the editor resets Color mode and drops the styling.
 - `tests/interaction.spec.ts` (on the parity dashboard, core and plugin alike): one data link renders the tile as a
   link to it; two open the links menu on click and close it with Escape; Tab reaches the link and the menu button
   (`:focus-visible`), Enter opens the menu; the plugin's focused tiles have core's outline and box shadow.
@@ -348,39 +451,42 @@ shows "Invalid date").
 3. Check `findNumericFieldMinMax` against the new tag (prefer a public export if one appeared), the partial copies
    (`suggestions.ts`, `fieldOverrides.ts`, the test-only `OptionsUI/registry.tsx`), and the panel-editor flow that
    `src/pjan/panelChangedHandler.ts` relies on (`PanelOptionsPane.onChangePanel`, `VizPanel.changePluginType` and
-   `_pluginLoaded` in `@grafana/scenes`, `adaptFieldColorMode` in `getPanelOptionsWithDefaults.ts`).
+   `_pluginLoaded` in `@grafana/scenes`, `adaptFieldColorMode` in `getPanelOptionsWithDefaults.ts`). For Color mode
+   Custom: re-apply its hooks in `module.tsx`, `StatPanel.tsx`, `BigValueTypes.ts` and `BigValueLayout.tsx` (each
+   marked), and check that `FieldDisplay.view`/`colIndex` and the public `Sparkline`'s `config` still work as described
+   in "Plugin addition: Color mode Custom".
 4. Bump `@grafana/*` and the bundled dependency versions to the new tag's (`package.json` and `yarn.lock` of
    grafana/grafana), set `grafana_version` in `docker-compose.yaml`, then run `npm run typecheck && npm run lint &&
-npm test && npm run build` and `npm run e2e` (the parity, interaction and saved-JSON tests).
+npm test && npm run build` and `npm run e2e` (the parity, interaction, saved-JSON and styling tests).
 
 ## Files
 
 ### Runtime code (AGPL-3.0, from public/app)
 
-7 files, 779 lines (with headers), and the logo.
+7 files, 812 lines (with headers), and the logo.
 
-| Upstream path                                                | Plugin path                                | Lines | Changes                                                                                                                                                                                                      |
-| ------------------------------------------------------------ | ------------------------------------------ | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `public/app/plugins/panel/stat/StatMigrations.ts`            | `src/plugins/panel/stat/StatMigrations.ts` |    48 | none                                                                                                                                                                                                         |
-| `public/app/plugins/panel/stat/StatPanel.tsx`                | `src/plugins/panel/stat/StatPanel.tsx`     |   163 | imports; renders the copied BigValue (marked); `DataLinksContextMenuApi` from the public `@grafana/ui` export; `onFieldConfigChange` to `useApplyFieldConfigChangedInPlace` from `src/pjan/` (marked)        |
-| `public/app/plugins/panel/stat/common.ts`                    | `src/plugins/panel/stat/common.ts`         |   132 | none                                                                                                                                                                                                         |
-| `public/app/plugins/panel/stat/module.tsx`                   | `src/plugins/panel/stat/module.tsx`        |   143 | imports; suggestions supplier left off; `setPanelChangeHandler(panelChangedHandler)` from `src/pjan/` (keeps options and the colour mode when switching from core stat, otherwise `statPanelChangedHandler`) |
-| `public/app/plugins/panel/stat/panelcfg.gen.ts`              | `src/plugins/panel/stat/panelcfg.gen.ts`   |    34 | none                                                                                                                                                                                                         |
-| `public/app/plugins/panel/stat/presets.ts`                   | `src/plugins/panel/stat/presets.ts`        |   249 | none                                                                                                                                                                                                         |
-| `public/app/plugins/panel/stat/suggestions.ts`               | `src/plugins/panel/stat/suggestions.ts`    |    15 | partial copy (`MAX_STAT_PREVIEW_SERIES`, `STAT_CARD_OPTIONS`)                                                                                                                                                |
-| `public/app/plugins/panel/stat/img/icn-singlestat-panel.svg` | `src/img/icn-singlestat-panel.svg`         |     – | none (the logo)                                                                                                                                                                                              |
+| Upstream path                                                | Plugin path                                | Lines | Changes                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------ | ------------------------------------------ | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `public/app/plugins/panel/stat/StatMigrations.ts`            | `src/plugins/panel/stat/StatMigrations.ts` |    48 | none                                                                                                                                                                                                                                                                                                                                                   |
+| `public/app/plugins/panel/stat/StatPanel.tsx`                | `src/plugins/panel/stat/StatPanel.tsx`     |   173 | imports; renders the copied BigValue (marked); Color mode Custom: `pjanStyling` to BigValue (marked); `DataLinksContextMenuApi` from the public `@grafana/ui` export; `onFieldConfigChange` to `useApplyFieldConfigChangedInPlace` from `src/pjan/` (marked)                                                                                           |
+| `public/app/plugins/panel/stat/common.ts`                    | `src/plugins/panel/stat/common.ts`         |   132 | none                                                                                                                                                                                                                                                                                                                                                   |
+| `public/app/plugins/panel/stat/module.tsx`                   | `src/plugins/panel/stat/module.tsx`        |   161 | imports; Color mode Custom (a fifth choice, the styling panel options chained after Color mode and Graph mode, the styling field options; marked); suggestions supplier left off; `setPanelChangeHandler(panelChangedHandler)` from `src/pjan/` (keeps options and the colour mode when switching from core stat, otherwise `statPanelChangedHandler`) |
+| `public/app/plugins/panel/stat/panelcfg.gen.ts`              | `src/plugins/panel/stat/panelcfg.gen.ts`   |    34 | none                                                                                                                                                                                                                                                                                                                                                   |
+| `public/app/plugins/panel/stat/presets.ts`                   | `src/plugins/panel/stat/presets.ts`        |   249 | none                                                                                                                                                                                                                                                                                                                                                   |
+| `public/app/plugins/panel/stat/suggestions.ts`               | `src/plugins/panel/stat/suggestions.ts`    |    15 | partial copy (`MAX_STAT_PREVIEW_SERIES`, `STAT_CARD_OPTIONS`)                                                                                                                                                                                                                                                                                          |
+| `public/app/plugins/panel/stat/img/icn-singlestat-panel.svg` | `src/img/icn-singlestat-panel.svg`         |     – | none (the logo)                                                                                                                                                                                                                                                                                                                                        |
 
 ### Helpers from the @grafana packages (Apache-2.0)
 
-5 files, 859 lines (with headers), plus the stand-in `src/packages/grafana-data/internal.ts`.
+5 files, 908 lines (with headers), plus the stand-in `src/packages/grafana-data/internal.ts`.
 
-| Upstream path                                                    | Plugin path                                                          | Lines | Changes                                                                                                  |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------- |
-| `packages/grafana-data/src/field/fieldOverrides.ts`              | `src/packages/grafana-data/src/field/fieldOverrides.ts`              |    48 | partial copy (`findNumericFieldMinMax`); imports from the public `@grafana/data` API                     |
-| `packages/grafana-ui/src/components/BigValue/BigValue.tsx`       | `src/packages/grafana-ui/src/components/BigValue/BigValue.tsx`       |    67 | `clearButtonStyles`, `FormattedValueDisplay` from the public `@grafana/ui` exports                       |
-| `packages/grafana-ui/src/components/BigValue/BigValueLayout.tsx` | `src/packages/grafana-ui/src/components/BigValue/BigValueLayout.tsx` |   634 | `getTextColorForAlphaBackground`, `calculateFontSize`, `Sparkline` from the public `@grafana/ui` exports |
-| `packages/grafana-ui/src/components/BigValue/BigValueTypes.ts`   | `src/packages/grafana-ui/src/components/BigValue/BigValueTypes.ts`   |    77 | `Themeable2` from the public `@grafana/ui` export                                                        |
-| `packages/grafana-ui/src/components/BigValue/PercentChange.tsx`  | `src/packages/grafana-ui/src/components/BigValue/PercentChange.tsx`  |    33 | `Icon` from the public `@grafana/ui` export                                                              |
+| Upstream path                                                    | Plugin path                                                          | Lines | Changes                                                                                                                                    |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/grafana-data/src/field/fieldOverrides.ts`              | `src/packages/grafana-data/src/field/fieldOverrides.ts`              |    48 | partial copy (`findNumericFieldMinMax`); imports from the public `@grafana/data` API                                                       |
+| `packages/grafana-ui/src/components/BigValue/BigValue.tsx`       | `src/packages/grafana-ui/src/components/BigValue/BigValue.tsx`       |    67 | `clearButtonStyles`, `FormattedValueDisplay` from the public `@grafana/ui` exports                                                         |
+| `packages/grafana-ui/src/components/BigValue/BigValueLayout.tsx` | `src/packages/grafana-ui/src/components/BigValue/BigValueLayout.tsx` |   677 | `getTextColorForAlphaBackground`, `calculateFontSize`, `Sparkline` from the public `@grafana/ui` exports; Color mode Custom hooks (marked) |
+| `packages/grafana-ui/src/components/BigValue/BigValueTypes.ts`   | `src/packages/grafana-ui/src/components/BigValue/BigValueTypes.ts`   |    83 | `Themeable2` from the public `@grafana/ui` export; the `pjanStyling` prop (marked)                                                         |
+| `packages/grafana-ui/src/components/BigValue/PercentChange.tsx`  | `src/packages/grafana-ui/src/components/BigValue/PercentChange.tsx`  |    33 | `Icon` from the public `@grafana/ui` export                                                                                                |
 
 ### Tests and test helpers
 

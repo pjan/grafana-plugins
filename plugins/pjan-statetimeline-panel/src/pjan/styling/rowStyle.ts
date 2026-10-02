@@ -2,6 +2,7 @@ import { type Field, type GrafanaTheme2 } from '@grafana/data';
 import {
   getBestContrastText,
   getColorNameLookup,
+  getMinTextContrast,
   getReadableText,
   getRelativeShadeColor,
   getStylingColor,
@@ -16,6 +17,9 @@ import {
   type TimelineStylingOptions,
   VALUE_COLOR_MODES,
 } from './options';
+
+// Values are drawn at 12 px, weight 500 (core's timeline.ts), so they need 4.5:1.
+const VALUE_MIN_CONTRAST = getMinTextContrast(12, 500);
 
 type BoxColorOptions = Required<Pick<FieldConfigWithStyling, 'fillColor' | 'lineColor' | 'valueColor'>>;
 
@@ -87,7 +91,7 @@ export function getRowStyle(field: Field, theme: GrafanaTheme2, styling: Timelin
       return getBestContrastText(theme, fillColor);
     }
     // A shade or a fixed colour that is unreadable on the fill, or a shade the state colour doesn't have: best contrast
-    return value ? getReadableText(theme, resolve(value, stateColor), fillColor) : undefined;
+    return value ? getReadableText(theme, resolve(value, stateColor), fillColor, VALUE_MIN_CONTRAST) : undefined;
   });
 
   return {

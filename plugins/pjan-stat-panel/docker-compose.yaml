@@ -8,3 +8,8 @@ services:
         # The OSS image and version Atlas runs, so the comparison with the core panel is like for like.
         grafana_image: grafana
         grafana_version: 13.2.3
+    environment:
+      # The end-to-end tests share one login (Playwright's stored session) for a run of about ten minutes. Grafana
+      # rotates session tokens every 10 minutes by default, and once one test rotates it, the others are sent to the
+      # login page. Rotating every 2 hours keeps a run on one token. Dev server only.
+      GF_AUTH_TOKEN_ROTATION_INTERVAL_MINUTES: 120

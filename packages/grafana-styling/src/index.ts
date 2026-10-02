@@ -11,10 +11,11 @@ export {
 } from './shades';
 export { getCandidateColorNames, getColorNameLookup } from './colorNames';
 export {
+  BLACK_AND_WHITE,
   getBestContrastText,
+  getMinTextContrast,
   getReadableText,
   getTextContrast,
-  MIN_TEXT_CONTRAST,
   toCanvasColor,
   toFillColor,
 } from './canvasColors';

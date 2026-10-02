@@ -2,17 +2,20 @@ import uPlot from 'uplot';
 
 import { type DataFrame, dateTimeFormat, type Field, type GrafanaTheme2, type TimeRange } from '@grafana/data';
 import { type TimeZone } from '@grafana/schema';
-import { FIXED_UNIT, type UPlotConfigBuilder } from '@grafana/ui';
+import { FIXED_UNIT, type UPlotConfigBuilder, UPLOT_AXIS_FONT_SIZE } from '@grafana/ui';
 import {
   getColorNameLookup,
   getSoftestReadableShadeColor,
   getStylingColor,
+  getMinTextContrast,
   getTextContrast,
-  MIN_TEXT_CONTRAST,
   toCanvasColor,
 } from '@pjan/grafana-styling';
 
 import { type FieldConfigWithStyling, ROW_NAME_COLOR_MODES, type TimelineStylingOptions } from './options';
+
+// Row names are drawn in the axis font (12 px, the normal weight), so they need 4.5:1.
+const ROW_NAME_MIN_CONTRAST = getMinTextContrast(UPLOT_AXIS_FONT_SIZE, 400);
 
 /** The weight of the 00:00 labels with "Day boundaries" on. */
 export const DAY_BOUNDARY_FONT_WEIGHT = 700;
@@ -52,7 +55,7 @@ export function getCurrentStateValue(times: number[], values: unknown[], from: n
 }
 
 /**
- * A row name in its state's colour: the softest shade of the state colour's hue that reaches MIN_TEXT_CONTRAST
+ * A row name in its state's colour: the softest shade of the state colour's hue that reaches ROW_NAME_MIN_CONTRAST
  * against the panel background. A colour without a name has no other shades, so it is used as is if it reaches that
  * contrast. Undefined (the axis text colour) otherwise.
  */
@@ -63,10 +66,10 @@ export function getRowNameStateColor(
 ): string | undefined {
   const name = names.get(stateColor);
   if (name) {
-    const shade = getSoftestReadableShadeColor(theme, name, MIN_TEXT_CONTRAST);
+    const shade = getSoftestReadableShadeColor(theme, name, ROW_NAME_MIN_CONTRAST);
     return shade ? toCanvasColor(theme, shade) : undefined;
   }
-  const readable = getTextContrast(theme, stateColor, theme.colors.background.primary) >= MIN_TEXT_CONTRAST;
+  const readable = getTextContrast(theme, stateColor, theme.colors.background.primary) >= ROW_NAME_MIN_CONTRAST;
   return readable ? toCanvasColor(theme, stateColor) : undefined;
 }
 

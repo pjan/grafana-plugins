@@ -8,6 +8,11 @@ export interface ClearableSliderSettings {
   min: number;
   max: number;
   step: number;
+  /**
+   * Where the slider shows an unset option: what the panel draws then (`min` if not given). While unset, choosing this
+   * value saves nothing (it is what unset draws).
+   */
+  unsetValue?: number;
 }
 
 /**
@@ -20,7 +25,7 @@ export const ClearableSliderEditor = ({
   item,
 }: StandardEditorProps<number | undefined, ClearableSliderSettings>) => {
   const styles = useStyles2(getStyles);
-  const { min = 0, max = 100, step = 1 } = item.settings ?? {};
+  const { min = 0, max = 100, step = 1, unsetValue = min } = item.settings ?? {};
   return (
     <div className={styles.group}>
       <div className={styles.slider}>
@@ -28,8 +33,15 @@ export const ClearableSliderEditor = ({
           min={min}
           max={max}
           step={step}
-          value={value ?? min}
-          onChange={(v) => onChange(v)}
+          value={value ?? unsetValue}
+          onChange={(v) => {
+            // Grafana's Slider reports its value again when its text input loses focus: tabbing through an unset
+            // slider would save the value it only shows. Only a different value sets the option.
+            if (value === undefined && v === unsetValue) {
+              return;
+            }
+            onChange(v);
+          }}
           ariaLabelForHandle={item.name}
           marks={{ [min]: min, [max]: max }}
         />

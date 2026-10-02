@@ -1,9 +1,12 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/BigValue/BigValueTypes.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Themeable2 imported from the public @grafana/ui export.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/BigValue/BigValueTypes.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Themeable2 imported from the public @grafana/ui export; Color mode Custom: the pjanStyling prop (src/pjan/styling/).
 import { type MouseEventHandler } from 'react';
 
 import { type DisplayValue, type DisplayValueAlignmentFactors, type FieldSparkline } from '@grafana/data';
 import { type PercentChangeColorMode, type VizTextDisplayOptions } from '@grafana/schema';
 import { type Themeable2 } from '@grafana/ui';
+
+// pjan-stat-panel: Color mode Custom (src/pjan/styling/)
+import { type TileStyling } from '../../../../../pjan/styling/tileStyling';
 
 export enum BigValueColorMode {
   Background = 'background',
@@ -74,4 +77,7 @@ export interface Props extends Themeable2 {
    * Disable the wide layout for the BigValue
    */
   disableWideLayout?: boolean;
+
+  /** pjan-stat-panel: Color mode Custom (src/pjan/styling/): the tile's colours. Only set with Custom. */
+  pjanStyling?: TileStyling;
 }

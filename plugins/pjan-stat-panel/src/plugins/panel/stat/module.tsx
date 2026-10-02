@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/stat/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; panel suggestions (setSuggestionsSupplier/statSuggestionsSupplier) left off; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and the colour mode when switching from core stat and otherwise calls statPanelChangedHandler).
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/stat/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; Color mode Custom: a fifth Color mode choice, the styling panel options chained after Color mode and Graph mode and the styling field options (useCustomConfig), from src/pjan/styling/; panel suggestions (setSuggestionsSupplier/statSuggestionsSupplier) left off; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and the colour mode when switching from core stat and otherwise calls statPanelChangedHandler).
 import { PanelPlugin } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import {
@@ -16,9 +16,20 @@ import { defaultOptions, type Options } from './panelcfg.gen';
 import { statPresetsSupplier } from './presets';
 // pjan-stat-panel: plugin-only panel-change handler (src/pjan/), wraps statPanelChangedHandler.
 import { panelChangedHandler } from '../../../pjan/panelChangedHandler';
+// pjan-stat-panel: Color mode Custom and its styling options (src/pjan/styling/), in the "Stat styles" group.
+import {
+  addStylingFieldConfig,
+  backgroundColorOption,
+  getCustomColorModeOption,
+  sparklineColorOption,
+  sparklineFillOpacityOption,
+  sparklineLineOpacityOption,
+  sparklineLineWidthOption,
+  textColorOption,
+} from '../../../pjan/styling/options';
 
 export const plugin = new PanelPlugin<Options>(StatPanel)
-  .useFieldConfig()
+  .useFieldConfig({ useCustomConfig: (builder) => addStylingFieldConfig(builder) }) // pjan-stat-panel: was useFieldConfig()
   .setPanelOptions((builder) => {
     const mainCategory = [t('stat.category-stat-styles', 'Stat styles')];
 
@@ -78,9 +89,12 @@ export const plugin = new PanelPlugin<Options>(StatPanel)
               value: BigValueColorMode.BackgroundSolid,
               label: t('stat.color-mode-options.label-background-solid', 'Background Solid'),
             },
+            getCustomColorModeOption(), // pjan-stat-panel
           ],
         },
       })
+      .addCustomEditor(backgroundColorOption()) // pjan-stat-panel
+      .addCustomEditor(textColorOption()) // pjan-stat-panel
       .addRadio({
         path: 'graphMode',
         name: t('stat.name-graph-mode', 'Graph mode'),
@@ -94,6 +108,10 @@ export const plugin = new PanelPlugin<Options>(StatPanel)
           ],
         },
       })
+      .addCustomEditor(sparklineColorOption()) // pjan-stat-panel
+      .addCustomEditor(sparklineLineOpacityOption()) // pjan-stat-panel
+      .addCustomEditor(sparklineFillOpacityOption()) // pjan-stat-panel
+      .addCustomEditor(sparklineLineWidthOption()) // pjan-stat-panel
       .addRadio({
         path: 'justifyMode',
         name: t('stat.name-text-alignment', 'Text alignment'),
