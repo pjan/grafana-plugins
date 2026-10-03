@@ -66,7 +66,7 @@ const custom = (styling, extra = {}) => ({
 
 const atlas = {
   backgroundColor: { mode: 'shade', shade: 'soft' },
-  textColor: { mode: 'contrast' },
+  textColor: { mode: 'automatic' },
   sparklineColor: { mode: 'text' },
   sparklineLineOpacity: 45,
   sparklineFillOpacity: 18,
@@ -87,8 +87,8 @@ export const CASES = [
   // Text color
   {
     id: 30,
-    title: 'text best contrast on value',
-    options: custom({ backgroundColor: { mode: 'value' }, textColor: { mode: 'contrast' } }),
+    title: 'text automatic on value',
+    options: custom({ backgroundColor: { mode: 'value' }, textColor: { mode: 'automatic' } }),
   },
   { id: 31, title: 'text value, no background', options: custom({ textColor: { mode: 'value' } }) },
   {
@@ -104,8 +104,8 @@ export const CASES = [
     title: 'text fixed on value',
     options: custom({ backgroundColor: { mode: 'value' }, textColor: { mode: 'fixed', fixedColor: 'black' } }),
   },
-  // pjan's example: black tiles, text in the state colour; small tiles (values below 24 px need 4.5:1), so the dark
-  // blue state falls back to best contrast
+  // pjan's example: black tiles, text in the state colour, drawn as chosen; small tiles (values below 24 px), where
+  // dark blue is below 4.5:1
   {
     id: 34,
     title: 'black tiles, value text',
@@ -128,7 +128,7 @@ export const CASES = [
     }),
   },
   { id: 41, title: 'sparkline strong', options: custom({ sparklineColor: { mode: 'shade', shade: 'strong' } }) },
-  { id: 42, title: 'atlas: soft, best contrast, sparkline as text', options: custom(atlas) },
+  { id: 42, title: 'atlas: soft, automatic, sparkline as text', options: custom(atlas) },
   {
     id: 43,
     title: 'sparkline fixed width 5',
@@ -181,7 +181,7 @@ export const CASES = [
     },
   },
 
-  // Colours without a name (a continuous scheme): background shade = the value colour, text shade = best contrast
+  // Colours without a name (a continuous scheme): background shade = the value colour, text shade = Automatic
   {
     id: 70,
     title: 'continuous, background value',
@@ -200,16 +200,13 @@ export const CASES = [
     fieldConfig: { defaults: { color: { mode: 'continuous-GrYlRd' }, min: 0, max: 100 }, overrides: [] },
   },
 
-  // The contrast minimum per element, against fixed colours (the same in both themes): #949494 on white is 3.03:1,
-  // enough for text from 24 px only
+  // Automatic text per element, at its own size, on a white tile: 3:1 for the 40 px value, 4.5:1 for the 16 px
+  // percent change and the name
   {
     id: 80,
-    title: 'value keeps its colour, percent change falls back',
+    title: 'automatic per element on white',
     options: custom(
-      {
-        backgroundColor: { mode: 'fixed', fixedColor: '#ffffff' },
-        textColor: { mode: 'fixed', fixedColor: '#949494' },
-      },
+      { backgroundColor: { mode: 'fixed', fixedColor: '#ffffff' }, textColor: { mode: 'automatic' } },
       { showPercentChange: true, graphMode: 'none', text: { valueSize: 40, percentSize: 16 } }
     ),
     targets: [series(['a', 'b'], rising)],
@@ -218,50 +215,34 @@ export const CASES = [
       overrides: [],
     },
   },
-  {
-    id: 81,
-    title: '30 px value with a unit: guarded at the unit’s size',
-    options: custom(
-      {
-        backgroundColor: { mode: 'fixed', fixedColor: '#ffffff' },
-        textColor: { mode: 'fixed', fixedColor: '#949494' },
-      },
-      { graphMode: 'none', text: { valueSize: 30 } }
-    ),
-    targets: [series(['a', 'b'], rising)],
-    fieldConfig: {
-      defaults: { unit: 'percent', thresholds: { mode: 'absolute', steps: [{ value: null, color: 'green' }] } },
-      overrides: [],
-    },
-  },
-  {
-    id: 82,
-    title: '30 px value without a unit',
-    options: custom(
-      {
-        backgroundColor: { mode: 'fixed', fixedColor: '#ffffff' },
-        textColor: { mode: 'fixed', fixedColor: '#949494' },
-      },
-      { graphMode: 'none', text: { valueSize: 30 } }
-    ),
-    targets: [series(['a', 'b'], rising)],
-    fieldConfig: {
-      defaults: { thresholds: { mode: 'absolute', steps: [{ value: null, color: 'green' }] } },
-      overrides: [],
-    },
-  },
-  // A transparent panel: text is measured against the dashboard's canvas behind it. #767676 is 4.55:1 on the light
-  // panel background and 4.39:1 on the light canvas; #808080 4.36:1 on the dark panel background, 4.75:1 on the dark
-  // canvas (names are 14 px or less: 4.5:1)
+  // A 30 px value with a unit: its suffix is drawn at 18 px, so it needs 4.5:1; without a unit 3:1
   ...[
-    [83, '#767676', false],
-    [84, '#767676', true],
-    [85, '#808080', false],
-    [86, '#808080', true],
-  ].map(([id, fixedColor, transparent]) => ({
+    [81, 'percent'],
+    [82, undefined],
+  ].map(([id, unit]) => ({
     id,
-    title: `text ${fixedColor}${transparent ? ', transparent panel' : ''}`,
-    options: custom({ textColor: { mode: 'fixed', fixedColor } }, { graphMode: 'none', text: { titleSize: 14 } }),
+    title: `automatic, 30 px value ${unit ? 'with' : 'without'} a unit`,
+    options: custom(
+      { backgroundColor: { mode: 'fixed', fixedColor: '#ffffff' }, textColor: { mode: 'automatic' } },
+      { graphMode: 'none', text: { valueSize: 30 } }
+    ),
+    targets: [series(['a', 'b'], rising)],
+    fieldConfig: {
+      defaults: {
+        ...(unit ? { unit } : {}),
+        thresholds: { mode: 'absolute', steps: [{ value: null, color: 'green' }] },
+      },
+      overrides: [],
+    },
+  })),
+  // Automatic without a background: on the panel background, or on the dashboard's canvas behind a transparent panel
+  ...[
+    [83, false],
+    [84, true],
+  ].map(([id, transparent]) => ({
+    id,
+    title: `automatic, no background${transparent ? ', transparent panel' : ''}`,
+    options: custom({ textColor: { mode: 'automatic' } }, { graphMode: 'none', text: { titleSize: 14 } }),
     transparent,
     targets: [series(['a', 'b'], rising)],
     fieldConfig: {
@@ -296,7 +277,7 @@ for (const c of CASES) {
 
 const dashboard = {
   uid: 'pjan-stat-styling',
-  title: 'Stat ++ styling (Color mode Custom)',
+  title: 'Stat plus styling (Color mode Custom)',
   tags: ['pjan-stat-panel'],
   editable: true,
   schemaVersion: 42,

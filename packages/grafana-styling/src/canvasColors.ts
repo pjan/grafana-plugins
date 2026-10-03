@@ -20,11 +20,14 @@ export function getMinTextContrast(fontSize: number, fontWeight: number | string
   return large ? MIN_CONTRAST_LARGE_TEXT : MIN_CONTRAST_NORMAL_TEXT;
 }
 
-const BLACK = 'rgb(0,0,0)';
-const WHITE = 'rgb(255,255,255)';
+/**
+ * The contrast text that needs 4.5:1 may fall back to when no colour reaches 4.5:1 (pjan, 2026-10-03). With a theme's
+ * page colours as the end points, mid-tone fills can't always reach 4.5:1 (Atlas: at least 4.41:1).
+ */
+export const FALLBACK_TEXT_CONTRAST = 4.2;
 
-/** Best contrast's two text colours by default: white and black (State timeline ++). */
-export const BLACK_AND_WHITE: readonly string[] = [WHITE, BLACK];
+// The search moves in 1 % steps from the start colour to an end point.
+const AUTOMATIC_TEXT_STEPS = 100;
 
 /**
  * A colour the styling sets, as drawn on the canvas: `rgb()`/`rgba()` without spaces (Fill color shades excepted, see
@@ -96,41 +99,136 @@ export function getTextContrast(
   return colorManipulator.getContrastRatio(composite(textRgba, behind), behind);
 }
 
+type Rgb = [number, number, number];
+
 /**
- * "Best contrast": of the candidate text colours (black and white unless given), the one that contrasts most with the
- * fill (composited over the panel background); the first on a tie.
+ * A colour's channels as drawn: a translucent colour composited over `background`, rounded to whole channels.
+ * Undefined for a colour that can't be read (a name the theme doesn't resolve, for example), so callers never throw.
+ * Grafana's parser first (it reads `rgb(r, g, b, a)`, which core's Fill opacity produces), tinycolor for the rest
+ * (hsl(), CSS names).
  */
-export function getBestContrastText(
-  theme: GrafanaTheme2,
-  fill: string,
-  candidates: readonly string[] = BLACK_AND_WHITE,
-  background?: string
-): string {
-  let best = candidates[0];
-  let bestContrast = getTextContrast(theme, best, fill, background);
-  for (const candidate of candidates.slice(1)) {
-    const contrast = getTextContrast(theme, candidate, fill, background);
-    if (contrast > bestContrast) {
-      best = candidate;
-      bestContrast = contrast;
+function toDrawnRgb(color: string, background: Rgb): Rgb | undefined {
+  let rgba: number[] | undefined;
+  try {
+    const parts = colorManipulator.decomposeColor(asRgba(color));
+    if (parts.type === 'rgb' || parts.type === 'rgba') {
+      rgba = parts.values;
     }
+  } catch {
+    // not a colour Grafana's parser reads
   }
-  return best;
+  if (!rgba) {
+    const t = tinycolor(color);
+    if (!t.isValid()) {
+      return undefined;
+    }
+    const { r, g, b, a } = t.toRgb();
+    rgba = [r, g, b, a];
+  }
+  const alpha = rgba.length > 3 ? rgba[3] : 1;
+  return [0, 1, 2].map((i) => Math.round(rgba![i] * alpha + background[i] * (1 - alpha))) as Rgb;
+}
+
+/** Relative luminance as Grafana's `colorManipulator.getLuminance` computes it, rounded to 3 digits as it is. */
+function luminance([r, g, b]: Rgb): number {
+  const [lr, lg, lb] = [r, g, b].map((c) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return Number((0.2126 * lr + 0.7152 * lg + 0.0722 * lb).toFixed(3));
+}
+
+const contrastOf = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+/** `from` mixed towards `to` by `amount` (0–1) in sRGB, rounded to whole channels. */
+const mix = (from: Rgb, to: Rgb, amount: number): Rgb =>
+  [0, 1, 2].map((i) => Math.round(from[i] + (to[i] - from[i]) * amount)) as Rgb;
+
+const toRgbString = ([r, g, b]: Rgb) => `rgb(${r},${g},${b})`;
+
+// Results per theme object (a theme plugin that changes its colours builds a new theme); bounded, because a
+// continuous scheme can ask for many fills
+const automaticCache = new WeakMap<GrafanaTheme2, Map<string, string>>();
+const AUTOMATIC_CACHE_SIZE = 2000;
+
+export interface AutomaticTextOptions {
+  /** The colour the search starts from; the colour drawn on unless given (State timeline plus row names: the state colour) */
+  from?: string;
+  /** What is behind a translucent `drawnOn`; the panel background unless given (a transparent panel shows the page) */
+  background?: string;
 }
 
 /**
- * A text colour if it reaches `minContrast` on the fill (see `getMinTextContrast`); otherwise best contrast of the
- * candidates.
+ * "Automatic" text: a colour of the same hue that is readable on what it is drawn on (pjan, 2026-10-03).
+ *
+ * The search starts from `from` (the colour drawn on, as drawn, unless given) and mixes it towards each of the theme's
+ * two extremes, its page colour (`colors.background.canvas`) and `colors.text.maxContrast`, in 1 % steps. The first
+ * colour that reaches `minContrast` (see `getMinTextContrast`) with `drawnOn` wins, on whichever side gets there in
+ * fewer steps (the page colour's side on a tie). When neither side reaches it, the same with FALLBACK_TEXT_CONTRAST,
+ * for text that needs more than that; when even that fails, the extreme with the higher contrast. A colour that can't
+ * be read (a name the active theme doesn't resolve) gives the theme's text colour instead of throwing. Results are
+ * cached per theme object.
  */
-export function getReadableText(
+export function getAutomaticText(
   theme: GrafanaTheme2,
-  text: string | undefined,
-  fill: string,
+  drawnOn: string,
   minContrast: number,
-  candidates: readonly string[] = BLACK_AND_WHITE,
-  background?: string
+  options: AutomaticTextOptions = {}
 ): string {
-  return text && getTextContrast(theme, text, fill, background) >= minContrast
-    ? text
-    : getBestContrastText(theme, fill, candidates, background);
+  const key = `${drawnOn}|${minContrast}|${options.from ?? ''}|${options.background ?? ''}`;
+  let cache = automaticCache.get(theme);
+  if (!cache) {
+    cache = new Map();
+    automaticCache.set(theme, cache);
+  }
+  let text = cache.get(key);
+  if (text === undefined) {
+    text = searchAutomaticText(theme, drawnOn, minContrast, options);
+    if (cache.size >= AUTOMATIC_CACHE_SIZE) {
+      cache.clear();
+    }
+    cache.set(key, text);
+  }
+  return text;
+}
+
+function searchAutomaticText(
+  theme: GrafanaTheme2,
+  drawnOn: string,
+  minContrast: number,
+  options: AutomaticTextOptions
+): string {
+  const fallback = theme.colors.text.primary;
+  const background = toDrawnRgb(options.background ?? theme.colors.background.primary, [255, 255, 255]);
+  const behind = background && toDrawnRgb(drawnOn, background);
+  const start = behind && (options.from ? toDrawnRgb(options.from, background) : behind);
+  if (!background || !behind || !start) {
+    return fallback;
+  }
+  const ends = [theme.colors.background.canvas, theme.colors.text.maxContrast]
+    .map((end) => toDrawnRgb(end, background))
+    .filter((end): end is Rgb => end !== undefined);
+  if (ends.length === 0) {
+    return fallback;
+  }
+  const behindLuminance = luminance(behind);
+  const contrast = (color: Rgb) => contrastOf(luminance(color), behindLuminance);
+  const thresholds = minContrast > FALLBACK_TEXT_CONTRAST ? [minContrast, FALLBACK_TEXT_CONTRAST] : [minContrast];
+
+  for (const threshold of thresholds) {
+    let found: { steps: number; color: Rgb } | undefined;
+    for (const end of ends) {
+      for (let steps = 0; steps <= AUTOMATIC_TEXT_STEPS && (!found || steps < found.steps); steps++) {
+        const color = mix(start, end, steps / AUTOMATIC_TEXT_STEPS);
+        if (contrast(color) >= threshold) {
+          found = { steps, color };
+          break;
+        }
+      }
+    }
+    if (found) {
+      return toRgbString(found.color);
+    }
+  }
+  return toRgbString(ends.reduce((best, end) => (contrast(end) > contrast(best) ? end : best)));
 }

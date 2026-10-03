@@ -1,7 +1,7 @@
 import { type FieldColorModeId, FieldType, type GrafanaTheme2, MappingType, type ValueMapping } from '@grafana/data';
 import { UPLOT_AXIS_FONT_SIZE } from '@grafana/ui';
 import {
-  getBestContrastText,
+  getAutomaticText,
   getMinTextContrast,
   getRelativeShadeColor,
   getTextContrast,
@@ -44,7 +44,7 @@ describe('getRowStyle', () => {
 
   it('treats incomplete or foreign values as unset', () => {
     const custom = {
-      fillColor: { mode: 'fixed', fixedColor: 'red' }, // fill offers shades only
+      fillColor: { mode: 'automatic' }, // text only
       lineColor: { mode: 'fixed' }, // no colour picked yet
       valueColor: { mode: 'shade', shade: 'darkest' },
     } as unknown as FieldConfigWithStyling;
@@ -83,17 +83,35 @@ describe('getRowStyle', () => {
       expect(fixed.getFill(green)).toBeUndefined();
     });
 
-    it('Value color "Best contrast": black or white, whichever contrasts more with the fill as drawn', () => {
-      const row = getRowStyle(rowWith(theme, { valueColor: { mode: 'contrast' } }), theme, {})!;
-      expect(row.getValueText(green, 'rgb(0,0,0)')).toBe('rgb(255,255,255)');
-      expect(row.getValueText(green, 'rgb(255,255,255)')).toBe('rgb(0,0,0)');
-      // a translucent fill is composited over the panel background first
-      const translucent = 'rgba(255,255,255,0.1)';
-      expect(row.getValueText(green, translucent)).toBe(getBestContrastText(theme, translucent));
-      expect(row.getValueText(green, translucent)).toBe(theme.isDark ? 'rgb(255,255,255)' : 'rgb(0,0,0)');
+    it('Value color "Automatic": the first readable shade of the box’s hue, on the fill as drawn', () => {
+      const row = getRowStyle(rowWith(theme, { valueColor: { mode: 'automatic' } }), theme, {})!;
+      for (const fill of [green, yellow, 'rgb(0,0,0)', 'rgb(255,255,255)', 'rgba(255,255,255,0.1)']) {
+        const text = row.getValueText(green, fill);
+        expect(text).toBe(getAutomaticText(theme, fill, VALUE_MIN_CONTRAST));
+        expect(getTextContrast(theme, text!, fill)).toBeGreaterThanOrEqual(4.2);
+      }
     });
 
-    it('Value color shade or fixed: kept when it reaches 4.5:1 on the fill, otherwise best contrast', () => {
+    if (theme === LIGHT) {
+      it('Value color "Automatic" on Grafana light’s green, worked out by hand', () => {
+        // #56A64B: 69 % towards black (#000000) reaches 4.52:1; the page colour (#fbfbfb) never reaches 4.5:1
+        const row = getRowStyle(rowWith(theme, { valueColor: { mode: 'automatic' } }), theme, {})!;
+        expect(row.getValueText(green, green)).toBe('rgb(27,51,23)');
+      });
+    }
+
+    it('Value color "Automatic" composites a translucent fill over what is behind the panel', () => {
+      const canvas = theme.colors.background.canvas;
+      const plain = getRowStyle(rowWith(theme, { valueColor: { mode: 'automatic' } }), theme, {})!;
+      const transparent = getRowStyle(rowWith(theme, { valueColor: { mode: 'automatic' } }), theme, {}, canvas)!;
+      const fill = 'rgba(255,255,255,0.1)';
+      expect(transparent.getValueText(green, fill)).toBe(
+        getAutomaticText(theme, fill, VALUE_MIN_CONTRAST, { background: canvas })
+      );
+      expect(plain.getValueText(green, fill)).toBe(getAutomaticText(theme, fill, VALUE_MIN_CONTRAST));
+    });
+
+    it('Value color shade or fixed: drawn as chosen, whatever its contrast with the fill', () => {
       const fills = [theme.colors.background.primary, 'rgb(128,128,128)', green, yellow];
       for (const valueColor of [
         { mode: 'shade', shade: 'stronger' },
@@ -107,26 +125,27 @@ describe('getRowStyle', () => {
             ? shade(theme, 'green', valueColor.shade)
             : toCanvasColor(theme, valueColor.fixedColor);
         for (const fill of fills) {
-          const text = row.getValueText(green, fill);
-          const readable = getTextContrast(theme, wanted!, fill) >= VALUE_MIN_CONTRAST;
-          expect(text).toBe(readable ? wanted : getBestContrastText(theme, fill));
+          expect(row.getValueText(green, fill)).toBe(wanted);
         }
       }
     });
 
-    it('Value color shade falls back to best contrast for a colour without a name', () => {
+    it('Value color shade falls back to Automatic for a colour without a name', () => {
       const row = getRowStyle(rowWith(theme, { valueColor: { mode: 'shade', shade: 'stronger' } }), theme, {})!;
-      expect(row.getValueText(hex, hex)).toBe(getBestContrastText(theme, hex));
+      expect(row.getValueText(hex, hex)).toBe(getAutomaticText(theme, hex, VALUE_MIN_CONTRAST));
     });
 
-    it('the Pill look sets fill softer, line base, value stronger, for the options left unset', () => {
+    it('Fill color fixed: the same colour for every state', () => {
+      const row = getRowStyle(rowWith(theme, { fillColor: { mode: 'fixed', fixedColor: 'purple' } }), theme, {})!;
+      expect([green, yellow, hex].map(row.getFill)).toEqual(Array(3).fill(toCanvasColor(theme, 'purple')));
+    });
+
+    it('the Pill look sets fill softer, line base, value Automatic, for the options left unset', () => {
       const row = getRowStyle(rowWith(theme, {}), theme, PILL)!;
       expect(row.getFill(green)).toBe(shade(theme, 'green', 'softer'));
       expect(row.getLine(green)).toBe(shade(theme, 'green', 'base'));
       const fill = row.getFill(green)!;
-      const stronger = shade(theme, 'green', 'stronger')!;
-      const readable = getTextContrast(theme, stronger, fill) >= VALUE_MIN_CONTRAST;
-      expect(row.getValueText(green, fill)).toBe(readable ? stronger : getBestContrastText(theme, fill));
+      expect(row.getValueText(green, fill)).toBe(getAutomaticText(theme, fill, VALUE_MIN_CONTRAST));
 
       const own = getRowStyle(
         rowWith(theme, {
@@ -141,15 +160,19 @@ describe('getRowStyle', () => {
     });
   });
 
-  it('Pill in the Atlas themes: the strongest shade passes the guard on the softest', () => {
-    for (const theme of [THEMES['Atlas light'], THEMES['Atlas dark']]) {
+  it('Pill in the Atlas themes: a tinted value text with 4.5:1 on the softest fill', () => {
+    // computed by hand: super-light-green is emerald 200 (#bfe3c7) in light, 57 % towards ink; emerald 800 (#3c6639)
+    // in dark, 79 % towards the light page colour
+    const expected = { 'Atlas light': 'rgb(83,99,89)', 'Atlas dark': 'rgb(205,217,209)' } as const;
+    for (const name of ['Atlas light', 'Atlas dark'] as const) {
+      const theme = THEMES[name];
       const green = stateColor(theme, 'ok');
       const row = getRowStyle(rowWith(theme, {}), theme, PILL)!;
-      expect(row.getValueText(green, row.getFill(green)!)).toBe(shade(theme, 'green', 'stronger'));
+      expect(row.getValueText(green, row.getFill(green)!)).toBe(expected[name]);
     }
   });
 
-  it('continuous schemes have no names: the state colour for fill and line, best contrast for the value', () => {
+  it('continuous schemes have no names: the state colour for fill and line, Automatic for the value', () => {
     const field = makeField(LIGHT, {
       type: FieldType.number,
       values: [0, 50, 100],
@@ -163,7 +186,7 @@ describe('getRowStyle', () => {
     const row = getRowStyle(field, LIGHT, {})!;
     const color = field.display!(50).color!;
     expect(row.getFill(color)).toBeUndefined();
-    expect(row.getValueText(color, color)).toBe(getBestContrastText(LIGHT, color));
+    expect(row.getValueText(color, color)).toBe(getAutomaticText(LIGHT, color, VALUE_MIN_CONTRAST));
   });
 
   it('the Atlas classic palette is hex colours: no shades', () => {

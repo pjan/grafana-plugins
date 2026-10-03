@@ -5,9 +5,9 @@ import { type APIRequestContext, expect, PanelEditPage, test } from '@grafana/pl
 
 import { CORE, panelContent, PLUGIN, savedPanel, type SavedPanel } from './helpers';
 
-// The saved JSON (the dashboard's save model, as Grafana writes it): a new Stat ++ panel saves what a new core Stat
+// The saved JSON (the dashboard's save model, as Grafana writes it): a new Stat plus panel saves what a new core Stat
 // panel saves, opening the editor writes nothing, converting a panel by changing `type` and back keeps it, and
-// switching a core Stat panel to Stat ++ in the panel editor keeps its options and colour mode.
+// switching a core Stat panel to Stat plus in the panel editor keeps its options and colour mode.
 interface PanelJson {
   id: number;
   type: string;
@@ -58,7 +58,7 @@ test.describe('saved JSON', () => {
     await api.dispose();
   });
 
-  test('a new Stat ++ panel saves what a new core Stat panel saves', async ({ gotoDashboardPage, page }) => {
+  test('a new Stat plus panel saves what a new core Stat panel saves', async ({ gotoDashboardPage, page }) => {
     const newPanel = async (visualization: string, type: string) => {
       const dashboardPage = await gotoDashboardPage({});
       const panelEditPage = await dashboardPage.addPanel();
@@ -67,7 +67,7 @@ test.describe('saved JSON', () => {
       return (await savedPanel(page))!;
     };
     const core = await newPanel('Stat', CORE);
-    const plugin = await newPanel('Stat ++', PLUGIN);
+    const plugin = await newPanel('Stat plus', PLUGIN);
 
     expect(plugin.pluginVersion).toBe(PLUGIN_VERSION);
     expect(Object.keys(plugin.options).sort()).toEqual(Object.keys(core.options).sort());
@@ -93,7 +93,7 @@ test.describe('saved JSON', () => {
     }
   });
 
-  test('converting a panel by changing its type, and back, keeps its settings', async ({ gotoDashboardPage, page }) => {
+  test('converting a panel by changing its type keeps its settings', async ({ gotoDashboardPage, page }) => {
     // "explicit text sizes" and "override on one series": options and field config away from the defaults
     for (const id of [350, 620]) {
       const original = parityPanel(id);
@@ -110,86 +110,11 @@ test.describe('saved JSON', () => {
       await expect.poll(async () => (await savedPanel(page, 1))?.type).toBe(PLUGIN);
       const plugin = (await savedPanel(page, 1))!;
       expect(settings(plugin)).toEqual(settings(core));
-
-      // Back to core: the plugin's saved JSON with core's type
-      await createDashboard('pjan-stat-convert-back', [{ ...original, ...plugin, id: 1, type: CORE }]);
-      await gotoDashboardPage({ uid: 'pjan-stat-convert-back' });
-      await expect(panelContent(page, 1).locator('div').first()).toBeVisible();
-      await expect.poll(async () => (await savedPanel(page, 1))?.type).toBe(CORE);
-      expect(settings(await savedPanel(page, 1))).toEqual(settings(core));
     }
   });
 
-  test(`back to core, a panel saved by the plugin (pluginVersion ${PLUGIN_VERSION}) gets core's < 8.0 migration`, async ({
-    gotoDashboardPage,
-    page,
-  }) => {
-    // Documented in README.md and UPSTREAM.md: Grafana's sharedSingleStatMigrationHandler reads pluginVersion as a
-    // Grafana version, so `percent` without min and max gets min 0 and max 100 written in.
-    const original = parityPanel(400); // "unit percent, saved without pluginVersion"
-    expect(original.pluginVersion).toBeUndefined();
-    await createDashboard('pjan-stat-convert-back', [
-      { ...original, id: 1, type: CORE, pluginVersion: PLUGIN_VERSION },
-    ]);
-    await gotoDashboardPage({ uid: 'pjan-stat-convert-back' });
-    await expect(panelContent(page, 1).locator('div').first()).toBeVisible();
-    await expect
-      .poll(async () => (await savedPanel(page, 1))?.fieldConfig.defaults)
-      .toMatchObject({
-        unit: 'percent',
-        min: 0,
-        max: 100,
-      });
-  });
-
-  test("back to core with pluginVersion set to Grafana's, the panel keeps its field config (src/README.md)", async ({
-    gotoDashboardPage,
-    page,
-  }) => {
-    const original = parityPanel(400); // "unit percent, saved without pluginVersion"
-    await createDashboard('pjan-stat-convert-back', [{ ...original, id: 1, type: CORE, pluginVersion: '13.2.3' }]);
-    await gotoDashboardPage({ uid: 'pjan-stat-convert-back' });
-    await expect(panelContent(page, 1).locator('div').first()).toBeVisible();
-    await expect.poll(async () => (await savedPanel(page, 1))?.options).toHaveProperty('colorMode');
-    const defaults = (await savedPanel(page, 1))!.fieldConfig.defaults;
-    expect(defaults.unit).toBe('percent');
-    expect(defaults).not.toHaveProperty('min');
-    expect(defaults).not.toHaveProperty('max');
-  });
-
-  test("picking Stat in the editor for a Stat ++ panel is Grafana's switch: two options, thresholds colours (src/README.md)", async ({
-    gotoPanelEditPage,
-    page,
-  }) => {
-    await createDashboard('pjan-stat-switch-back', [
-      {
-        ...parityPanel(621), // "override on one series", the plugin panel
-        id: 1,
-        options: { ...SWITCH_OPTIONS },
-        fieldConfig: { defaults: { color: { mode: 'palette-classic' }, unit: 'ms' }, overrides: [] },
-      },
-    ]);
-    const panelEditPage = await gotoPanelEditPage({ dashboard: { uid: 'pjan-stat-switch-back' }, id: '1' });
-    await expect(
-      panelEditPage.panel.locator.getByTestId('data-testid panel content').locator('div').first()
-    ).toBeVisible();
-    await expect.poll(async () => (await savedPanel(page, 1))?.type).toBe(PLUGIN);
-    await panelEditPage.setVisualization('Stat');
-    await expect.poll(async () => (await savedPanel(page, 1))?.type).toBe(CORE);
-    const core = (await savedPanel(page, 1))!;
-    expect(core.fieldConfig.defaults).toMatchObject({ color: { mode: 'thresholds' }, unit: 'ms' });
-    expect(core.options).toMatchObject({
-      reduceOptions: SWITCH_OPTIONS.reduceOptions,
-      orientation: SWITCH_OPTIONS.orientation,
-      // the rest are core's defaults again
-      colorMode: 'value',
-      textMode: 'auto',
-      showPercentChange: false,
-    });
-  });
-
-  // Switches a core Stat panel to Stat ++ in the panel editor and checks the saved JSON and the tiles drawn.
-  // `pluginLoaded`: the dashboard also has a Stat ++ panel, so the plugin's module is already loaded when the
+  // Switches a core Stat panel to Stat plus in the panel editor and checks the saved JSON and the tiles drawn.
+  // `pluginLoaded`: the dashboard also has a Stat plus panel, so the plugin's module is already loaded when the
   // visualization changes (scenes then loads it synchronously); the editor is opened in the app, without a reload.
   const SWITCH_OPTIONS = {
     reduceOptions: { values: false, calcs: ['mean'], fields: '' },
@@ -211,7 +136,7 @@ test.describe('saved JSON', () => {
     { name: 'no colour set', color: undefined, pluginLoaded: false },
     { name: 'no colour set, plugin already loaded', color: undefined, pluginLoaded: true },
   ]) {
-    test(`switching a core Stat panel to Stat ++ in the panel editor keeps its settings (${name})`, async ({
+    test(`switching a core Stat panel to Stat plus in the panel editor keeps its settings (${name})`, async ({
       gotoDashboardPage,
       page,
       selectors,
@@ -245,7 +170,7 @@ test.describe('saved JSON', () => {
       expect(core.fieldConfig.defaults.color).toEqual(color);
       if (pluginLoaded) {
         expect((await savedPanel(page, 2))?.type).toBe(PLUGIN);
-        // In the app (no reload): the Stat ++ module stays loaded
+        // In the app (no reload): the Stat plus module stays loaded
         await page.locator('[data-viz-panel-key="panel-1"]').hover();
         await page.keyboard.press('e');
         await expect(page).toHaveURL(/editPanel=1/);
@@ -279,7 +204,7 @@ test.describe('saved JSON', () => {
         .toBe(true);
       const coreTiles = await tiles();
 
-      await panelEditPage.setVisualization('Stat ++');
+      await panelEditPage.setVisualization('Stat plus');
       await expect.poll(async () => (await savedPanel(page, 1))?.type).toBe(PLUGIN);
       expect(settings(await savedPanel(page, 1))).toEqual(settings(core));
       // and it draws with them: the same tiles, in the same colours

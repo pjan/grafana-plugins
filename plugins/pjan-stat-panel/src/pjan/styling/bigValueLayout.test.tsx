@@ -3,7 +3,8 @@ import { type ReactElement } from 'react';
 
 import { FieldType } from '@grafana/data';
 import { PercentChangeColorMode } from '@grafana/schema';
-import { getMinTextContrast, getTextContrast } from '@pjan/grafana-styling';
+import { getAutomaticText, getMinTextContrast, getTextContrast } from '@pjan/grafana-styling';
+import tinycolor from 'tinycolor2';
 import { LIGHT, THEMES } from '@pjan/grafana-styling/src/testdata/themes';
 
 import { buildLayout } from 'packages/grafana-ui/src/components/BigValue/BigValueLayout';
@@ -15,7 +16,7 @@ import {
 } from 'packages/grafana-ui/src/components/BigValue/BigValueTypes';
 
 import { CUSTOM_BIG_VALUE_COLOR_MODE, type StatStyling } from './options';
-import { CORE_TEXT_COLORS, getTileStyling } from './tileStyling';
+import { getTileStyling } from './tileStyling';
 
 const DARK = THEMES['Grafana dark'];
 const color = (name: string, theme = LIGHT) => theme.visualization.getColorByName(name);
@@ -64,24 +65,38 @@ describe('Color mode Custom in BigValueLayout', () => {
     expect(customMode).toEqual(valueMode);
   });
 
-  it('draws the background and guards each text element at its own size and weight', () => {
-    // Text Value on the light panel background: green is ~3.0:1, enough for the large value only
+  it('draws a chosen text colour on every element, whatever its contrast', () => {
+    // Text Value on the light panel background: green is ~3.0:1, below 4.5:1 for the name
     const d = drawn(custom({ textColor: { mode: 'value' } }));
-    expect(d.layout.valueFontSize).toBeGreaterThanOrEqual(24);
     expect(getMinTextContrast(d.layout.titleFontSize, 400)).toBe(4.5);
-    expect(getTextContrast(LIGHT, color('green'), LIGHT.colors.background.primary)).toBeGreaterThanOrEqual(
-      getMinTextContrast(d.layout.valueFontSize, 500)
-    );
+    expect(getTextContrast(LIGHT, color('green'), LIGHT.colors.background.primary)).toBeLessThan(4.5);
     expect(d.value.color).toBe(color('green'));
-    expect(d.title.color).toBe(CORE_TEXT_COLORS[1]);
+    expect(d.title.color).toBe(color('green'));
     expect(d.panel.background).toBe('transparent');
+  });
+
+  it('Automatic measures each element at its own size and weight', () => {
+    const d = drawn(custom({ backgroundColor: { mode: 'value' }, textColor: { mode: 'automatic' } }));
+    const background = LIGHT.colors.background.primary;
+    const at = (size: number, weight: number) =>
+      getAutomaticText(LIGHT, color('green'), getMinTextContrast(size, weight), { background });
+    expect(d.value.color).toBe(at(d.layout.valueFontSize, 500));
+    expect(d.title.color).toBe(at(d.layout.titleFontSize, 400));
   });
 
   it('percent change follows the text colour on a background, and keeps its own mode without one', () => {
     const onBackground = drawn(custom({ backgroundColor: { mode: 'fixed', fixedColor: 'black' } }));
     expect(onBackground.panel.background).toBe(color('black'));
-    expect(onBackground.percent.containerStyles.color).toBe(onBackground.value.color);
-    expect(onBackground.value.color).toBe(CORE_TEXT_COLORS[0]); // core's text colour on black
+    // not set on a background: Automatic on black, each element at its own size (percent change is small text)
+    const background = LIGHT.colors.background.primary;
+    expect(onBackground.value.color).toBe(
+      getAutomaticText(LIGHT, color('black'), getMinTextContrast(onBackground.layout.valueFontSize, 500), {
+        background,
+      })
+    );
+    expect(onBackground.percent.containerStyles.color).toBe(
+      getAutomaticText(LIGHT, color('black'), 4.5, { background })
+    );
 
     const withoutBackground = drawn(custom({ textColor: { mode: 'fixed', fixedColor: 'purple' } }));
     expect(withoutBackground.percent.containerStyles.color).toBe(color('green')); // Standard, rising
@@ -92,7 +107,7 @@ describe('Color mode Custom in BigValueLayout', () => {
       custom(
         {
           backgroundColor: { mode: 'value' },
-          textColor: { mode: 'contrast' },
+          textColor: { mode: 'automatic' },
           sparklineColor: { mode: 'text' },
           sparklineLineOpacity: 45,
           sparklineFillOpacity: 18,
@@ -102,24 +117,23 @@ describe('Color mode Custom in BigValueLayout', () => {
         DARK
       )
     );
-    expect(d.value.color).toBe(CORE_TEXT_COLORS[1]); // dark text on dark-theme green
+    const text = tinycolor(d.value.color as string);
     expect(d.sparkline).toEqual({
       custom: {
         drawStyle: 'line',
         lineWidth: 2,
-        lineColor: 'rgba(32, 34, 38, 0.45)',
-        fillColor: 'rgba(32, 34, 38, 0.18)',
+        lineColor: text.clone().setAlpha(0.45).toRgbString(),
+        fillColor: text.clone().setAlpha(0.18).toRgbString(),
       },
     });
   });
 
-  it('a value with a unit suffix is guarded at the suffix’s size', () => {
-    // Green on the light panel background is ~3.0:1. A 30+ px value passes 3:1; its "%" is drawn at 0.6×, below
-    // 24 px, where 4.5:1 is needed, so the value falls back to best contrast.
+  it('Automatic on a value with a unit suffix uses the suffix’s size', () => {
+    // A 30+ px value needs 3:1; its "%" is drawn at 0.6×, below 24 px, where 4.5:1 is needed
     const tile = (suffix: string | undefined) =>
       drawn(
         custom(
-          { textColor: { mode: 'value' } },
+          { backgroundColor: { mode: 'value' }, textColor: { mode: 'automatic' } },
           {
             textMode: BigValueTextMode.Value,
             sparkline: undefined,
@@ -130,11 +144,12 @@ describe('Color mode Custom in BigValueLayout', () => {
           }
         )
       );
+    const background = LIGHT.colors.background.primary;
     const plain = tile(undefined);
     expect(plain.layout.valueFontSize).toBeGreaterThanOrEqual(24);
-    expect(plain.value.color).toBe(color('green'));
+    expect(plain.value.color).toBe(getAutomaticText(LIGHT, color('green'), 3, { background }));
     const withSuffix = tile('%');
     expect(withSuffix.layout.valueFontSize * 0.6).toBeLessThan(24);
-    expect(withSuffix.value.color).toBe(CORE_TEXT_COLORS[1]);
+    expect(withSuffix.value.color).toBe(getAutomaticText(LIGHT, color('green'), 4.5, { background }));
   });
 });

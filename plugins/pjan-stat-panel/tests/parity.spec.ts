@@ -81,7 +81,7 @@ const capture = async (page: Page, id: number): Promise<Capture> => {
   const dom = await element.evaluate((root) => {
     const elements = [root, ...Array.from(root.querySelectorAll('*'))];
     const canvases = Array.from(root.querySelectorAll('canvas')).map((canvas) => {
-      // Width, height, and a hash of the RGBA bytes, as in State timeline ++'s parity test
+      // Width, height, and a hash of the RGBA bytes, as in State timeline plus's parity test
       const data = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data;
       let hash = 0x811c9dc5;
       let painted = 0;

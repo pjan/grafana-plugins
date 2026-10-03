@@ -10,9 +10,9 @@ import {
   toStylingColor,
 } from './StylingColorEditor';
 
-// The mode lists State timeline ++ gives its line, value and row-name colours.
+// The mode lists State timeline plus gives its line, value and row-name colours.
 const LINE_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
-const VALUE_COLOR_MODES: StylingColorMode[] = ['contrast', 'shade', 'fixed'];
+const VALUE_COLOR_MODES: StylingColorMode[] = ['automatic', 'shade', 'fixed'];
 const ROW_NAME_COLOR_MODES: StylingColorMode[] = ['state', 'fixed'];
 
 // Choosing in the select and clearing it are covered end to end (tests/styling.spec.ts): Combobox's virtualised menu
@@ -29,7 +29,7 @@ const renderEditor = (value: StylingColor | undefined, settings: StylingColorEdi
 describe('getStylingColorOptions', () => {
   it('offers the modes of an option, in order, with the five shades as one group', () => {
     expect(getStylingColorOptions(VALUE_COLOR_MODES).map((o) => [o.value, o.group])).toEqual([
-      ['contrast', undefined],
+      ['automatic', undefined],
       ['softer', 'Shade of the state color'],
       ['soft', 'Shade of the state color'],
       ['base', 'Shade of the state color'],
@@ -44,7 +44,7 @@ describe('getStylingColorOptions', () => {
   });
 });
 
-describe('getStylingColorOptions for Stat ++', () => {
+describe('getStylingColorOptions for Stat plus', () => {
   it('offers None, Value and Same as text where asked, in the order given', () => {
     expect(getStylingColorOptions(['none', 'value', 'shade', 'fixed']).map((o) => o.label)).toEqual([
       'None',
@@ -78,7 +78,7 @@ describe('getStylingColorOptions for Stat ++', () => {
 describe('toStylingColor', () => {
   it('maps a choice to the option value', () => {
     expect(toStylingColor('strong', undefined)).toEqual({ mode: 'shade', shade: 'strong' });
-    expect(toStylingColor('contrast', { mode: 'shade', shade: 'soft' })).toEqual({ mode: 'contrast' });
+    expect(toStylingColor('automatic', { mode: 'shade', shade: 'soft' })).toEqual({ mode: 'automatic' });
     expect(toStylingColor('state', undefined)).toEqual({ mode: 'state' });
   });
 
@@ -88,7 +88,7 @@ describe('toStylingColor', () => {
   });
 
   it('clearing unsets the option', () => {
-    expect(toStylingColor(undefined, { mode: 'contrast' })).toBeUndefined();
+    expect(toStylingColor(undefined, { mode: 'automatic' })).toBeUndefined();
   });
 });
 

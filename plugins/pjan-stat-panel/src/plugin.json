@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
-  "name": "Stat ++",
+  "name": "Stat plus",
   "id": "pjan-stat-panel",
   "info": {
     "keywords": ["panel", "stat"],

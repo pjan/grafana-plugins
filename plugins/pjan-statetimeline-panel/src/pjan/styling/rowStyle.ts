@@ -1,9 +1,8 @@
 import { type Field, type GrafanaTheme2 } from '@grafana/data';
 import {
-  getBestContrastText,
+  getAutomaticText,
   getColorNameLookup,
   getMinTextContrast,
-  getReadableText,
   getRelativeShadeColor,
   getStylingColor,
   type StylingColor,
@@ -27,7 +26,7 @@ type BoxColorOptions = Required<Pick<FieldConfigWithStyling, 'fillColor' | 'line
 export const PILL_LOOK: BoxColorOptions = {
   fillColor: { mode: 'shade', shade: 'softer' },
   lineColor: { mode: 'shade', shade: 'base' },
-  valueColor: { mode: 'shade', shade: 'stronger' },
+  valueColor: { mode: 'automatic' },
 };
 
 /** The Pill look's line width, in CSS pixels, for every row. */
@@ -63,7 +62,16 @@ const memoize = <T>(fn: (key: string) => T) => {
 };
 
 /** Undefined when neither the row nor the look sets a box colour, so core's code draws the row. */
-export function getRowStyle(field: Field, theme: GrafanaTheme2, styling: TimelineStylingOptions): RowStyle | undefined {
+/**
+ * `panelBackground`: what is behind the boxes, the panel background unless given (the dashboard's canvas behind a
+ * transparent panel); translucent fills are composited over it for Automatic.
+ */
+export function getRowStyle(
+  field: Field,
+  theme: GrafanaTheme2,
+  styling: TimelineStylingOptions,
+  panelBackground?: string
+): RowStyle | undefined {
   const custom = getCustom(field);
   const look = isPillLook(styling) ? PILL_LOOK : undefined;
   const fill = getStylingColor(custom.fillColor, FILL_COLOR_MODES) ?? look?.fillColor;
@@ -87,11 +95,13 @@ export function getRowStyle(field: Field, theme: GrafanaTheme2, styling: Timelin
 
   const getValueText = memoize((key: string) => {
     const [stateColor, fillColor] = key.split('\n');
-    if (value?.mode === 'contrast') {
-      return getBestContrastText(theme, fillColor);
+    if (!value) {
+      return undefined;
     }
-    // A shade or a fixed colour that is unreadable on the fill, or a shade the state colour doesn't have: best contrast
-    return value ? getReadableText(theme, resolve(value, stateColor), fillColor, VALUE_MIN_CONTRAST) : undefined;
+    // A shade or a fixed colour is drawn as chosen; Automatic, and a shade the state colour doesn't have, is the first
+    // readable shade of the box's hue
+    const chosen = value.mode === 'automatic' ? undefined : resolve(value, stateColor);
+    return chosen ?? getAutomaticText(theme, fillColor, VALUE_MIN_CONTRAST, { background: panelBackground });
   });
 
   return {

@@ -52,9 +52,9 @@ export interface FieldConfigWithStyling {
   rowNameColor?: StylingColor;
 }
 
-export const FILL_COLOR_MODES: StylingColorMode[] = ['shade'];
+export const FILL_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
 export const LINE_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
-export const VALUE_COLOR_MODES: StylingColorMode[] = ['contrast', 'shade', 'fixed'];
+export const VALUE_COLOR_MODES: StylingColorMode[] = ['automatic', 'shade', 'fixed'];
 export const ROW_NAME_COLOR_MODES: StylingColorMode[] = ['state', 'fixed'];
 
 const NO_STYLING: TimelineStylingOptions = Object.freeze({});
@@ -107,7 +107,10 @@ export function addFillAndTextColorFieldConfig<T>(builder: FieldConfigEditorBuil
     builder,
     'fillColor',
     t('pjan.styling.fill-color-name', 'Fill color'),
-    t('pjan.styling.fill-color-desc', 'A shade of the state color, ranked by contrast with the panel background'),
+    t(
+      'pjan.styling.fill-color-desc',
+      'A shade of the state color, ranked by contrast with the panel background, or a fixed color'
+    ),
     { modes: FILL_COLOR_MODES, placeholder: t('pjan.styling.state-color', 'State color') }
   );
   addStylingColorFieldConfig(
@@ -116,7 +119,7 @@ export function addFillAndTextColorFieldConfig<T>(builder: FieldConfigEditorBuil
     t('pjan.styling.value-color-name', 'Value color'),
     t(
       'pjan.styling.value-color-desc',
-      'Best contrast is black or white. A shade or a fixed color needs a contrast of 4.5:1 with the box; otherwise best contrast is used'
+      'Automatic is the first shade of the box’s hue with a contrast of 4.5:1 (at least 4.2:1). A shade or a fixed color is drawn as chosen'
     ),
     { modes: VALUE_COLOR_MODES, placeholder: t('pjan.styling.value-color-placeholder', 'Automatic') }
   );
@@ -126,7 +129,7 @@ export function addFillAndTextColorFieldConfig<T>(builder: FieldConfigEditorBuil
     t('pjan.styling.row-name-color-name', 'Row name color'),
     t(
       'pjan.styling.row-name-color-desc',
-      'A fixed color, or the color of the row’s current state: its last value in the time range, in the softest shade with a contrast of 4.5:1 with the panel background'
+      'A fixed color, or the color of the row’s current state: its last value in the time range, in the first shade of its hue with a contrast of 4.5:1 (at least 4.2:1) with the panel background'
     ),
     { modes: ROW_NAME_COLOR_MODES, placeholder: t('pjan.styling.text-color', 'Text color') }
   );
@@ -170,7 +173,7 @@ export function addStylingOptions<T>(builder: PanelOptionsEditorBuilder<T>) {
       name: t('pjan.styling.look-name', 'Look'),
       description: t(
         'pjan.styling.look-desc',
-        'Pill: the softest shade as fill, a line in the base shade, and the value in the strongest shade. Its fill is opaque, so Fill opacity doesn’t apply; its line is 1 px unless Line width is set above 0. A look only sets the options left unset'
+        'Pill: the softest shade as fill, a line in the base shade, and the value in Automatic (the first readable shade of the fill’s hue). Its fill is opaque, so Fill opacity doesn’t apply; its line is 1 px unless Line width is set above 0. A look only sets the options left unset'
       ),
       category,
       settings: {

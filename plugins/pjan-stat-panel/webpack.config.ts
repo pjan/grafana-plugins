@@ -176,7 +176,7 @@ const config = async (env: Env): Promise<Configuration> => {
     };
   }
 
-  // 5. Size limits for webpack's performance warnings. webpack's default (244 KiB) is meant for web pages. Stat ++
+  // 5. Size limits for webpack's performance warnings. webpack's default (244 KiB) is meant for web pages. Stat plus
   //    bundles the copied panel and BigValue code, tinycolor2, @grafana/schema and @grafana/i18n (with its i18next
   //    helpers); everything else is shared by Grafana at runtime. module.js is about 60 KiB minified. Warn above
   //    150 KiB: room for the shared styling package and the opt-in additions, but a sudden large bundled dependency

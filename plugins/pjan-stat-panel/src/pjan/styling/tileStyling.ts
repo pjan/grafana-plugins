@@ -1,12 +1,10 @@
 import tinycolor from 'tinycolor2';
 
 import { type Field, type FieldDisplay, type GrafanaTheme2 } from '@grafana/data';
-import { getTextColorForAlphaBackground } from '@grafana/ui';
 import {
-  getBestContrastText,
+  getAutomaticText,
   getColorNameLookup,
   getMinTextContrast,
-  getReadableText,
   getRelativeShadeColor,
   getStylingColor,
   type StylingColor,
@@ -29,14 +27,11 @@ export const GRAY = '#808080';
 /** The sparkline fill core's Background modes draw (BigValueLayout.renderChart) */
 export const CORE_BACKGROUND_SPARKLINE_FILL = 'rgba(255,255,255,0.4)';
 
-/** Core's two text colours on a coloured tile (getTextColorForAlphaBackground); "Best contrast" picks one of them. */
-export const CORE_TEXT_COLORS: readonly string[] = ['rgb(247, 248, 250)', 'rgb(32, 34, 38)'];
-
 /**
  * The smallest size the value is drawn at. Grafana's `FormattedValueDisplay` (@grafana/ui 13.2.3) draws a non-empty
  * suffix (a unit such as "%" or " ms") smaller than the number when the value's font size is a number: 0.9× below 20 px,
  * 0.8× from 20 px, 0.6× from 26 px. The prefix is drawn at the full size. Re-implemented here from that behaviour (not
- * copied), so the contrast guard measures the suffix at its own size.
+ * copied), so Automatic measures the suffix at its own size.
  */
 export function getSmallestValueFontSize(fontSize: number, suffix: string | undefined): number {
   if (!suffix) {
@@ -46,7 +41,7 @@ export function getSmallestValueFontSize(fontSize: number, suffix: string | unde
   return fontSize * factor;
 }
 
-/** The text elements of a tile, each guarded at its own size. */
+/** The text elements of a tile, each with the minimum contrast of its own size for Automatic. */
 export type TextElement = 'value' | 'name' | 'percent';
 
 export interface SparklineStyle {
@@ -113,18 +108,18 @@ export function resolveStyling(fieldCustom: unknown, panelStyling: StatStyling |
  *   colour without a name); a fixed colour.
  * - `panelBackground`: what is behind the tiles (the panel background, or the dashboard's canvas for a transparent
  *   panel).
- * - Text, for the value and the name (and percent change on a background): not set, the value in its colour and the
- *   name in the panel's text colour without a background (core's Value mode), and core's text colour for the
- *   background with one (core's Background modes). Set, each element must reach its minimum contrast for its size and
- *   weight (`getMinTextContrast`) with what it is drawn on (the background, or the panel background), otherwise best
- *   contrast (the one of core's two text colours with the higher contrast). A shade without a name: best contrast.
- * - Sparkline: the value's colour, a shade of it (the value's colour without a name), the value text's colour (after
- *   its contrast fallback), or a fixed colour; line opacity (not set: as the colour, opaque), fill opacity (set: the
- *   line's colour at that alpha), line width (not set: 1).
- * - Unset parts follow core on their own (pjan, 2026-10-02, option A): without a background (or with None), core's
- *   Value mode (text and sparkline line in the value colour, fill at 20 % of the line colour); with one, core's
- *   Background Solid on that tile colour (text getTextColorForAlphaBackground, sparkline line the tile colour
- *   brightened by 40, fill white at 40 % even when the sparkline colour is set).
+ * - Text, for the value and the name (and percent change on a background): Automatic (`getAutomaticText`: the first
+ *   shade of the background's hue, or without a background of the value colour's hue, that reaches the element's
+ *   minimum contrast for its size and weight against what it is drawn on, `getMinTextContrast`), the value's colour, a shade of it, or a fixed colour. A value, shade or fixed colour is drawn
+ *   as chosen (pjan, 2026-10-03); a shade of a colour without a name is Automatic. Not set: Automatic on a background;
+ *   without one, the value in its colour and the name in the panel's text colour (core's Value mode).
+ * - Sparkline: the value's colour, a shade of it (the value's colour without a name), the value text's colour, or a
+ *   fixed colour; line opacity (not set: as the colour, opaque), fill opacity (set: the line's colour at that alpha),
+ *   line width (not set: 1).
+ * - Other unset parts follow core (pjan, 2026-10-02): without a background (or with None), core's Value mode
+ *   (sparkline line in the value colour, fill at 20 % of the line colour); with one, core's Background Solid on that
+ *   tile colour (sparkline line the tile colour brightened by 40, fill white at 40 % even when the sparkline colour is
+ *   set).
  */
 export function getTileStyling(
   theme: GrafanaTheme2,
@@ -157,36 +152,30 @@ export function getTileStyling(
 
   const textSetting = styling.textColor;
   const getTextColor = (element: TextElement, fontSize: number, fontWeight: number): string | undefined => {
+    // Automatic starts from the background's colour, or without one from the value's own colour (pjan, 2026-10-03)
+    const automatic = () =>
+      getAutomaticText(theme, drawnOn, getMinTextContrast(fontSize, fontWeight), {
+        background: panelBackground,
+        from: hasBackground ? undefined : valueColor,
+      });
     if (!textSetting) {
       if (hasBackground) {
-        return getTextColorForAlphaBackground(background!, theme.isDark);
+        return automatic();
       }
       return element === 'value' ? valueColor : undefined;
     }
-    let wanted: string | undefined;
+    // A value, shade or fixed colour is drawn as chosen; Automatic, and a shade of a colour without a name, is the
+    // first readable shade of the background's hue
     switch (textSetting.mode) {
       case 'value':
-        wanted = valueColor;
-        break;
+        return valueColor;
       case 'shade':
-        wanted = shade(textSetting);
-        break;
+        return shade(textSetting) ?? automatic();
       case 'fixed':
-        wanted = fixed(textSetting);
-        break;
+        return fixed(textSetting);
+      default:
+        return automatic();
     }
-    if (!wanted) {
-      // Best contrast, or a shade of a colour without a name
-      return getBestContrastText(theme, drawnOn, CORE_TEXT_COLORS, panelBackground);
-    }
-    return getReadableText(
-      theme,
-      wanted,
-      drawnOn,
-      getMinTextContrast(fontSize, fontWeight),
-      CORE_TEXT_COLORS,
-      panelBackground
-    );
   };
 
   const getSparkline = (textColor: string | undefined): SparklineStyle => {
@@ -241,7 +230,7 @@ export function getTileStyling(
 
 /**
  * The styling of one Stat tile with Color mode Custom: the colour name behind its colour (the tile's field, looked up
- * as State timeline ++ does; series indexes as applyFieldOverrides set them, for the classic palette), and its settings
+ * as State timeline plus does; series indexes as applyFieldOverrides set them, for the classic palette), and its settings
  * (the series' override over the panel option).
  */
 export function getStatTileStyling(

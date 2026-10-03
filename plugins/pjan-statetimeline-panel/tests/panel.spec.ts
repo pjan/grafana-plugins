@@ -16,7 +16,11 @@ test('renders a timeline canvas and a legend', async ({ gotoDashboardPage, readP
   await expect(panel.locator).toContainText('crit');
 });
 
-test('draws the same pixels as the core state timeline', async ({ gotoDashboardPage, readProvisionedDashboard, page }) => {
+test('draws the same pixels as the core state timeline', async ({
+  gotoDashboardPage,
+  readProvisionedDashboard,
+  page,
+}) => {
   const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD });
   const dashboardPage = await gotoDashboardPage(dashboard);
   const core = dashboardPage.getPanelByTitle(CORE).locator.locator('canvas');
@@ -31,7 +35,8 @@ test('draws the same pixels as the core state timeline', async ({ gotoDashboardP
 test('shows the same legend as the core state timeline', async ({ gotoDashboardPage, readProvisionedDashboard }) => {
   const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD });
   const dashboardPage = await gotoDashboardPage(dashboard);
-  const legend = (title: string) => dashboardPage.getPanelByTitle(title).locator.locator('[data-testid^="data-testid VizLegend series"]');
+  const legend = (title: string) =>
+    dashboardPage.getPanelByTitle(title).locator.locator('[data-testid^="data-testid VizLegend series"]');
   // both legends rendered (the panels load independently)
   await expect(legend(CORE).first()).toBeVisible();
   await expect(legend(PLUGIN).first()).toBeVisible();

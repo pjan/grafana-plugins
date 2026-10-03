@@ -102,7 +102,7 @@ describe('Color mode Custom', () => {
     expect(modesOf('textColor')).toEqual(TEXT_COLOR_MODES);
     expect(modesOf('sparklineColor')).toEqual(SPARKLINE_COLOR_MODES);
     expect(BACKGROUND_COLOR_MODES).toEqual(['none', 'value', 'shade', 'fixed']);
-    expect(TEXT_COLOR_MODES).toEqual(['contrast', 'value', 'shade', 'fixed']);
+    expect(TEXT_COLOR_MODES).toEqual(['automatic', 'value', 'shade', 'fixed']);
     expect(SPARKLINE_COLOR_MODES).toEqual(['value', 'shade', 'text', 'fixed']);
     expect(item('styling.sparklineLineOpacity').editor).toBe(ClearableSliderEditor);
     expect(item('styling.sparklineLineOpacity').settings).toEqual({

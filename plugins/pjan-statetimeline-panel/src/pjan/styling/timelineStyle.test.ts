@@ -9,7 +9,7 @@ import {
   MappingType,
 } from '@grafana/data';
 import { VisibilityMode } from '@grafana/schema';
-import { getBestContrastText, getRelativeShadeColor, toCanvasColor, toFillColor } from '@pjan/grafana-styling';
+import { getAutomaticText, getRelativeShadeColor, toCanvasColor, toFillColor } from '@pjan/grafana-styling';
 
 import { getConfig, type TimelineCoreOptions } from '../../core/components/TimelineChart/timeline';
 import { TimelineMode } from '../../core/components/TimelineChart/utils';
@@ -62,12 +62,12 @@ describe('getTimelineStyleHooks', () => {
   });
 
   it('an override on row 3 does not leak to its neighbours (core’s getFieldConfig quirk is not reused)', () => {
-    const hooks = getTimelineStyleHooks(frameWith(override('c', 'valueColor', { mode: 'contrast' })), theme)!;
+    const hooks = getTimelineStyleHooks(frameWith(override('c', 'valueColor', { mode: 'automatic' })), theme)!;
     const stateColor = jest.fn(() => green);
     expect(hooks.getValueTextColor(2, stateColor, green)).toBeUndefined();
     // the state colour is only looked up for rows with a value colour
     expect(stateColor).not.toHaveBeenCalled();
-    expect(hooks.getValueTextColor(3, stateColor, green)).toBe('rgb(0,0,0)');
+    expect(hooks.getValueTextColor(3, stateColor, green)).toBe(getAutomaticText(theme, green, 4.5));
     expect(stateColor).toHaveBeenCalledTimes(1);
     expect(hooks.getBoxColors(3, green)).toEqual({ fill: undefined, line: undefined });
   });
@@ -265,7 +265,7 @@ describe('timeline.ts with the styling hooks', () => {
             properties: [
               { id: 'custom.fillColor', value: { mode: 'shade', shade: 'stronger' } },
               { id: 'custom.lineColor', value: { mode: 'fixed', fixedColor: 'red' } },
-              { id: 'custom.valueColor', value: { mode: 'contrast' } },
+              { id: 'custom.valueColor', value: { mode: 'automatic' } },
             ],
           },
         ],
@@ -278,9 +278,28 @@ describe('timeline.ts with the styling hooks', () => {
     expect(fills).toEqual([coreFill, normalize(colorManipulator.alpha(stronger, 0.7)), coreFill]);
     expect(strokes).toEqual([normalize(green), normalize(toCanvasColor(theme, 'red')!), normalize(green)]);
     const coreText = normalize(theme.colors.getContrastText(colorManipulator.alpha(green, 0.7), 3));
-    // best contrast on the stronger shade at 70 % over white
-    const best = normalize(getBestContrastText(theme, colorManipulator.alpha(stronger, 0.7)));
+    // Automatic on the stronger shade at 70 % over white
+    const best = normalize(getAutomaticText(theme, colorManipulator.alpha(stronger, 0.7), 4.5));
     expect(texts.map((t) => t.color)).toEqual([coreText, best, coreText]);
+  });
+
+  it('Fill color fixed: drawn through timeline.ts with Fill opacity applied, as core applies it to its fills', () => {
+    const hooks = getTimelineStyleHooks(
+      frameWith({
+        defaults: {},
+        overrides: [
+          {
+            matcher: { id: FieldMatcherID.byName, options: 'b' },
+            properties: [{ id: 'custom.fillColor', value: { mode: 'fixed', fixedColor: 'purple' } }],
+          },
+        ],
+      }),
+      theme
+    );
+    const { fills } = draw(hooks, 70);
+    const coreFill = normalize(colorManipulator.alpha(green, 0.7));
+    const purple = theme.visualization.getColorByName('purple');
+    expect(fills).toEqual([coreFill, normalize(colorManipulator.alpha(purple, 0.7)), coreFill]);
   });
 
   it('looks up no more state colours than core when no row has a value colour', () => {

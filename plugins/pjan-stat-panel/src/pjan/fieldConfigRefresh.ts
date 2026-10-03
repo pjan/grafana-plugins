@@ -7,7 +7,7 @@ import { type FieldConfigSource } from '@grafana/data';
  * grafana/grafana).
  *
  * `panelChangedHandler` restores the colour of a core Stat panel switched to this plugin in the panel editor, on the
- * VizPanel's own field config object. When this plugin's module is already loaded (another Stat ++ panel was drawn
+ * VizPanel's own field config object. When this plugin's module is already loaded (another Stat plus panel was drawn
  * in the session), scenes 8.13.5 loads it synchronously (`VizPanel._loadPlugin`), so React renders the panel once
  * before `changePluginType` calls the handler. That render applies the field config with the colour Grafana adapted
  * (`thresholds`) and `VizPanel.applyFieldConfig` caches the result until the data changes, so the panel would keep

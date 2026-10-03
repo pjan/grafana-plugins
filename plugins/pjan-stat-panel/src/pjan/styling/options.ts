@@ -49,7 +49,7 @@ export interface OptionsWithStyling {
 }
 
 export const BACKGROUND_COLOR_MODES: StylingColorMode[] = ['none', 'value', 'shade', 'fixed'];
-export const TEXT_COLOR_MODES: StylingColorMode[] = ['contrast', 'value', 'shade', 'fixed'];
+export const TEXT_COLOR_MODES: StylingColorMode[] = ['automatic', 'value', 'shade', 'fixed'];
 export const SPARKLINE_COLOR_MODES: StylingColorMode[] = ['value', 'shade', 'text', 'fixed'];
 
 export const UNSET_SPARKLINE_LINE_OPACITY = 100;
@@ -98,10 +98,13 @@ const textSetting = (): Setting => ({
   name: t('pjan.stat-styling.text-color-name', 'Text color'),
   description: t(
     'pjan.stat-styling.text-color-desc',
-    'The value and the name. Each needs a contrast of 4.5:1 (3:1 from 24 px, or 18.66 px bold) with what it is drawn on; otherwise best contrast. Not set: the value’s color, or Grafana’s text color on a background'
+    'The value and the name. Automatic is the first shade of the background’s hue with a contrast of 4.5:1 (3:1 from 24 px, or 18.66 px bold; at least 4.2:1). A value, shade or fixed color is drawn as chosen. Not set: Automatic on a background, otherwise the value’s color'
   ),
   editor: StylingColorEditor,
-  settings: { modes: TEXT_COLOR_MODES, placeholder: t('pjan.stat-styling.text-color-placeholder', 'As Grafana') },
+  settings: {
+    modes: TEXT_COLOR_MODES,
+    placeholder: t('pjan.stat-styling.text-color-placeholder', 'Automatic on a background'),
+  },
 });
 
 const sparklineSettings = (): Setting[] => [

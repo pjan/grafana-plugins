@@ -7,16 +7,18 @@ pjan's Grafana plugins. Each plugin is an npm workspace in its own directory und
 - Emotion styles through `useStyles2`;
 - Jest tests next to the code.
 
-| Plugin                                                          | Type  | What it is                                                                                                                                                                           | Licence                                                                            |
-| --------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| [`pjan-statetimeline-panel`](plugins/pjan-statetimeline-panel/) | panel | **State timeline ++**: Grafana's state timeline as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions: per-row annotations and styling (both built). | AGPL-3.0: it starts from Grafana's own state-timeline code (see its `UPSTREAM.md`) |
-| [`pjan-stat-panel`](plugins/pjan-stat-panel/)                   | panel | **Stat ++**: Grafana's stat panel as a plugin: a drop-in replacement that behaves like the core panel. Opt-in addition: Color mode Custom (background, text and sparkline colours).  | AGPL-3.0: it starts from Grafana's own stat code (see its `UPSTREAM.md`)           |
+| Plugin                                                          | Type  | What it is                                                                                                                                                                             | Licence                                                                            |
+| --------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [`pjan-statetimeline-panel`](plugins/pjan-statetimeline-panel/) | panel | **State timeline plus**: Grafana's state timeline as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions: per-row annotations and styling (both built). | AGPL-3.0: it starts from Grafana's own state-timeline code (see its `UPSTREAM.md`) |
+| [`pjan-stat-panel`](plugins/pjan-stat-panel/)                   | panel | **Stat plus**: Grafana's stat panel as a plugin: a drop-in replacement that behaves like the core panel. Opt-in addition: Color mode Custom (background, text and sparkline colours).  | AGPL-3.0: it starts from Grafana's own stat code (see its `UPSTREAM.md`)           |
 
 Code shared by several plugins lives in workspace packages under `packages/`, which the plugins bundle from source:
 
 | Package                                              | What it is                                                                                         | Licence    |
 | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------- |
 | [`@pjan/grafana-styling`](packages/grafana-styling/) | Opt-in styling helpers: relative shades, colour names, contrast, and the colour and slider editors | Apache-2.0 |
+
+Colour options work the same in every plugin (`packages/grafana-styling/README.md`, "Colour rules for every plugin"): colours you choose are drawn as chosen, and **Automatic** text is the first shade of the same hue that is readable on what it is drawn on.
 
 ## Working in the repo
 

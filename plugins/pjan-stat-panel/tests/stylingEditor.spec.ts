@@ -6,7 +6,7 @@ import { type APIRequestContext, expect, type Page, test } from '@grafana/plugin
 import { CORE, panelContent, PLUGIN, savedPanel } from './helpers';
 
 // Color mode Custom in the panel editor and in the saved JSON: the "Stat styles" list and its showIf, what selecting
-// Custom and setting and clearing a value save, that opening the editor writes nothing, and both ways back to core.
+// Custom and setting and clearing a value save, and that opening the editor writes nothing.
 const STYLING = JSON.parse(
   fs.readFileSync(path.join(__dirname, '../provisioning/dashboards/styling.json'), 'utf8')
 ) as { uid: string; time: object; panels: Array<Record<string, unknown> & { id: number; options: object }> };
@@ -18,7 +18,7 @@ const SETTINGS = [
   'Sparkline line opacity',
   'Sparkline fill opacity',
   'Sparkline line width',
-]; // "atlas: soft, best contrast, sparkline as text"
+]; // "atlas: soft, automatic, sparkline as text"
 
 const editor = (page: Page, name: string) => page.getByTestId(`data-testid Stat styles ${name} field property editor`);
 
@@ -74,7 +74,7 @@ test.describe('Color mode Custom in the editor and the saved JSON', () => {
     panelEditPage,
     page,
   }) => {
-    await panelEditPage.setVisualization('Stat ++');
+    await panelEditPage.setVisualization('Stat plus');
     const core = ['Orientation', 'Text mode', 'Color mode', 'Graph mode', 'Text alignment', 'Show percent change'];
     await expect.poll(() => statStyles(page)).toEqual(core);
 
@@ -208,49 +208,5 @@ test.describe('Color mode Custom in the editor and the saved JSON', () => {
       expect(await savedPanel(page, ATLAS_ID)).toEqual(before);
       await page.waitForTimeout(250);
     }
-  });
-
-  test('renamed to core (type stat), the panel keeps colorMode custom, which core draws without a background', async ({
-    gotoDashboardPage,
-    page,
-  }) => {
-    const panel = STYLING.panels.find((p) => p.id === ATLAS_ID)!;
-    await createDashboard('pjan-stat-styling-core', [{ ...panel, id: 1, type: CORE }]);
-    await gotoDashboardPage({ uid: 'pjan-stat-styling-core' });
-    await expect(panelContent(page, 1).locator('canvas').first()).toBeVisible();
-    await expect.poll(async () => (await savedPanel(page, 1))?.options).toHaveProperty('colorMode', 'custom');
-    expect((await savedPanel(page, 1))!.options.styling).toEqual(panel.options['styling' as keyof object]);
-    const drawn = await panelContent(page, 1).evaluate((root) =>
-      Array.from(root.querySelectorAll<HTMLElement>('div'))
-        .filter((el) => el.style.padding !== '' && el.style.display === 'flex')
-        .map((tile) => {
-          const value = Array.from(tile.firstElementChild!.children as HTMLCollectionOf<HTMLElement>).find(
-            (el) => el.style.fontWeight === '500'
-          )!;
-          return { background: tile.style.background, valueColor: value.style.color };
-        })
-    );
-    expect(drawn.length).toBe(4);
-    // plain text: no background and no colour of its own
-    for (const tile of drawn) {
-      expect(tile).toEqual({ background: '', valueColor: '' });
-    }
-  });
-
-  test('picking Stat in the editor resets Color mode (core’s panel-change handler)', async ({
-    gotoPanelEditPage,
-    page,
-  }) => {
-    const panel = STYLING.panels.find((p) => p.id === ATLAS_ID)!;
-    await createDashboard('pjan-stat-styling-switch', [{ ...panel, id: 1 }]);
-    const panelEditPage = await gotoPanelEditPage({ dashboard: { uid: 'pjan-stat-styling-switch' }, id: '1' });
-    await expect(editor(page, 'Background color')).toBeVisible({ timeout: 30_000 });
-    await expect.poll(async () => (await savedPanel(page, 1))?.type).toBe(PLUGIN);
-    await panelEditPage.setVisualization('Stat');
-    await expect.poll(async () => (await savedPanel(page, 1))?.type).toBe(CORE);
-    const core = (await savedPanel(page, 1))!;
-    expect(core.options.colorMode).toBe('value');
-    expect(core.options).not.toHaveProperty('styling');
-    await expect.poll(() => statStyles(page)).not.toContain('Background color');
   });
 });

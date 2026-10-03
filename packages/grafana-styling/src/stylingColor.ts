@@ -3,13 +3,13 @@ import { RELATIVE_SHADES, type RelativeShade } from './shades';
 /**
  * - `shade`: a relative shade of the state colour (`shade`);
  * - `fixed`: a colour from Grafana's colour picker (`fixedColor`);
- * - `contrast`: the best-contrast text colour for what it is drawn on (text only);
- * - `state`: the row's current state colour (State timeline ++ row names);
- * - `value`: the state (value) colour itself (Stat ++);
- * - `text`: the same colour as the text (Stat ++ sparkline);
- * - `none`: nothing is drawn (Stat ++ background).
+ * - `automatic`: a readable colour of the same hue for what it is drawn on (`getAutomaticText`; text only);
+ * - `state`: the row's current state colour (State timeline plus row names);
+ * - `value`: the state (value) colour itself (Stat plus);
+ * - `text`: the same colour as the text (Stat plus sparkline);
+ * - `none`: nothing is drawn (Stat plus background).
  */
-export type StylingColorMode = 'shade' | 'fixed' | 'contrast' | 'state' | 'value' | 'text' | 'none';
+export type StylingColorMode = 'shade' | 'fixed' | 'automatic' | 'state' | 'value' | 'text' | 'none';
 
 /** A colour option of the styling. Like Grafana's own field colour, a mode and what that mode needs. */
 export interface StylingColor {

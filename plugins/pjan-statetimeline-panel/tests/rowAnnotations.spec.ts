@@ -448,7 +448,7 @@ test.describe('per-row annotations', () => {
   });
 
   test('a new panel saves no per-row annotation options until they are used', async ({ panelEditPage, page }) => {
-    await panelEditPage.setVisualization('State timeline ++');
+    await panelEditPage.setVisualization('State timeline plus');
     const saved = () =>
       page.evaluate(() => {
         let found: { options: Record<string, unknown>; custom: Record<string, unknown> } | undefined;

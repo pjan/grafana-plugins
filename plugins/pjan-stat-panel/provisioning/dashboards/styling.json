@@ -1,6 +1,6 @@
 {
   "uid": "pjan-stat-styling",
-  "title": "Stat ++ styling (Color mode Custom)",
+  "title": "Stat plus styling (Color mode Custom)",
   "tags": ["pjan-stat-panel"],
   "editable": true,
   "schemaVersion": 42,
@@ -234,7 +234,7 @@
     {
       "id": 30,
       "type": "pjan-stat-panel",
-      "title": "text best contrast on value",
+      "title": "text automatic on value",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -267,7 +267,7 @@
         "colorMode": "custom",
         "textMode": "value_and_name",
         "graphMode": "area",
-        "styling": { "backgroundColor": { "mode": "value" }, "textColor": { "mode": "contrast" } }
+        "styling": { "backgroundColor": { "mode": "value" }, "textColor": { "mode": "automatic" } }
       }
     },
     {
@@ -515,7 +515,7 @@
     {
       "id": 42,
       "type": "pjan-stat-panel",
-      "title": "atlas: soft, best contrast, sparkline as text",
+      "title": "atlas: soft, automatic, sparkline as text",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -550,7 +550,7 @@
         "graphMode": "area",
         "styling": {
           "backgroundColor": { "mode": "shade", "shade": "soft" },
-          "textColor": { "mode": "contrast" },
+          "textColor": { "mode": "automatic" },
           "sparklineColor": { "mode": "text" },
           "sparklineLineOpacity": 45,
           "sparklineFillOpacity": 18
@@ -756,7 +756,7 @@
     {
       "id": 80,
       "type": "pjan-stat-panel",
-      "title": "value keeps its colour, percent change falls back",
+      "title": "automatic per element on white",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -779,14 +779,14 @@
         "text": { "valueSize": 40, "percentSize": 16 },
         "styling": {
           "backgroundColor": { "mode": "fixed", "fixedColor": "#ffffff" },
-          "textColor": { "mode": "fixed", "fixedColor": "#949494" }
+          "textColor": { "mode": "automatic" }
         }
       }
     },
     {
       "id": 81,
       "type": "pjan-stat-panel",
-      "title": "30 px value with a unit: guarded at the unit’s size",
+      "title": "automatic, 30 px value with a unit",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -811,14 +811,14 @@
         "text": { "valueSize": 30 },
         "styling": {
           "backgroundColor": { "mode": "fixed", "fixedColor": "#ffffff" },
-          "textColor": { "mode": "fixed", "fixedColor": "#949494" }
+          "textColor": { "mode": "automatic" }
         }
       }
     },
     {
       "id": 82,
       "type": "pjan-stat-panel",
-      "title": "30 px value without a unit",
+      "title": "automatic, 30 px value without a unit",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -840,14 +840,14 @@
         "text": { "valueSize": 30 },
         "styling": {
           "backgroundColor": { "mode": "fixed", "fixedColor": "#ffffff" },
-          "textColor": { "mode": "fixed", "fixedColor": "#949494" }
+          "textColor": { "mode": "automatic" }
         }
       }
     },
     {
       "id": 83,
       "type": "pjan-stat-panel",
-      "title": "text #767676",
+      "title": "automatic, no background",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -867,13 +867,13 @@
         "textMode": "value_and_name",
         "graphMode": "none",
         "text": { "titleSize": 14 },
-        "styling": { "textColor": { "mode": "fixed", "fixedColor": "#767676" } }
+        "styling": { "textColor": { "mode": "automatic" } }
       }
     },
     {
       "id": 84,
       "type": "pjan-stat-panel",
-      "title": "text #767676, transparent panel",
+      "title": "automatic, no background, transparent panel",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -893,60 +893,7 @@
         "textMode": "value_and_name",
         "graphMode": "none",
         "text": { "titleSize": 14 },
-        "styling": { "textColor": { "mode": "fixed", "fixedColor": "#767676" } }
-      },
-      "transparent": true
-    },
-    {
-      "id": 85,
-      "type": "pjan-stat-panel",
-      "title": "text #808080",
-      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
-          "scenarioId": "csv_content",
-          "csvContent": "time,a,b\n1759342200000,20,20\n1759342800000,22,22\n1759343400000,24,24\n1759344000000,26,26\n1759344600000,28,28\n1759345200000,30,30\n1759345800000,32,32\n1759346400000,34,34\n1759347000000,36,36\n1759347600000,38,38\n1759348200000,40,40\n1759348800000,42,42\n1759349400000,44,44\n1759350000000,46,46\n1759350600000,48,48\n1759351200000,50,50\n1759351800000,52,52\n1759352400000,54,54\n1759353000000,56,56\n1759353600000,58,58\n1759354200000,60,60\n1759354800000,62,62\n1759355400000,64,64\n1759356000000,66,66\n1759356600000,68,68\n1759357200000,70,70\n1759357800000,72,72\n1759358400000,74,74\n1759359000000,76,76\n1759359600000,78,78\n1759360200000,80,80\n1759360800000,82,82\n1759361400000,84,84\n1759362000000,86,86\n1759362600000,88,88\n1759363200000,90,90"
-        }
-      ],
-      "gridPos": { "x": 12, "y": 60, "w": 12, "h": 5 },
-      "fieldConfig": {
-        "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "value": null, "color": "green" }] } },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "custom",
-        "textMode": "value_and_name",
-        "graphMode": "none",
-        "text": { "titleSize": 14 },
-        "styling": { "textColor": { "mode": "fixed", "fixedColor": "#808080" } }
-      }
-    },
-    {
-      "id": 86,
-      "type": "pjan-stat-panel",
-      "title": "text #808080, transparent panel",
-      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
-          "scenarioId": "csv_content",
-          "csvContent": "time,a,b\n1759342200000,20,20\n1759342800000,22,22\n1759343400000,24,24\n1759344000000,26,26\n1759344600000,28,28\n1759345200000,30,30\n1759345800000,32,32\n1759346400000,34,34\n1759347000000,36,36\n1759347600000,38,38\n1759348200000,40,40\n1759348800000,42,42\n1759349400000,44,44\n1759350000000,46,46\n1759350600000,48,48\n1759351200000,50,50\n1759351800000,52,52\n1759352400000,54,54\n1759353000000,56,56\n1759353600000,58,58\n1759354200000,60,60\n1759354800000,62,62\n1759355400000,64,64\n1759356000000,66,66\n1759356600000,68,68\n1759357200000,70,70\n1759357800000,72,72\n1759358400000,74,74\n1759359000000,76,76\n1759359600000,78,78\n1759360200000,80,80\n1759360800000,82,82\n1759361400000,84,84\n1759362000000,86,86\n1759362600000,88,88\n1759363200000,90,90"
-        }
-      ],
-      "gridPos": { "x": 0, "y": 65, "w": 12, "h": 5 },
-      "fieldConfig": {
-        "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "value": null, "color": "green" }] } },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "custom",
-        "textMode": "value_and_name",
-        "graphMode": "none",
-        "text": { "titleSize": 14 },
-        "styling": { "textColor": { "mode": "fixed", "fixedColor": "#808080" } }
+        "styling": { "textColor": { "mode": "automatic" } }
       },
       "transparent": true
     }

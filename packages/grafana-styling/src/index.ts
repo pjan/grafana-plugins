@@ -3,7 +3,6 @@ export { getStylingColor, type StylingColor, type StylingColorMode } from './sty
 export {
   getHueOfColorName,
   getRelativeShadeColor,
-  getSoftestReadableShadeColor,
   rankHue,
   RELATIVE_SHADES,
   type RankedHue,
@@ -11,10 +10,10 @@ export {
 } from './shades';
 export { getCandidateColorNames, getColorNameLookup } from './colorNames';
 export {
-  BLACK_AND_WHITE,
-  getBestContrastText,
+  type AutomaticTextOptions,
+  FALLBACK_TEXT_CONTRAST,
+  getAutomaticText,
   getMinTextContrast,
-  getReadableText,
   getTextContrast,
   toCanvasColor,
   toFillColor,

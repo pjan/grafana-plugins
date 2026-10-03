@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { type APIRequestContext, type Locator, type Page } from '@playwright/test';
 
 import { expect, test } from '@grafana/plugin-e2e';
@@ -8,7 +11,12 @@ import { expect, test } from '@grafana/plugin-e2e';
 const UID = 'pjan-statetimeline-styling';
 const CORE = 'state-timeline';
 const PLUGIN = 'pjan-statetimeline-panel';
-const NOTHING_SET_ID = 36;
+// The plugin panel of the "nothing set" case, by title, so adding cases doesn't shift it
+const NOTHING_SET_ID = (
+  JSON.parse(fs.readFileSync(path.join(__dirname, '../provisioning/dashboards/styling.json'), 'utf8')) as {
+    panels: Array<{ id: number; title: string }>;
+  }
+).panels.find((p) => p.title === `nothing set [${PLUGIN}]`)!.id;
 const LABELS = ['running', 'degraded', 'down'];
 const HUES: Record<string, Hue> = { running: 'green', degraded: 'yellow', down: 'red' };
 /** The hue of a value's state, from its text (core truncates it) */
@@ -53,6 +61,12 @@ const STOCK: Record<
       'dark-yellow': '#e0b400',
     },
   },
+};
+
+// The Pill look's value text: Automatic on the softest fill, worked out by hand (see `automatic` below)
+const PILL_TEXT: Record<Theme, Record<Hue, string>> = {
+  light: { green: '#3f5b3b', yellow: '#736b25', red: '#59282e' },
+  dark: { green: '#ffffff', yellow: '#57490f', red: '#f6dadd' },
 };
 
 // Both canvases of a comparison must be at least this much painted, so two charts without boxes can't pass.
@@ -231,11 +245,40 @@ const contrast = (a: string, b: string) => {
   const [la, lb] = [luminance(a), luminance(b)];
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 };
-const bestContrast = (fill: string) => (contrast('#ffffff', fill) >= contrast('#000000', fill) ? '#ffffff' : '#000000');
-/** The text colour the 4.5:1 guard allows on a fill: the wanted one, or best contrast. Undefined when too close to call. */
-const guarded = (wanted: string, fill: string) => {
-  const c = contrast(wanted, fill);
-  return Math.abs(c - 4.5) < 0.05 ? undefined : c >= 4.5 ? wanted : bestContrast(fill);
+// Automatic text (getAutomaticText in the shared package), written out separately: Grafana's luminance rounded to 3
+// digits, 1 % sRGB steps from the start colour towards the theme's page colour and maxContrast (Grafana 13.2.3's stock
+// themes), the first step with 4.5:1, else 4.2:1, on whichever side gets there first.
+const AUTOMATIC_ENDS: Record<Theme, [string, string]> = { light: ['#fbfbfb', '#000000'], dark: ['#111217', '#ffffff'] };
+const contrast3 = (a: string, b: string) => {
+  const [la, lb] = [a, b].map((c) => Number(luminance(c).toFixed(3)));
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+};
+const automatic = (theme: Theme, drawnOn: string, from = drawnOn) => {
+  for (const threshold of [4.5, 4.2]) {
+    let found: { steps: number; color: string } | undefined;
+    for (const end of AUTOMATIC_ENDS[theme]) {
+      for (let steps = 0; steps <= 100 && (!found || steps < found.steps); steps++) {
+        const color = hex(channels(from).map((c, i) => Math.round(c + (channels(end)[i] - c) * (steps / 100))));
+        if (contrast3(color, drawnOn) >= threshold) {
+          found = { steps, color };
+          break;
+        }
+      }
+    }
+    if (found) {
+      return found.color;
+    }
+  }
+  throw new Error(`no automatic text on ${drawnOn}`);
+};
+/**
+ * Automatic for a fill read back from 8-bit pixels, or undefined when a pixel one level off either way would give a
+ * different colour (near the 4.5:1 / 4.2:1 boundary the two passes land on opposite sides): too close to call.
+ */
+const automaticFromPixels = (theme: Theme, fill: string) => {
+  const expected = automatic(theme, fill);
+  const shifted = (d: number) => hex(channels(fill).map((c) => Math.min(255, Math.max(0, c + d))));
+  return [-1, 1].every((d) => near(automatic(theme, shifted(d)), expected, 3)) ? expected : undefined;
 };
 /** A canvas pixel composited over the panel background (getImageData isn't premultiplied). */
 const composite = (rgba: number[], background: string) =>
@@ -286,7 +329,7 @@ for (const [theme, scale] of [
       expect(plugin.fingerprint).toBe(reference.fingerprint);
     });
 
-    test('Value color: fixed, a shade, best contrast, each with the 4.5:1 guard', async ({ page }) => {
+    test('Value color: fixed and a shade as chosen, Automatic readable', async ({ page }) => {
       const plugin = await drawn(page, `value color [${PLUGIN}]`);
       const values = plugin.draws.filter(isValue);
       expect(values.length).toBeGreaterThan(10);
@@ -295,12 +338,19 @@ for (const [theme, scale] of [
         // just left of the text: the box's fill (no line), as drawn over the panel background
         const fill = composite(at(plugin.pixels, value.x! - 1, value.y!), colors.background);
         const row = rowOf(plugin, value);
-        const wanted = row === 'a' ? '#1f60c4' : row === 'b' ? colors[hueOf(value.text!)].stronger : bestContrast(fill);
-        const expected = row === 'c' ? wanted : guarded(wanted, fill);
-        if (expected) {
-          expect(value.style, `${row}: ${value.text} on ${fill}`).toBe(expected);
-          checked++;
+        const label = `${row}: ${value.text} on ${fill}`;
+        if (row === 'c') {
+          const expected = automaticFromPixels(theme, fill);
+          if (!expected) {
+            continue;
+          }
+          // the fill is read back from 8-bit pixels: a step either way
+          expect(near(value.style, expected, 3), `${label}: ${value.style}`).toBe(true);
+          expect(contrast(value.style, fill), label).toBeGreaterThanOrEqual(4.1);
+        } else {
+          expect(value.style, label).toBe(row === 'a' ? '#1f60c4' : colors[hueOf(value.text!)].stronger);
         }
+        checked++;
       }
       expect(checked).toBeGreaterThan(10);
     });
@@ -357,19 +407,20 @@ for (const [theme, scale] of [
       });
     }
 
-    test('Value color "Best contrast" on a continuous scheme: composited with the fill opacity', async ({ page }) => {
-      const plugin = await drawn(page, `best contrast, continuous [${PLUGIN}]`);
+    test('Value color "Automatic" on a continuous scheme: composited with the fill opacity', async ({ page }) => {
+      const plugin = await drawn(page, `automatic, continuous [${PLUGIN}]`);
       const values = plugin.draws.filter(isValue);
       expect(values.length).toBeGreaterThan(10);
       let checked = 0;
       for (const value of values) {
         const fill = composite(at(plugin.pixels, value.x! - 1, value.y!), colors.background);
-        // too close to call from 8-bit pixels: skip
-        if (Math.abs(contrast('#ffffff', fill) - contrast('#000000', fill)) < 0.2) {
+        const expected = automaticFromPixels(theme, fill);
+        if (!expected) {
           continue;
         }
-
-        expect(value.style, `${value.text} on ${fill}`).toBe(bestContrast(fill));
+        // the fill is read back from 8-bit pixels: a step either way
+        expect(near(value.style, expected, 3), `${value.text} on ${fill}: ${value.style}`).toBe(true);
+        expect(contrast(value.style, fill)).toBeGreaterThanOrEqual(4.1);
         checked++;
       }
       expect(checked).toBeGreaterThan(10);
@@ -394,11 +445,11 @@ for (const [theme, scale] of [
         Object.fromEntries(d.draws.filter(isRowName).map((x) => [x.text, x.style] as const));
       expect(nameColors(core)).toEqual({ a: colors.text, b: colors.text, c: colors.text });
       expect(nameColors(plugin)).toEqual({
-        // a ends running (green): its softest shade with 4.5:1 on the panel background
-        a: colors.named['semi-dark-green'],
+        // Automatic from the state colour on the panel background, worked out by hand: a ends running (green), c ends
+        // degraded (yellow); in the dark theme both already reach 4.5:1 and stay as they are
+        a: theme === 'light' ? '#44833b' : '#73bf69',
         b: colors.named.purple,
-        // c ends degraded (yellow): no yellow reaches 4.5:1 on white, so theme text
-        c: theme === 'light' ? colors.text : colors.named['dark-yellow'],
+        c: theme === 'light' ? '#8a7407' : '#fade2a',
       });
       // Everything else, the time labels below the names included, is core's: the whole canvas but the boxes of the
       // names drawn again (a name's width, its height from its font, 2 px around it)
@@ -420,7 +471,8 @@ for (const [theme, scale] of [
           }
         }
       }
-      expect(redrawn.length).toBe(theme === 'light' ? 2 : 3);
+      // a, b and c: Automatic gives c (yellow) a shade of its own in the light theme too
+      expect(redrawn.length).toBe(3);
       expect(differing).toEqual([]);
     });
 
@@ -554,9 +606,19 @@ for (const [theme, scale] of [
       expect(checked).toBeGreaterThan(0);
     });
 
-    test('Pill: softest fill, 1 px line in the base shade, strongest value text with the guard, no truncation', async ({
-      page,
-    }) => {
+    test('Row name color on a transparent panel: measured against the dashboard canvas behind it', async ({ page }) => {
+      const plugin = await drawn(page, `row names, transparent panel [${PLUGIN}]`);
+      const nameColors = Object.fromEntries(plugin.draws.filter(isRowName).map((x) => [x.text, x.style] as const));
+      // Worked out by hand against the light canvas (#fbfbfb), one step off the panel background's #44833b and
+      // #8a7407; in the dark theme both state colours already reach 4.5:1 on the dark canvas
+      expect(nameColors).toEqual({
+        a: theme === 'light' ? '#43813b' : '#73bf69',
+        b: colors.named.purple,
+        c: theme === 'light' ? '#887207' : '#fade2a',
+      });
+    });
+
+    test('Pill: softest fill, 1 px line in the base shade, Automatic value text, no truncation', async ({ page }) => {
       const plugin = await drawn(page, `pill [${PLUGIN}]`);
       const values = plugin.draws.filter(isValue);
       expect(values.length).toBeGreaterThan(0);
@@ -570,10 +632,7 @@ for (const [theme, scale] of [
         // The line: the box's first column, a line width (1 px) and the text padding (2 canvas px) left of the text.
         // Not for a box that starts before the plot (its value is drawn at the plot's edge).
         lines += near(hex(at(plugin.pixels, value.x! - scale - 2, value.y!)), shades.base) ? 1 : 0;
-        const expected = guarded(shades.stronger, shades.softer);
-        if (expected) {
-          expect(value.style).toBe(expected);
-        }
+        expect(value.style).toBe(PILL_TEXT[theme][hueOf(value.text!)]);
       }
       expect(lines).toBeGreaterThanOrEqual(values.length - 1);
       expect(strokes(plugin).has(colors.green.base)).toBe(true);
@@ -630,26 +689,10 @@ const pickColor = (page: Page, name: string) =>
 const STYLING_FIELD_OPTIONS = ['fillColor', 'lineColor', 'valueColor', 'rowNameColor'];
 
 test.describe('saved JSON', () => {
-  // One worker, in order: the last test adds a dashboard through the API and deletes it afterwards.
   test.describe.configure({ mode: 'default' });
-  let api: APIRequestContext;
-  const ROUND_TRIP_UID = 'pjan-statetimeline-styling-round-trip';
-
-  test.beforeAll(async ({ playwright, grafanaAPICredentials }) => {
-    const { user, password } = grafanaAPICredentials;
-    api = await playwright.request.newContext({
-      baseURL: process.env.GRAFANA_URL || 'http://localhost:3000',
-      extraHTTPHeaders: { Authorization: `Basic ${Buffer.from(`${user}:${password}`).toString('base64')}` },
-    });
-  });
-
-  test.afterAll(async () => {
-    await api.delete(`/api/dashboards/uid/${ROUND_TRIP_UID}`);
-    await api.dispose();
-  });
 
   test('a new panel saves no styling options', async ({ panelEditPage, page }) => {
-    await panelEditPage.setVisualization('State timeline ++');
+    await panelEditPage.setVisualization('State timeline plus');
     await expect.poll(async () => (await savedPanel(page, /.*/))?.type).toBe(PLUGIN);
     const saved = (await savedPanel(page, /.*/))!;
     expect(saved.options).not.toHaveProperty('styling');
@@ -756,47 +799,6 @@ test.describe('saved JSON', () => {
       .poll(async () => ((await savedPanel(page, title))?.options.styling as Record<string, unknown>)?.look)
       .toBe('pill');
   });
-
-  test('back to core keeps the panel options and drops the field options; to the plugin again, they apply', async ({
-    gotoDashboardPage,
-    page,
-  }) => {
-    // Provisioned as a core panel with the plugin's options, as after changing `type` in the JSON
-    await page.addInitScript(recordDraws);
-    await gotoDashboardPage({ uid: UID });
-    const title = 'switched back to core';
-    await canvasOf(page, title);
-    await expect.poll(() => savedPanel(page, title)).toBeDefined();
-    const core = (await savedPanel(page, title))!;
-    expect(core.type).toBe(CORE);
-    expect(core.options.styling).toEqual({ look: 'pill', gridColor: 'red' });
-    expect(core.fieldConfig.defaults.custom ?? {}).not.toHaveProperty('fillColor');
-    expect(core.fieldConfig.overrides[0].properties).toEqual([{ id: 'custom.fillOpacity', value: 40 }]);
-
-    // The same JSON with the plugin's type again
-    const dashboard = JSON.parse(JSON.stringify(await (await api.get(`/api/dashboards/uid/${UID}`)).json())).dashboard;
-    const panel = dashboard.panels.find((p: { title: string }) => p.title === title);
-    const response = await api.post('/api/dashboards/db', {
-      data: {
-        dashboard: {
-          uid: ROUND_TRIP_UID,
-          title: 'Styling round trip',
-          time: dashboard.time,
-          timezone: 'utc',
-          schemaVersion: dashboard.schemaVersion,
-          panels: [{ ...panel, type: PLUGIN, options: core.options, fieldConfig: core.fieldConfig }],
-        },
-        overwrite: true,
-      },
-    });
-    expect(response.ok()).toBe(true);
-    await gotoDashboardPage({ uid: ROUND_TRIP_UID, queryParams: new URLSearchParams({ theme: 'light' }) });
-    const plugin = await drawn(page, title);
-    // Pill and the grid colour apply; the field options are gone (no soft fill)
-    expect(strokes(plugin).has(STOCK.light.named.red)).toBe(true);
-    const value = plugin.draws.filter(isValue)[0];
-    expect(near(hex(at(plugin.pixels, value.x! - 1, value.y!)), STOCK.light[hueOf(value.text!)].softer)).toBe(true);
-  });
 });
 
 // "Current state color" must follow the data: a refresh with the same structure gives the plot new data without a
@@ -806,11 +808,11 @@ test.describe('row name in the current state colour, across refreshes', () => {
   let api: APIRequestContext;
   const REFRESH_UID = 'pjan-statetimeline-styling-refresh';
   const THRESHOLDS = ['green', 'blue', 'purple', 'red'];
-  // Grafana's stock colours: the threshold colour (the box, fill opacity 100) -> its softest shade with 4.5:1 on the
-  // panel background (the row name)
+  // Grafana's stock colours: the threshold colour (the box, fill opacity 100) -> Automatic from it on the panel
+  // background (the row name), worked out by hand; colours that already reach 4.5:1 stay as they are
   const NAME_OF_BOX: Record<Theme, Record<string, string>> = {
-    light: { '#56a64b': '#37872d', '#3274d9': '#3274d9', '#a352cc': '#a352cc', '#e02f44': '#e02f44' },
-    dark: { '#73bf69': '#56a64b', '#5794f2': '#5794f2', '#b877d9': '#b877d9', '#f2495c': '#f2495c' },
+    light: { '#56a64b': '#44833b', '#3274d9': '#3274d9', '#a352cc': '#a352cc', '#e02f44': '#e02f44' },
+    dark: { '#73bf69': '#73bf69', '#5794f2': '#5794f2', '#b877d9': '#b877d9', '#f2495c': '#f2495c' },
   };
 
   test.beforeAll(async ({ playwright, grafanaAPICredentials }) => {

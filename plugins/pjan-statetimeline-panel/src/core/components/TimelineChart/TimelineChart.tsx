@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/TimelineChart.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; 'styling' in propsToDiff (opt-in styling).
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/TimelineChart.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; 'styling' and 'pjanPanelBackground' in propsToDiff, the pjanPanelBackground prop (opt-in styling).
 import { useCallback } from 'react';
 
 import { type DataFrame, FALLBACK_COLOR, FieldType, type TimeRange } from '@grafana/data';
@@ -25,6 +25,7 @@ export interface TimelineProps extends Omit<GraphNGProps, 'prepConfig' | 'propsT
   tooltip?: VizTooltipOptions;
   // Whenever `paginationRev` changes, the graph will be fully re-configured/rendered.
   paginationRev?: string;
+  pjanPanelBackground?: string; // pjan-statetimeline-panel: the dashboard canvas behind a transparent panel
 }
 
 const propsToDiff = [
@@ -38,6 +39,7 @@ const propsToDiff = [
   'annotationLanes',
   'theme',
   'styling', // pjan-statetimeline-panel: opt-in styling panel options
+  'pjanPanelBackground', // pjan-statetimeline-panel
 ];
 
 export const TimelineChart = (props: TimelineProps) => {

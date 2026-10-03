@@ -80,7 +80,7 @@ Two non-mechanical import changes, both in `src/plugins/panel/stat/StatPanel.tsx
 **Enums:** the panel passes `@grafana/schema`'s `BigValueColorMode`, `BigValueGraphMode`, `BigValueJustifyMode` and
 `BigValueTextMode` to `BigValue`, whose props use the enums declared in the copied `BigValueTypes.ts`, as upstream does
 with `@grafana/ui`'s. TypeScript accepts this without changes (enums with the same name and members are compatible), so
-`BigValueTypes.ts` keeps its own enums. Unlike State timeline ++, no const enum had to be declared as constants.
+`BigValueTypes.ts` keeps its own enums. Unlike State timeline plus, no const enum had to be declared as constants.
 
 ## Stand-ins for internal entry points
 
@@ -127,7 +127,7 @@ future Grafana passes a copy, the options still carry over and the colour mode i
 switch. Every other previous panel type (Angular singlestat, gauge, time series, …) goes to core's
 `statPanelChangedHandler`, which keeps only `reduceOptions` and `orientation` (and migrates Angular singlestat).
 
-**When the plugin's module is already loaded** (another Stat ++ panel was drawn in the session), `VizPanel._loadPlugin`
+**When the plugin's module is already loaded** (another Stat plus panel was drawn in the session), `VizPanel._loadPlugin`
 loads it synchronously, inside the click on the visualization card. React then renders the panel before
 `changePluginType` reaches the handler, `VizPanel.applyFieldConfig` applies the adapted `thresholds` colour, and it
 caches the result for as long as the data object stays the same (`_prevData === rawData`). The returned options only
@@ -140,21 +140,21 @@ render. The content is unchanged, so the saved JSON is the same. When the module
 before the first render, and that extra call only applies the same field config again.
 
 Verified in Grafana 13.2.3 by `tests/savedJson.spec.ts`: a core Stat panel with every option away from its default, a
-unit, decimals and an override, with the classic palette or with no colour, switched to Stat ++ in the editor, with the
+unit, decimals and an override, with the classic palette or with no colour, switched to Stat plus in the editor, with the
 plugin's module loaded or not (four tests), saves the same options and field config, and draws the same tiles (the
 same inline style declarations and text, so the classic palette's colours). Without the restore, the removal, or the
 re-application, the matching tests fail.
 
 **Renaming `type` from `stat` to `pjan-stat-panel` in the dashboard JSON stays the lossless conversion** (and the only
-one for library panels and provisioned dashboards). Switching back in the editor's picker goes through core's handler,
-which keeps only `reduceOptions` and `orientation`; renaming `type` back keeps everything.
+one for library panels and provisioned dashboards). Only this direction is supported (pjan, 2026-10-03): switching a
+Stat plus panel back to core Stat is not designed for or tested.
 
 ## Plugin addition: Color mode Custom
 
 Opt-in (with every core Color mode nothing changes, and a panel that doesn't pick Custom saves nothing new; user
 documentation in `src/README.md`). Design agreed by pjan on 2026-10-02 (`plans/atlas-stat-panel.md`, "Styling
 addition"), after the spike `spike/stat-styling`. Code in `src/pjan/styling/`, with the colour helpers shared with
-State timeline ++ in the workspace package `@pjan/grafana-styling` (`packages/grafana-styling/`, Apache-2.0, bundled
+State timeline plus in the workspace package `@pjan/grafana-styling` (`packages/grafana-styling/`, Apache-2.0, bundled
 from source; `THIRD_PARTY_NOTICES.txt` lists it).
 
 - **Options** (`options.ts`): Color mode's fifth choice, `colorMode: "custom"`. Only with it do these show (`showIf`),
@@ -177,48 +177,44 @@ sparklineLineOpacity, sparklineFillOpacity, sparklineLineWidth}`.
   - **Unset parts follow core's Value mode without a background, core's Background Solid with one** (pjan, 2026-10-02,
     option A; each unset part on its own). Without a Background color (or with None): text and sparkline line in the
     value colour, the name in the panel's text colour, the fill at 20 % of the line colour; nothing set at all is core's
-    Value mode, exactly. With a Background color (Value, a shade, Fixed): unset Text is core's light/dark text for the
-    drawn background (`getTextColorForAlphaBackground`), an unset Sparkline color the drawn background brightened by 40
+    Value mode, exactly. With a Background color (Value, a shade, Fixed): unset Text is Automatic on the drawn background
+    (below; pjan, 2026-10-03), an unset Sparkline color the drawn background brightened by 40
     (`tinycolor(...).brighten(40)`, the formula core's `renderChart` applies to the tile colour), and an unset Sparkline
     fill opacity core's `rgba(255,255,255,0.4)`, even with a Sparkline color set. In both cases an unset line opacity
     is opaque and an unset line width 1.
   - Background: None (no fill, as not set), Value (solid), a relative shade of the value colour, or a fixed colour.
     No gradient (core's Background Gradient covers it).
-  - Text, for the value and the name: Best contrast, Value, a shade, or a fixed colour. Each element must reach
-    `getMinTextContrast(fontSize, fontWeight)` (WCAG 2 AA: 3:1 from 24 px, or 18.66 px at weight 700; 4.5:1 otherwise)
-    at the size the layout computed for it (value weight 500, name 400, percent change 500), against what it is drawn
-    on (the background, or what is behind the panel without one); otherwise best contrast.
-    - The value is guarded at the smallest size it is drawn at: `FormattedValueDisplay` (@grafana/ui 13.2.3) draws a
+  - Text, for the value and the name: Automatic, Value, a shade, or a fixed colour (pjan, 2026-10-03). Value, a shade
+    and a fixed colour are drawn as chosen, whatever their contrast. Automatic is the shared `getAutomaticText`: from
+    the background's colour (without a background, the value's own colour, pjan 2026-10-03), measured against what the
+    text is drawn on (the background, or what is behind the panel without one), 1 % steps towards the theme's
+    page colour (`colors.background.canvas`) and `colors.text.maxContrast`, the first colour that reaches
+    `getMinTextContrast(fontSize, fontWeight)` (WCAG 2 AA: 3:1 from 24 px, or 18.66 px at weight 700; 4.5:1 otherwise,
+    falling back to 4.2:1) at the size the layout computed for the element (value weight 500, name 400, percent change
+    500), on whichever side gets there first.
+    - The value is measured at the smallest size it is drawn at: `FormattedValueDisplay` (@grafana/ui 13.2.3) draws a
       non-empty unit suffix at 0.9× below 20 px, 0.8× from 20 px and 0.6× from 26 px (`getSmallestValueFontSize`,
       re-implemented from that behaviour). The prefix is drawn at the full size.
     - Behind the panel: the panel background, or for a transparent panel (`PanelProps.transparent`, a marked change in
       `StatPanel.tsx`) the dashboard's canvas (`theme.colors.background.canvas`), which is what Grafana 13.2.3 shows
       there (`tests/styling.spec.ts` checks the pixel). A translucent background is composited over it.
-    - A translucent text colour is composited over what it is drawn on before measuring (the shared
-      `getTextContrast`; Grafana's `getContrastRatio` ignores the text's alpha).
     - A value without a colour is drawn in CSS gray, as core does; as `#808080`, which draws the same and which the
-      contrast helpers can read. Best contrast is the one of
-      core's two text colours, `rgb(32, 34, 38)` and `rgb(247, 248, 250)`, with the higher WCAG contrast.
+      contrast helpers can read.
   - Percent change: with a background, the resolved text colour at its own size (as core does on coloured backgrounds);
     without one, its own color mode (Same as value follows the value's colour as drawn).
-  - Sparkline: Value, a shade, Same as text (the value's colour as drawn, after its contrast fallback), or a fixed
+  - Sparkline: Value, a shade, Same as text (the value's colour as drawn), or a fixed
     colour; line opacity, fill opacity (set: the line's colour at that alpha) and line width; unset as above. Grafana's public
     `Sparkline` draws exactly the `lineColor`, `fillColor` and `lineWidth` it is given (spike, and `tests/styling.spec.ts`).
   - Colours without a name (hex colours, continuous schemes, a palette of hex colours such as Atlas's): a Background
-    or Sparkline shade falls back to the value colour, a Text shade to best contrast.
-- **Back to core:** picking Stat in the editor goes through core's handler: Color mode goes back to its default
-  (Value), the `styling` options and the field options are dropped. Renaming `type` to `stat` in the JSON keeps
-  `colorMode: "custom"` and `styling`; core has no Custom, so its `BigValueLayout` draws the tiles without a background
-  and with the text in the panel's text colour (no case of its switches matches) and the sparkline in the value
-  colour, until a core mode is picked (`tests/stylingEditor.spec.ts`).
+    or Sparkline shade falls back to the value colour, a Text shade to Automatic.
 - **Override-only field options** say "(Color mode Custom only)" at the end of their description: the overrides menu
   doesn't show the panel's Color mode.
-- **Shared package changes** (same commit series): `getMinTextContrast`, `getReadableText` taking the minimum and
-  best-contrast candidates (and what is behind the panel), `getTextContrast` compositing a translucent text colour,
+- **Shared package changes** (same commit series): `getMinTextContrast`, `getTextContrast` compositing a translucent
+  text colour (later: `getAutomaticText`, replacing best contrast and the contrast guard, 2026-10-03),
   the `value`, `text` and `none` colour modes, and the slider's `unsetValue`. The slider ignores its unset value while
   the option is unset: Grafana's `Slider` reports its value again when its text input loses focus, so tabbing through
-  an unset slider would otherwise save it (100, 20, 1; State timeline ++'s Corner radius saved 0 that way). State timeline
-  ++ takes its 4.5:1 from `getMinTextContrast` (its text is 12 px: no change).
+  an unset slider would otherwise save it (100, 20, 1; State timeline plus's Corner radius saved 0 that way). State timeline
+  plus takes its 4.5:1 from `getMinTextContrast` (its text is 12 px: no change).
 
 ## `pluginVersion` and the single-stat migration
 
@@ -232,20 +228,17 @@ The plugin is versioned `1.0.0` (pjan's decision, 2026-10-01). Panels it saves c
   every legacy migration below it. For a current panel only the `< 8.0` step changes anything: `percent` and
   `percentunit` fields without `min`/`max` get `min: 0` and `max: 100` (or 1) written in, which changes the sparkline's
   y range and percentage thresholds.
-- **Effect:** a panel saved by this plugin (`1.0.0`) gets that step on every plugin upgrade (`1.0.0` → `1.0.1`, …),
-  and in core after its `type` is changed back to `stat` (core then sees `1.0.0` as older than 8.0). Workaround when
-  changing `type` back: set `pluginVersion` to `13.2.3` as well (removing it makes Grafana assume 6.1 and run every
-  legacy migration).
-  `tests/savedJson.spec.ts` checks the second case, so the documentation stays true. Panels that set `min`/`max`, or
-  don't use `percent`/`percentunit`, are not affected.
+- **Effect:** a panel saved by this plugin (`1.0.0`) gets that step on every plugin upgrade (`1.0.0` → `1.0.1`, …).
+  Panels that set `min`/`max`, or don't use `percent`/`percentunit`, are not affected. (Switching back to core Stat,
+  where core would read `1.0.0` the same way, is not supported: pjan, 2026-10-03.)
 - The plan is for the version to track Grafana's later (numbered after the upstream tag it is synced to, never above
   that tag's minor), once more panels are ported; that removes the effect.
 
 ## Pruned and left off
 
-| Feature           | Upstream code                                                                       | Status and reason                                                                                                                                                                                                                                            |
-| ----------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Panel suggestions | `suggestions.ts` (`statSuggestionsSupplier`), `features/panel/suggestions/utils.ts` | Left off deliberately, as in State timeline ++. A plugin could offer them (`"suggestions": true` in `plugin.json` plus a supplier), but this panel would then add a second set of Stat suggestion cards next to core's. `suggestions.test.ts` is not ported. |
+| Feature           | Upstream code                                                                       | Status and reason                                                                                                                                                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Panel suggestions | `suggestions.ts` (`statSuggestionsSupplier`), `features/panel/suggestions/utils.ts` | Left off deliberately, as in State timeline plus. A plugin could offer them (`"suggestions": true` in `plugin.json` plus a supplier), but this panel would then add a second set of Stat suggestion cards next to core's. `suggestions.test.ts` is not ported. |
 
 Everything else is kept: the options (names, paths, categories, order, defaults, `showIf`, i18n keys and defaults),
 the presets in "Panel styles" (core's, unchanged), the load migration, the panel-change migrations from other panels,
@@ -278,10 +271,10 @@ links menu), keyboard focus, and the native `title` tooltips.
   automatic JSX runtime on the scaffold's swc-loader rule (`src/pjan/buildConfig.test.ts` fails if the `build`/`dev`
   scripts stop using this file), `LICENSE_APACHE2`, `UPSTREAM.md` and `NOTICE.md` copied into `dist/`,
   `dist/THIRD_PARTY_NOTICES.txt` written by `ThirdPartyNoticesPlugin`, Terser with an explicit licence-comment
-  condition, and webpack's size warnings at 150 KiB (module.js is about 71 KiB). Same setup as State timeline ++ (see
+  condition, and webpack's size warnings at 150 KiB (module.js is about 71 KiB). Same setup as State timeline plus (see
   its `UPSTREAM.md` for the reasons), including its `ThirdPartyNoticesPlugin` checks: the build fails when a bundled
   file belongs to no package (neither the plugin's own, under `node_modules`, nor a workspace package under
-  `packages/`), when a workspace package has no licence, and when one package is bundled from two directories. Stat ++
+  `packages/`), when a workspace package has no licence, and when one package is bundled from two directories. Stat plus
   bundles the workspace package `@pjan/grafana-styling` (Color mode Custom), which the notices list.
 - `jest.config.js`: the scaffold's swc transform with the automatic JSX runtime; `TZ = 'Pacific/Easter'` as in
   grafana/grafana's `jest.config.js`.
@@ -292,7 +285,7 @@ links menu), keyboard focus, and the native `title` tooltips.
   (`src/{core,features,packages,plugins}/**`): `react-hooks/refs`, `react-hooks/set-state-in-effect`,
   `@typescript-eslint/array-type`, `no-redeclare` off and unused disable directives not reported. `src/pjan/**` keeps
   the scaffold's rules. Plugin code imports `@pjan/grafana-styling` through its entry point only (its `src/testdata/`
-  is for tests), as in State timeline ++. Two `@typescript-eslint/no-deprecated` warnings remain in the test-only copies
+  is for tests), as in State timeline plus. Two `@typescript-eslint/no-deprecated` warnings remain in the test-only copies
   `NumberInput.tsx` (`onKeyPress`) and `select.tsx` (`Select`), as upstream.
 - i18n: `t()` comes from the bundled `@grafana/i18n` (scaffold default). `src/module.ts` calls
   `await initPluginTranslations(pluginJson.id)`. The plugin ships no translations, so every string renders its
@@ -307,12 +300,12 @@ links menu), keyboard focus, and the native `title` tooltips.
 
 ## plugin.json
 
-The scaffold's id `pjan-stat-panel`; the name is "Stat ++". From core's `plugin.json`: the `img/icn-singlestat-panel.svg`
+The scaffold's id `pjan-stat-panel`; the name is "Stat plus". From core's `plugin.json`: the `img/icn-singlestat-panel.svg`
 logo (the two cards in the visualization picker differ only by name) and the documentation link. Added a "Source code"
 link (AGPL source offer, the public repository). Not applicable to an external panel: `"suggestions": true` (left off),
 the "Raise issue" link (Grafana's tracker).
 
-`grafanaDependency` is `^13.2.0`, as for State timeline ++: Grafana installs and loads the plugin on any 13.x from
+`grafanaDependency` is `^13.2.0`, as for State timeline plus: Grafana installs and loads the plugin on any 13.x from
 13.2.0, so the range does not stop it from running on a newer minor. The copied code, and the public `@grafana/*` APIs
 it relies on, are those of Grafana 13.2.3. **Before the plugin is used on a newer Grafana minor** (13.3, 13.4, …), run
 the parity tests against that version (`npm run e2e`, `grafana_version` in `docker-compose.yaml`) and the re-sync check
@@ -349,7 +342,7 @@ Color mode Custom (`src/pjan/styling/`): `options.test.ts` (the fifth choice; th
 order; `showIf` with Custom, and Graph mode Area for the sparkline options; no defaults; the editors and their
 settings; the field options hidden from the defaults, with override, process and `shouldApply`; no reuse of the time
 series' `custom` keys; no `custom` defaults), `tileStyling.test.ts` (resolution order, each mode and its fallbacks,
-the contrast guard per element size and weight, best contrast of core's two colours, pjan's black-tile example,
+chosen colours drawn as chosen at every size, Automatic per element size and weight, pjan's black-tile example,
 sparkline colours, opacities and width, colour names behind tiles: thresholds, overrides, classic palette slots in
 Grafana's and the Atlas theme), `bigValueLayout.test.tsx` (the copied layout's hooks: nothing set equals Value mode,
 each element at its own size, percent change on and off a background, the sparkline config), `statPanel.test.tsx`
@@ -414,31 +407,34 @@ End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.ya
   font sizes the layout computed, and the sparkline's stroke, fill and line width as set on its canvas (recorded), all
   against the rules computed in the test with the shared package's contrast and shade helpers. Cases: each
   Background color mode, each Text color mode, each Sparkline color mode with opacities and widths, the Atlas look
-  (soft, best contrast, sparkline as text 45/18), pjan's example (black tiles, text in the state colour; small tiles,
-  so dark blue falls back to best contrast), an override on one series, percent change on and off a background, a
-  continuous scheme (shades fall back). "Nothing set" is compared with core's Value mode pixel by pixel. Negative
-  controls: without the contrast guard, or without percent change following the text, the matching cases fail.
+  (soft, Automatic, sparkline as text 45/18), pjan's example (black tiles, text in the state colour, dark blue too),
+  Automatic per element on white (3:1 for the large value, 4.5:1 for percent change and the name), at a unit's size,
+  and against the canvas of a transparent panel, an override on one series, percent change on and off a background, a
+  continuous scheme (shades fall back). Automatic is checked against values worked out by hand (Grafana's luminance
+  rounded to 3 digits, 1 % steps between the stock theme's page colour and `maxContrast`) as well as against the
+  shared helper. "Nothing set" is compared with core's Value mode pixel by pixel. Negative control: without percent
+  change following the text, the matching cases fail.
 - `tests/stylingEditor.spec.ts`: the "Stat styles" list in the editor and its `showIf`; selecting Custom saves only
   `colorMode`; a value set is saved and a cleared one loses its key (colour, shade, slider); opening the editor of a
-  Custom panel writes nothing (3 seconds); renamed to `stat`, the panel keeps `colorMode: "custom"` and core draws
-  plain tiles; picking Stat in the editor resets Color mode and drops the styling.
+  Custom panel writes nothing (3 seconds).
 - `tests/interaction.spec.ts` (on the parity dashboard, core and plugin alike): one data link renders the tile as a
   link to it; two open the links menu on click and close it with Escape; Tab reaches the link and the menu button
   (`:focus-visible`), Enter opens the menu; the plugin's focused tiles have core's outline and box shadow.
-- `tests/savedJson.spec.ts` (from the dashboard's save model): a new Stat ++ panel saves the same options and field
+- `tests/savedJson.spec.ts` (from the dashboard's save model): a new Stat plus panel saves the same options and field
   config as a new core Stat panel (keys and values, apart from `type`/`pluginVersion`); opening the editor writes
-  nothing (checked for 3 seconds); converting by `type` to the plugin and back keeps options and field config; a panel
-  saved by the plugin gets core's `< 8.0` migration after switching back (see "`pluginVersion`"), and doesn't with
-  `pluginVersion` set to `13.2.3` (the workaround in `src/README.md`); picking Stat in the editor for a Stat ++ panel
-  keeps only `reduceOptions` and `orientation` and resets the classic palette to thresholds (core's handler, as
-  `src/README.md` says); switching a core Stat
-  panel to Stat ++ in the panel editor keeps options and colour, and draws the same tiles, with the classic palette or
+  nothing (checked for 3 seconds); converting by `type` to the plugin keeps options and field config; switching a core Stat
+  panel to Stat plus in the panel editor keeps options and colour, and draws the same tiles, with the classic palette or
   no colour, with the plugin's module loaded or not (see "Panel type switch"). It creates its
   dashboards through the HTTP API and deletes them afterwards.
 
 The TestData CSV scenario has no relative time: all timestamps and the dashboard time ranges are fixed UTC values,
 written as ISO strings (Grafana 13.2.3 does not parse epoch-millisecond strings as an absolute dashboard time range and
 shows "Invalid date").
+
+Negative controls for the explicit colours and Automatic text (2026-10-03): a contrast guard on Text color Value, or
+core's text colour for unset text on a background, or Automatic without a background starting from the panel
+background instead of the value's colour, fails `tileStyling.test.ts`; the shared rule's controls are listed in
+State timeline plus's `UPSTREAM.md`.
 
 ## Re-syncing to a newer tag
 

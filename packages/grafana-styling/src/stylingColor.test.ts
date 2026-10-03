@@ -1,8 +1,8 @@
 import { getStylingColor, type StylingColorMode } from './stylingColor';
 
-// The mode lists State timeline ++ gives its line, value and row-name colours.
+// The mode lists State timeline plus gives its line, value and row-name colours.
 const LINE_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
-const VALUE_COLOR_MODES: StylingColorMode[] = ['contrast', 'shade', 'fixed'];
+const VALUE_COLOR_MODES: StylingColorMode[] = ['automatic', 'shade', 'fixed'];
 const ROW_NAME_COLOR_MODES: StylingColorMode[] = ['state', 'fixed'];
 
 describe('getStylingColor', () => {
@@ -15,7 +15,7 @@ describe('getStylingColor', () => {
       mode: 'fixed',
       fixedColor: 'red',
     });
-    expect(getStylingColor({ mode: 'contrast' }, VALUE_COLOR_MODES)).toEqual({ mode: 'contrast' });
+    expect(getStylingColor({ mode: 'automatic' }, VALUE_COLOR_MODES)).toEqual({ mode: 'automatic' });
     expect(getStylingColor({ mode: 'state' }, ROW_NAME_COLOR_MODES)).toEqual({ mode: 'state' });
   });
 
@@ -24,7 +24,7 @@ describe('getStylingColor', () => {
     [{ mode: 'fixed' }, LINE_COLOR_MODES],
     [{ mode: 'shade' }, LINE_COLOR_MODES],
     [{ mode: 'shade', shade: 'darkest' }, LINE_COLOR_MODES],
-    [{ mode: 'contrast' }, LINE_COLOR_MODES],
+    [{ mode: 'automatic' }, LINE_COLOR_MODES],
     [{ mode: 'state' }, VALUE_COLOR_MODES],
     ['red', ROW_NAME_COLOR_MODES],
   ])('counts %o as unset', (value, modes) => {

@@ -3,14 +3,7 @@ import uPlot from 'uplot';
 import { type DataFrame, dateTimeFormat, type Field, type GrafanaTheme2, type TimeRange } from '@grafana/data';
 import { type TimeZone } from '@grafana/schema';
 import { FIXED_UNIT, type UPlotConfigBuilder, UPLOT_AXIS_FONT_SIZE } from '@grafana/ui';
-import {
-  getColorNameLookup,
-  getSoftestReadableShadeColor,
-  getStylingColor,
-  getMinTextContrast,
-  getTextContrast,
-  toCanvasColor,
-} from '@pjan/grafana-styling';
+import { getAutomaticText, getMinTextContrast, getStylingColor, toCanvasColor } from '@pjan/grafana-styling';
 
 import { type FieldConfigWithStyling, ROW_NAME_COLOR_MODES, type TimelineStylingOptions } from './options';
 
@@ -55,22 +48,13 @@ export function getCurrentStateValue(times: number[], values: unknown[], from: n
 }
 
 /**
- * A row name in its state's colour: the softest shade of the state colour's hue that reaches ROW_NAME_MIN_CONTRAST
- * against the panel background. A colour without a name has no other shades, so it is used as is if it reaches that
- * contrast. Undefined (the axis text colour) otherwise.
+ * A row name in its state's colour: the first shade of the state colour's hue, starting from the colour itself, that
+ * reaches ROW_NAME_MIN_CONTRAST against what is behind it: the panel background, or the dashboard's canvas behind a
+ * transparent panel (`panelBackground`). Automatic text, `getAutomaticText`.
  */
-export function getRowNameStateColor(
-  theme: GrafanaTheme2,
-  names: Map<string, string>,
-  stateColor: string
-): string | undefined {
-  const name = names.get(stateColor);
-  if (name) {
-    const shade = getSoftestReadableShadeColor(theme, name, ROW_NAME_MIN_CONTRAST);
-    return shade ? toCanvasColor(theme, shade) : undefined;
-  }
-  const readable = getTextContrast(theme, stateColor, theme.colors.background.primary) >= ROW_NAME_MIN_CONTRAST;
-  return readable ? toCanvasColor(theme, stateColor) : undefined;
+export function getRowNameStateColor(theme: GrafanaTheme2, stateColor: string, panelBackground?: string): string {
+  const behind = panelBackground ?? theme.colors.background.primary;
+  return getAutomaticText(theme, behind, ROW_NAME_MIN_CONTRAST, { from: stateColor, background: behind });
 }
 
 /**
@@ -82,7 +66,8 @@ type RowNameColorFn = (u: uPlot, seriesIdx: number) => string | undefined;
 function getRowNameColorFn(
   field: Field,
   theme: GrafanaTheme2,
-  getTimeRange: () => TimeRange
+  getTimeRange: () => TimeRange,
+  panelBackground?: string
 ): RowNameColorFn | undefined {
   const setting = getStylingColor((field.config.custom as FieldConfigWithStyling)?.rowNameColor, ROW_NAME_COLOR_MODES);
   if (!setting) {
@@ -92,14 +77,21 @@ function getRowNameColorFn(
     const color = toCanvasColor(theme, setting.fixedColor!);
     return () => color;
   }
-  const names = getColorNameLookup(field, theme);
+  // Per state colour: the search runs on every axis draw otherwise
+  const byStateColor = new Map<string, string>();
   return (u, seriesIdx) => {
     const range = getTimeRange();
     const times = u.data[0] as number[];
     const values = u.data[seriesIdx] as unknown[];
     const value = getCurrentStateValue(times, values, range.from.valueOf(), range.to.valueOf());
     const stateColor = value != null ? field.display?.(value).color : undefined;
-    return stateColor ? getRowNameStateColor(theme, names, stateColor) : undefined;
+    if (!stateColor) {
+      return undefined;
+    }
+    if (!byStateColor.has(stateColor)) {
+      byStateColor.set(stateColor, getRowNameStateColor(theme, stateColor, panelBackground));
+    }
+    return byStateColor.get(stateColor);
   };
 }
 
@@ -118,9 +110,12 @@ export function addAxisStyling(
   theme: GrafanaTheme2,
   styling: TimelineStylingOptions = {},
   timeZone: TimeZone,
-  getTimeRange: () => TimeRange
+  getTimeRange: () => TimeRange,
+  panelBackground?: string
 ) {
-  const rowNameColors = frame.fields.slice(1).map((field) => getRowNameColorFn(field, theme, getTimeRange));
+  const rowNameColors = frame.fields
+    .slice(1)
+    .map((field) => getRowNameColorFn(field, theme, getTimeRange, panelBackground));
   const hasRowNameColors = rowNameColors.some(Boolean);
   const gridColor = styling.gridColor ? toCanvasColor(theme, styling.gridColor) : undefined;
   const axisTextColor = styling.axisTextColor ? toCanvasColor(theme, styling.axisTextColor) : undefined;

@@ -1,9 +1,9 @@
 import { colorManipulator } from '@grafana/data';
 
 import {
-  getBestContrastText,
+  FALLBACK_TEXT_CONTRAST,
+  getAutomaticText,
   getMinTextContrast,
-  getReadableText,
   getTextContrast,
   toCanvasColor,
   toFillColor,
@@ -50,33 +50,96 @@ describe('contrast', () => {
       getTextContrast(dark, 'rgb(255,255,255)', 'rgba(242, 73, 92, 0.7)'),
       5
     );
-    expect(getBestContrastText(dark, fill)).toBe('rgb(255,255,255)');
+  });
+});
+
+describe('getAutomaticText', () => {
+  const ATLAS_LIGHT = THEMES['Atlas light'];
+  const ATLAS_DARK = THEMES['Atlas dark'];
+  const contrast = (a: string, b: string) => colorManipulator.getContrastRatio(a, b);
+
+  // Expected colours computed by hand (Grafana's luminance, rounded to 3 digits, and 1 % sRGB steps); the end points
+  // are Atlas's page colours, #f4f7fa and #010206.
+  it('takes the first colour of the same hue that reaches the contrast, towards the side that gets there first', () => {
+    // light-green in Atlas Light is emerald 300 (#9bd5a8): 59 % towards ink gives 4.55:1, 58 % doesn't reach 4.5:1
+    expect(getAutomaticText(ATLAS_LIGHT, '#9bd5a8', 4.5)).toBe('rgb(64,89,72)');
+    // large text: 46 % towards ink, 3.09:1
+    expect(getAutomaticText(ATLAS_LIGHT, '#9bd5a8', 3)).toBe('rgb(84,116,93)');
+    // super-light-green in Atlas Dark is emerald 800 (#3c6639): 79 % towards the light page colour, 4.57:1
+    expect(getAutomaticText(ATLAS_DARK, '#3c6639', 4.5)).toBe('rgb(205,217,209)');
   });
 
-  it('best contrast is black or white, whichever is higher', () => {
-    expect(getBestContrastText(LIGHT, '#FADE2A')).toBe('rgb(0,0,0)');
-    expect(getBestContrastText(LIGHT, '#1250B0')).toBe('rgb(255,255,255)');
-    // core's automatic contrast prefers white from 3:1; best contrast doesn't
-    expect(LIGHT.colors.getContrastText('#E02F44', 3)).toBe('#ffffff');
-    expect(getBestContrastText(LIGHT, '#E02F44')).toBe('rgb(0,0,0)');
+  it('falls back to 4.2:1 for text that needs 4.5:1 when no colour of the hue reaches 4.5:1', () => {
+    // light-green in Atlas Dark is emerald 700 (#42834b): neither page colour gets to 4.5:1; 90 % towards ink, 4.24:1
+    const text = getAutomaticText(ATLAS_DARK, '#42834b', 4.5);
+    expect(text).toBe('rgb(8,15,13)');
+    expect(contrast(text, '#42834b')).toBeGreaterThanOrEqual(FALLBACK_TEXT_CONTRAST);
+    expect(contrast(text, '#42834b')).toBeLessThan(4.5);
   });
 
-  it('keeps a text colour from the minimum contrast given, otherwise falls back to best contrast', () => {
-    // #767676 on white is 4.54:1, #777777 4.48:1
-    expect(getReadableText(LIGHT, '#767676', '#ffffff', 4.5)).toBe('#767676');
-    expect(getReadableText(LIGHT, '#777777', '#ffffff', 4.5)).toBe('rgb(0,0,0)');
-    expect(getReadableText(LIGHT, undefined, '#000000', 4.5)).toBe('rgb(255,255,255)');
-    // #949494 on white is 3.03:1 (enough for large text only), #959595 2.995:1
-    expect(getReadableText(LIGHT, '#949494', '#ffffff', 3)).toBe('#949494');
-    expect(getReadableText(LIGHT, '#959595', '#ffffff', 3)).toBe('rgb(0,0,0)');
-    expect(getReadableText(LIGHT, '#949494', '#ffffff', 4.5)).toBe('rgb(0,0,0)');
+  it('ends at the extreme with the higher contrast when even the fallback is out of reach', () => {
+    const grey = {
+      ...LIGHT,
+      colors: {
+        ...LIGHT.colors,
+        background: { ...LIGHT.colors.background, canvas: '#777777' },
+        text: { ...LIGHT.colors.text, maxContrast: '#999999' },
+      },
+    };
+    expect(getAutomaticText(grey, '#808080', 4.5)).toBe('rgb(153,153,153)');
   });
 
-  it('best contrast picks from the candidates given (Stat ++: core’s two text colours)', () => {
-    const core = ['rgb(247, 248, 250)', 'rgb(32, 34, 38)'];
-    expect(getBestContrastText(LIGHT, '#FADE2A', core)).toBe('rgb(32, 34, 38)');
-    expect(getBestContrastText(LIGHT, '#1250B0', core)).toBe('rgb(247, 248, 250)');
-    expect(getReadableText(LIGHT, '#777777', '#ffffff', 4.5, core)).toBe('rgb(32, 34, 38)');
+  it('starts from another colour when given (row names in the state colour, on the panel background)', () => {
+    // emerald 400 (#6fc686) on white: 35 % towards ink, 4.61:1
+    expect(getAutomaticText(ATLAS_LIGHT, '#ffffff', 4.5, { from: '#6fc686' })).toBe('rgb(73,129,89)');
+    // emerald 800 already reaches 6.65:1 on white, so it stays as it is
+    expect(getAutomaticText(ATLAS_LIGHT, '#ffffff', 4.5, { from: '#3c6639' })).toBe('rgb(60,102,57)');
+  });
+
+  it('takes the side that reaches the contrast in fewer steps', () => {
+    // #808080 at 3:1 in Grafana light: 57 steps towards black (#000000) give rgb(55,55,55); the page colour (#fbfbfb)
+    // would need 79
+    expect(getAutomaticText(LIGHT, '#808080', 3)).toBe('rgb(55,55,55)');
+  });
+
+  it('on a tie, takes the page colour’s side', () => {
+    const blackAndWhite = {
+      ...LIGHT,
+      colors: {
+        ...LIGHT.colors,
+        background: { ...LIGHT.colors.background, canvas: '#ffffff' },
+        text: { ...LIGHT.colors.text, maxContrast: '#000000' },
+      },
+    };
+    // #787878 at 1.5:1: 23 steps either way, rgb(151,151,151) towards white and rgb(92,92,92) towards black
+    expect(getAutomaticText(blackAndWhite, '#787878', 1.5)).toBe('rgb(151,151,151)');
+  });
+
+  it('gives the theme’s text colour for a colour it can’t read, instead of throwing', () => {
+    expect(getAutomaticText(LIGHT, 'dark-teal', 4.5)).toBe(LIGHT.colors.text.primary); // an Atlas-only name
+    expect(getAutomaticText(LIGHT, '#ffffff', 4.5, { from: 'not-a-colour' })).toBe(LIGHT.colors.text.primary);
+  });
+
+  it('reads hsl() and CSS names as the colours they are', () => {
+    expect(getAutomaticText(LIGHT, 'hsl(0, 0%, 50%)', 3)).toBe(getAutomaticText(LIGHT, '#808080', 3));
+    expect(getAutomaticText(LIGHT, 'gray', 3)).toBe(getAutomaticText(LIGHT, '#808080', 3));
+  });
+
+  it('measures on a translucent fill as drawn: composited over the panel background', () => {
+    const drawn = 'rgb(205,234,212)'; // #9bd5a8 at 50 % on white
+    expect(getAutomaticText(ATLAS_LIGHT, 'rgba(155, 213, 168, 0.5)', 4.5)).toBe(
+      getAutomaticText(ATLAS_LIGHT, drawn, 4.5)
+    );
+  });
+
+  it.each(Object.keys(THEMES))('reaches 4.5:1 or the fallback on every shade of every hue in %s', (name) => {
+    const theme = THEMES[name];
+    for (const hue of theme.visualization.hues) {
+      for (const shade of hue.shades) {
+        const text = getAutomaticText(theme, shade.color, 4.5);
+        expect(contrast(text, shade.color)).toBeGreaterThanOrEqual(FALLBACK_TEXT_CONTRAST);
+      }
+    }
   });
 });
 
@@ -122,7 +185,7 @@ describe('getTextContrast with a translucent text colour', () => {
     expect(getTextContrast(dark, 'rgba(255, 255, 255, 0.6)', fill)).toBeCloseTo(expected, 5);
   });
 
-  it('an opaque text colour is measured as before (State timeline ++ unchanged)', () => {
+  it('an opaque text colour is measured as before (State timeline plus unchanged)', () => {
     const dark = THEMES['Grafana dark'];
     for (const fill of ['#73BF69', '#73BF6980', 'rgba(242, 73, 92, 0.7)', 'rgb(242, 73, 92, 0.7)']) {
       expect(getTextContrast(dark, '#ffffff', fill)).toBe(

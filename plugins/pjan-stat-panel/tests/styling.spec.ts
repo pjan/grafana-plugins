@@ -8,11 +8,7 @@ import tinycolor from 'tinycolor2';
 
 // The colour helpers of the shared package, from their files: its entry point also exports the editors (@grafana/ui),
 // which don't load in Node.
-import {
-  getBestContrastText,
-  getMinTextContrast,
-  getReadableText,
-} from '../../../packages/grafana-styling/src/canvasColors';
+import { getAutomaticText, getMinTextContrast } from '../../../packages/grafana-styling/src/canvasColors';
 import { getRelativeShadeColor } from '../../../packages/grafana-styling/src/shades';
 
 import { panelContent } from './helpers';
@@ -43,13 +39,13 @@ interface Styling {
 
 // The series of the dashboard and their state colours (value mappings), as generated
 const STATE_COLORS: Record<string, string> = { api: 'green', web: 'yellow', db: 'red', queue: 'dark-blue' };
-const CORE_TEXT = ['rgb(247, 248, 250)', 'rgb(32, 34, 38)'];
 
 // Expected colours worked out by hand for a few cases, independently of the code under test and of the oracle below:
 // the theme's colours from Grafana 13.2.3's stock themes, contrast by the WCAG 2 formula (relative luminance with
 // the sRGB transfer function, (L1 + 0.05) / (L2 + 0.05)) written out separately, and core's brighten(40) for the
-// sparkline line on a background. Contrasts below are those hand computations.
-const [CORE_LIGHT_TEXT, CORE_DARK_TEXT] = ['rgb(247, 248, 250)', 'rgb(32, 34, 38)'];
+// sparkline line on a background. Contrasts below are those hand computations. Automatic text was worked out the same
+// way: Grafana's luminance (rounded to 3 digits), 1 % sRGB steps towards the theme's page colour (#fbfbfb / #111217)
+// and maxContrast (#000000 / #ffffff).
 const WHITE_40 = 'rgba(255, 255, 255, 0.4)';
 type Known = Record<string, Partial<Record<'background' | 'value' | 'stroke' | 'fill', string>>>;
 const HARD_CODED: Record<'light' | 'dark', Record<number, Known>> = {
@@ -61,20 +57,12 @@ const HARD_CODED: Record<'light' | 'dark', Record<number, Known>> = {
       db: { background: 'rgb(224, 47, 68)', stroke: 'rgb(255, 149, 170)', fill: WHITE_40 },
       queue: { background: 'rgb(18, 80, 176)', stroke: 'rgb(120, 182, 255)', fill: WHITE_40 },
     },
-    // 30: best contrast on the value colour. Green: light 2.84 / dark 5.27; yellow 1.47 / 10.18; red 4.24 / 3.53;
-    // dark blue 7.06 / 2.12
-    30: {
-      api: { value: CORE_DARK_TEXT },
-      web: { value: CORE_DARK_TEXT },
-      db: { value: CORE_LIGHT_TEXT },
-      queue: { value: CORE_LIGHT_TEXT },
-    },
-    // 34: on black, below 24 px (4.5:1): green 6.95, yellow 13.42, red 4.66 keep; dark blue 2.80 falls back
+    // 34: on black, the state colour as chosen, dark blue included (no contrast fallback any more)
     34: {
       api: { value: 'rgb(86, 166, 75)' },
       web: { value: 'rgb(242, 204, 12)' },
       db: { value: 'rgb(224, 47, 68)' },
-      queue: { value: CORE_LIGHT_TEXT },
+      queue: { value: 'rgb(18, 80, 176)' },
     },
   },
   dark: {
@@ -84,20 +72,28 @@ const HARD_CODED: Record<'light' | 'dark', Record<number, Known>> = {
       db: { background: 'rgb(242, 73, 92)', stroke: 'rgb(255, 175, 194)', fill: WHITE_40 },
       queue: { background: 'rgb(31, 96, 196)', stroke: 'rgb(133, 198, 255)', fill: WHITE_40 },
     },
-    // green 2.11 / 7.12; yellow 1.27 / 11.79; red 3.36 / 4.46; dark blue 5.60 / 2.68
-    30: {
-      api: { value: CORE_DARK_TEXT },
-      web: { value: CORE_DARK_TEXT },
-      db: { value: CORE_DARK_TEXT },
-      queue: { value: CORE_LIGHT_TEXT },
-    },
-    // on black: green 9.39, yellow 15.55, red 5.88 keep; dark blue 3.53 falls back
     34: {
       api: { value: 'rgb(115, 191, 105)' },
       web: { value: 'rgb(250, 222, 42)' },
       db: { value: 'rgb(242, 73, 92)' },
-      queue: { value: CORE_LIGHT_TEXT },
+      queue: { value: 'rgb(31, 96, 196)' },
     },
+  },
+};
+
+// 30: Automatic on the value colour, for a large value (3:1, from 24 px) and a small one (4.5:1)
+const AUTOMATIC_ON_VALUE: Record<'light' | 'dark', Record<string, { large: string; small: string }>> = {
+  light: {
+    api: { large: 'rgb(42, 81, 37)', small: 'rgb(27, 51, 23)' },
+    web: { large: 'rgb(136, 114, 7)', small: 'rgb(104, 88, 5)' },
+    db: { large: 'rgb(90, 19, 27)', small: 'rgb(11, 2, 3)' },
+    queue: { large: 'rgb(135, 166, 214)', small: 'rgb(186, 203, 230)' },
+  },
+  dark: {
+    api: { large: 'rgb(63, 99, 62)', small: 'rgb(46, 70, 48)' },
+    web: { large: 'rgb(140, 126, 33)', small: 'rgb(108, 98, 30)' },
+    db: { large: 'rgb(105, 39, 50)', small: 'rgb(49, 26, 33)' },
+    queue: { large: 'rgb(159, 187, 230)', small: 'rgb(212, 225, 244)' },
   },
 };
 
@@ -200,19 +196,20 @@ function expected(
   const bg = styling.backgroundColor?.mode === 'none' ? undefined : styling.backgroundColor;
   const background = bg ? (resolve(bg) ?? valueColor) : undefined;
   const drawnOn = background ?? theme.colors.background.primary;
-  const coreOnBackground = (c: string) => {
-    const t = tinycolor(c);
-    return t.getAlpha() < 0.3 ? CORE_TEXT[theme.isDark ? 0 : 1] : t.getBrightness() > 180 ? CORE_TEXT[1] : CORE_TEXT[0];
-  };
+  // without a background, Automatic starts from the value's own colour
+  const automatic = (fontSize: number, weight: number) =>
+    getAutomaticText(theme, drawnOn, getMinTextContrast(fontSize, weight), {
+      background: theme.colors.background.primary,
+      from: background ? undefined : valueColor,
+    });
+  // A value, shade or fixed colour as chosen; Automatic (and a shade without a name, and unset on a background) is the
+  // first readable shade of what the text is drawn on
   const text = (fontSize: number, weight: number, element: 'value' | 'name'): string | undefined => {
     const setting = styling.textColor;
     if (!setting) {
-      return background ? coreOnBackground(background) : element === 'value' ? valueColor : undefined;
+      return background ? automatic(fontSize, weight) : element === 'value' ? valueColor : undefined;
     }
-    const wanted = resolve(setting);
-    return wanted
-      ? getReadableText(theme, wanted, drawnOn, getMinTextContrast(fontSize, weight), CORE_TEXT)
-      : getBestContrastText(theme, drawnOn, CORE_TEXT);
+    return (setting.mode === 'automatic' ? undefined : resolve(setting)) ?? automatic(fontSize, weight);
   };
   const value = text(tile.value.smallestFontSize, 500, 'value')!;
   // Unset parts follow core: Value mode without a background, Background Solid on one (the tile colour brightened by
@@ -349,6 +346,12 @@ for (const scale of [1, 2]) {
               expect(tile.sparkline.fill.map(rgb), label).toEqual([rgb(want.sparkline.fill)]);
               expect(tile.sparkline.width, label).toEqual([want.sparkline.width * scale]);
             }
+            const automaticOnValue = panel.id === 30 ? AUTOMATIC_ON_VALUE[themeName][tile.name] : undefined;
+            if (automaticOnValue) {
+              // worked out independently (see AUTOMATIC_ON_VALUE), not by the oracle above
+              const size = tile.value.smallestFontSize >= 24 ? 'large' : 'small';
+              expect(rgb(tile.value.color), `${label} value (hard-coded, ${size})`).toBe(automaticOnValue[size]);
+            }
             const known = HARD_CODED[themeName][panel.id]?.[tile.name];
             if (known) {
               // colours worked out independently (see HARD_CODED), not by the oracle above
@@ -371,16 +374,14 @@ for (const scale of [1, 2]) {
         });
       }
 
-      test('pjan’s example: black tiles with the state colour as text; dark blue falls back to best contrast', async ({
+      test('pjan’s example: black tiles with the state colour as text, drawn as chosen (dark blue too)', async ({
         page,
       }) => {
         const tiles = await tilesOf(page, 34, false);
-        const black = theme.visualization.getColorByName('black');
         for (const tile of tiles) {
-          expect(tile.value.fontSize).toBeLessThan(24); // 4.5:1 applies
+          expect(tile.value.fontSize).toBeLessThan(24); // small text: no fallback even below 4.5:1
           const state = theme.visualization.getColorByName(STATE_COLORS[tile.name]);
-          const best = getBestContrastText(theme, black, CORE_TEXT);
-          expect(rgb(tile.value.color), tile.name).toBe(rgb(tile.name === 'queue' ? best : state));
+          expect(rgb(tile.value.color), tile.name).toBe(rgb(state));
         }
       });
 
@@ -426,55 +427,70 @@ for (const scale of [1, 2]) {
         }
       });
 
-      test('the value keeps its colour (3:1 from 24 px), percent change falls back (4.5:1 below)', async ({ page }) => {
-        // #949494 on white: 3.03:1 (hand computed, WCAG 2)
+      // Automatic text worked out by hand (as AUTOMATIC_ON_VALUE): on white, and on the panel background or the canvas
+      const HAND: Record<'light' | 'dark', Record<'white3' | 'white45' | 'panel45' | 'canvas45', string>> = {
+        light: {
+          white3: 'rgb(148, 148, 148)',
+          white45: 'rgb(117, 117, 117)',
+          // without a background: from the value's green (#56A64B)
+          panel45: 'rgb(68, 131, 59)',
+          canvas45: 'rgb(67, 129, 59)',
+        },
+        dark: {
+          white3: 'rgb(148, 148, 151)',
+          white45: 'rgb(117, 118, 120)',
+          // the value's green (#73BF69) already reaches 4.5:1 on both
+          panel45: 'rgb(115, 191, 105)',
+          canvas45: 'rgb(115, 191, 105)',
+        },
+      };
+
+      test('Automatic per element: 3:1 for the large value, 4.5:1 for percent change and the name', async ({
+        page,
+      }) => {
         const tiles = await tilesOf(page, 80, false);
         for (const tile of tiles) {
           expect(tile.value.fontSize).toBeGreaterThanOrEqual(24);
           expect(tile.percent!.fontSize).toBeLessThan(24);
-          expect(rgb(tile.value.color)).toBe('rgb(148, 148, 148)');
-          expect(rgb(tile.percent!.color)).toBe(CORE_DARK_TEXT);
-          expect(rgb(tile.title!.color)).toBe(CORE_DARK_TEXT);
+          expect(rgb(tile.value.color)).toBe(HAND[themeName].white3);
+          expect(rgb(tile.percent!.color)).toBe(HAND[themeName].white45);
+          expect(rgb(tile.title!.color)).toBe(HAND[themeName].white45);
         }
       });
 
-      test('a 30 px value with a unit is guarded at the unit’s size (18 px)', async ({ page }) => {
+      test('Automatic on a 30 px value with a unit uses the unit’s size (18 px)', async ({ page }) => {
         for (const tile of await tilesOf(page, 81, false)) {
           expect(tile.value.fontSize).toBe(30);
           expect(tile.value.smallestFontSize).toBeCloseTo(18, 1);
-          expect(rgb(tile.value.color)).toBe(CORE_DARK_TEXT);
+          expect(rgb(tile.value.color)).toBe(HAND[themeName].white45);
         }
-        // the same without a unit keeps its colour
+        // the same without a unit needs 3:1
         for (const tile of await tilesOf(page, 82, false)) {
           expect(tile.value.smallestFontSize).toBe(30);
-          expect(rgb(tile.value.color)).toBe('rgb(148, 148, 148)');
+          expect(rgb(tile.value.color)).toBe(HAND[themeName].white3);
         }
       });
 
-      test('a transparent panel: text is measured against the dashboard canvas behind it', async ({ page }) => {
+      test('a transparent panel: Automatic is measured against the dashboard canvas behind it', async ({ page }) => {
         // What Grafana 13.2.3 draws behind a transparent panel: the dashboard's canvas colour
-        const [plain, transparent] = themeName === 'light' ? [83, 84] : [85, 86];
-        const fixed = themeName === 'light' ? 'rgb(118, 118, 118)' : 'rgb(128, 128, 128)';
-        const behind = await tilesOf(page, transparent, false);
-        expect((await backgroundPixels(page, transparent, behind))[0]).toBe(rgb(theme.colors.background.canvas));
-        // Hand computed (WCAG 2): light #767676 is 4.55:1 on the panel (#ffffff), 4.39:1 on the canvas (#fbfbfb);
-        // dark #808080 4.36:1 on the panel (#181b1f), 4.75:1 on the canvas (#111217). Names need 4.5:1.
+        const behind = await tilesOf(page, 84, false);
+        expect((await backgroundPixels(page, 84, behind))[0]).toBe(rgb(theme.colors.background.canvas));
         const name = async (id: number) => rgb((await tilesOf(page, id, false))[0].title!.color);
-        if (themeName === 'light') {
-          expect(await name(plain)).toBe(fixed);
-          expect(await name(transparent)).toBe(CORE_DARK_TEXT);
-        } else {
-          expect(await name(plain)).toBe(CORE_LIGHT_TEXT);
-          expect(await name(transparent)).toBe(fixed);
-        }
+        expect(await name(83)).toBe(HAND[themeName].panel45);
+        expect(await name(84)).toBe(HAND[themeName].canvas45);
       });
 
       test('percent change follows the text colour on a background, and keeps its own mode without one', async ({
         page,
       }) => {
         const green = theme.visualization.getColorByName('green');
+        // On a green tile with the text not set: Automatic for each element at its own size (hand-computed, see
+        // AUTOMATIC_ON_VALUE), so the small percent change needs 4.5:1 where a large value needs 3:1
+        const onGreen = AUTOMATIC_ON_VALUE[themeName].api;
         for (const tile of await tilesOf(page, 60)) {
-          expect(rgb(tile.percent!.color)).toBe(rgb(tile.value.color));
+          expect(tile.percent!.fontSize).toBeLessThan(24);
+          expect(rgb(tile.percent!.color)).toBe(onGreen.small);
+          expect(rgb(tile.value.color)).toBe(tile.value.smallestFontSize >= 24 ? onGreen.large : onGreen.small);
         }
         for (const tile of await tilesOf(page, 61)) {
           expect(rgb(tile.value.color)).not.toBe(rgb(green));
@@ -482,14 +498,17 @@ for (const scale of [1, 2]) {
         }
       });
 
-      test('colours without a name: a background shade is the value colour, a text shade best contrast', async ({
+      test('colours without a name: a background shade is the value colour, a text shade Automatic', async ({
         page,
       }) => {
         const values = await tilesOf(page, 70);
         const shades = await tilesOf(page, 71);
         expect(shades.map((t) => rgb(t.background))).toEqual(values.map((t) => rgb(t.background)));
         for (const tile of shades) {
-          expect(rgb(tile.value.color)).toBe(rgb(getBestContrastText(theme, tile.background, CORE_TEXT)));
+          const minContrast = getMinTextContrast(tile.value.smallestFontSize, 500);
+          expect(rgb(tile.value.color)).toBe(
+            rgb(getAutomaticText(theme, tile.background, minContrast, { background: theme.colors.background.primary }))
+          );
         }
         expect(panelById(71).options.styling?.textColor?.mode).toBe('shade');
       });

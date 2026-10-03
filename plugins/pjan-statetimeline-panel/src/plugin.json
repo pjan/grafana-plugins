@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
-  "name": "State timeline ++",
+  "name": "State timeline plus",
   "id": "pjan-statetimeline-panel",
   "info": {
     "keywords": ["panel", "state timeline"],

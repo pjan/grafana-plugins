@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling hooks (src/pjan/styling/): `styling` panel options, pjanStyle in the core options and its line width for each series, addAxisStyling after the axes.
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimelineChart/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; opt-in styling hooks (src/pjan/styling/): `styling` panel options, pjanStyle in the core options and its line width for each series, addAxisStyling after the axes; pjanPanelBackground for both.
 import {
   type DataFrame,
   FALLBACK_COLOR,
@@ -60,6 +60,7 @@ interface UPlotConfigOptions {
   hoverMulti: boolean;
   axisWidth?: number;
   styling?: TimelineStylingOptions; // pjan-statetimeline-panel
+  pjanPanelBackground?: string; // pjan-statetimeline-panel: the dashboard canvas behind a transparent panel
 }
 
 /**
@@ -101,6 +102,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
   hoverMulti,
   xAxisConfig,
   styling, // pjan-statetimeline-panel
+  pjanPanelBackground, // pjan-statetimeline-panel
 }) => {
   const builder = new UPlotConfigBuilder(timeZones[0]);
 
@@ -124,7 +126,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
     return FALLBACK_COLOR;
   };
 
-  const pjanStyle = getTimelineStyleHooks(frame, theme, styling); // pjan-statetimeline-panel
+  const pjanStyle = getTimelineStyleHooks(frame, theme, styling, pjanPanelBackground); // pjan-statetimeline-panel
 
   const opts: TimelineCoreOptions = {
     mode: mode!,
@@ -234,7 +236,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
     size: yAxisHidden ? 0 : yAxisWidth,
     theme,
   });
-  addAxisStyling(builder, frame, theme, styling, timeZones[0], getTimeRange); // pjan-statetimeline-panel
+  addAxisStyling(builder, frame, theme, styling, timeZones[0], getTimeRange, pjanPanelBackground); // pjan-statetimeline-panel
 
   let seriesIndex = 0;
 

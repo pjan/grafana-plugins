@@ -38,7 +38,10 @@ const maps = [
   },
 ];
 const fixedBlue = { mode: 'fixed', fixedColor: 'blue' };
-const mapped = (custom) => ({ defaults: { color: fixedBlue, mappings: maps, ...(custom ? { custom } : {}) }, overrides: [] });
+const mapped = (custom) => ({
+  defaults: { color: fixedBlue, mappings: maps, ...(custom ? { custom } : {}) },
+  overrides: [],
+});
 
 const series36 = (k) => END - 36 * 10 * MIN + k * 10 * MIN;
 const range36 = (gen) => Array.from({ length: 36 }, (_, k) => gen(k));

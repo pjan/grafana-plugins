@@ -4,7 +4,7 @@ import { expect, test } from '@grafana/plugin-e2e';
 // other in the same column, with the core panel's default options.
 const DASHBOARD = 'dashboard.json';
 const CORE = 'Core stat';
-const PLUGIN = 'Stat ++';
+const PLUGIN = 'Stat plus';
 
 test('renders the values and their sparklines', async ({ gotoDashboardPage, readProvisionedDashboard }) => {
   const dashboard = await readProvisionedDashboard({ fileName: DASHBOARD });

@@ -43,7 +43,7 @@
     {
       "id": 2,
       "type": "pjan-stat-panel",
-      "title": "Stat ++",
+      "title": "Stat plus",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"

@@ -40,12 +40,15 @@ export function getStylingColorOptions(modes: StylingColorMode[]): Array<Combobo
   ];
   return modes.flatMap((mode): Array<ComboboxOption<string>> => {
     switch (mode) {
-      case 'contrast':
+      case 'automatic':
         return [
           {
-            value: 'contrast',
-            label: t('pjan.styling.best-contrast', 'Best contrast'),
-            description: t('pjan.styling.best-contrast-desc', 'Black or white'),
+            value: 'automatic',
+            label: t('pjan.styling.automatic', 'Automatic'),
+            description: t(
+              'pjan.styling.automatic-desc',
+              'The first shade of the same hue that is readable on it (4.5:1, large text 3:1)'
+            ),
           },
         ];
       case 'shade':
@@ -85,7 +88,7 @@ export function toStylingColor(key: string | undefined, previous: StylingColor |
 }
 
 /**
- * The editor of the styling's colour options: a select of the choices (a relative shade, best contrast, the current
+ * The editor of the styling's colour options: a select of the choices (a relative shade, automatic, the current
  * state colour, or a fixed colour), with Grafana's colour picker next to it for a fixed colour. Its placeholder says
  * what an unset option draws; clearing the select unsets the option, so no default value is saved.
  */

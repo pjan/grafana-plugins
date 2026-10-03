@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props; opt-in styling (src/pjan/styling/): legend items and tooltip swatches in the colours drawn.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props; opt-in styling (src/pjan/styling/): legend items and tooltip swatches in the colours drawn, and the canvas behind a transparent panel.
 import { useCallback, useMemo, useState } from 'react';
 
 import { DashboardCursorSync, type DataFrame, type PanelProps, useDataLinksContext } from '@grafana/data';
@@ -48,6 +48,7 @@ export const StateTimelinePanel = ({
   replaceVariables,
   onChangeTimeRange,
   id: panelId,
+  transparent, // pjan-statetimeline-panel: what is behind the boxes (opt-in styling)
 }: TimelinePanelProps) => {
   const theme = useTheme2();
 
@@ -124,6 +125,7 @@ export const StateTimelinePanel = ({
         dataLinkPostProcessor={dataLinkPostProcessor}
         cursorSync={cursorSync}
         annotationLanes={options.annotations?.multiLane ? getXAnnotationFrames(data.annotations).length : undefined}
+        pjanPanelBackground={transparent ? theme.colors.background.canvas : undefined} // pjan-statetimeline-panel
       >
         {(builder, alignedFrame) => {
           return (

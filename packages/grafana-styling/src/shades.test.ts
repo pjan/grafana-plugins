@@ -1,6 +1,6 @@
 import { type GrafanaTheme2 } from '@grafana/data';
 
-import { getHueOfColorName, getRelativeShadeColor, getSoftestReadableShadeColor, rankHue } from './shades';
+import { getHueOfColorName, getRelativeShadeColor, rankHue } from './shades';
 import { ATLAS_EXTRA_HUES } from './testdata/atlasTheme';
 import { THEMES as themes } from './testdata/themes';
 const GRAFANA_HUES = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
@@ -128,26 +128,5 @@ describe('ranking in every theme', () => {
         expect([...contrasts].sort((a, b) => a - b)).toEqual(contrasts);
       }
     }
-  });
-});
-
-describe('getSoftestReadableShadeColor', () => {
-  it('is the softest shade that reaches the contrast with the panel background', () => {
-    const theme = themes['Grafana light'];
-    // green on white: 1.67, 2.24, 3.02, 4.51, 6.00
-    expect(getSoftestReadableShadeColor(theme, 'super-light-green', 4.5)).toBe(
-      theme.visualization.getColorByName('semi-dark-green')
-    );
-    expect(getSoftestReadableShadeColor(theme, 'dark-green', 3)).toBe(theme.visualization.getColorByName('green'));
-    expect(getSoftestReadableShadeColor(theme, 'green', 1)).toBe(
-      theme.visualization.getColorByName('super-light-green')
-    );
-  });
-
-  it('is undefined when no shade reaches it, or for a name without shades', () => {
-    const theme = themes['Grafana light'];
-    // yellow on white: at most 2.50
-    expect(getSoftestReadableShadeColor(theme, 'yellow', 4.5)).toBeUndefined();
-    expect(getSoftestReadableShadeColor(theme, '#ff0000', 1)).toBeUndefined();
   });
 });

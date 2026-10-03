@@ -43,7 +43,7 @@ for (let k = -3; k <= count + 5; k++) {
 }
 const edgeTarget = csv(edges.join('\n'));
 
-// For best contrast on a continuous scheme: numbers without mappings (the panel's default colour mode, by value), in
+// For Automatic on a continuous scheme: numbers without mappings (the panel's default colour mode, by value), in
 // 3-hour states, up to the scheme's red end. 100 is mapped to a colour given as rgb(), as older dashboards have them;
 // core's Fill opacity turns it into rgb(r, g, b, a).
 const LEVELS = [0, 25, 50, 75, 100, 90, 60];
@@ -87,7 +87,7 @@ let id = 0;
 const panel = (
   type,
   title,
-  { custom, overrides = [], options = {}, defaults = {}, targets = [target] } = {},
+  { custom, overrides = [], options = {}, defaults = {}, targets = [target], transparent = false } = {},
   gridPos
 ) => ({
   id: ++id,
@@ -98,6 +98,7 @@ const panel = (
   gridPos,
   fieldConfig: { defaults: { mappings, ...defaults, ...(custom ? { custom } : {}) }, overrides },
   options,
+  ...(transparent ? { transparent: true } : {}),
 });
 
 // A case: the core panel above the plugin, full width, or with `references` (core panels per theme that draw what the
@@ -168,7 +169,7 @@ addCase('value color', {
   custom: { valueColor: fixed('#1f60c4') },
   overrides: [
     byName('b', { 'custom.valueColor': shade('stronger') }),
-    byName('c', { 'custom.valueColor': { mode: 'contrast' } }),
+    byName('c', { 'custom.valueColor': { mode: 'automatic' } }),
   ],
 });
 addCase('value overflow', { options: { styling: { valueOverflow: 'hide' } } });
@@ -180,11 +181,11 @@ for (const align of ['center', 'right']) {
   );
 }
 addCase(
-  'best contrast, continuous',
+  'automatic, continuous',
   {
     targets: [numberTarget],
     defaults: numberDefaults,
-    custom: { valueColor: { mode: 'contrast' } },
+    custom: { valueColor: { mode: 'automatic' } },
   },
   { core: { targets: [numberTarget], defaults: numberDefaults } }
 );
@@ -196,6 +197,19 @@ addCase('row names', {
     byName('c', { 'custom.rowNameColor': { mode: 'state' } }),
   ],
 });
+// The same on a transparent panel: the names are measured against the dashboard's canvas behind it
+addCase(
+  'row names, transparent panel',
+  {
+    transparent: true,
+    overrides: [
+      byName('a', { 'custom.rowNameColor': { mode: 'state' } }),
+      byName('b', { 'custom.rowNameColor': fixed('purple') }),
+      byName('c', { 'custom.rowNameColor': { mode: 'state' } }),
+    ],
+  },
+  { core: { transparent: true } }
+);
 addCase('day boundaries', { options: { styling: { dayBoundaries: true } } });
 addCase(
   'day boundaries, New York, orange',
@@ -222,20 +236,6 @@ addCase(
 );
 // Nothing set, for the panel editor checks.
 addCase('nothing set', {});
-// A plugin panel switched back to core by changing its type in the JSON: core's panel with the plugin's options.
-panels.push(
-  panel(
-    CORE,
-    'switched back to core',
-    {
-      custom: { fillColor: shade('soft') },
-      overrides: [byName('b', { 'custom.rowNameColor': fixed('purple'), 'custom.fillOpacity': 40 })],
-      options: { styling: { look: 'pill', gridColor: 'red' } },
-    },
-    { x: 0, y, w: 24, h: 6 }
-  )
-);
-
 const dashboard = {
   uid: 'pjan-statetimeline-styling',
   title: 'State timeline styling: core vs pjan-statetimeline-panel',

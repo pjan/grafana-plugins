@@ -73,17 +73,21 @@ export interface TimelineStyleHooks {
 
 /**
  * The box and value styling of the rows of `frame` (the aligned frame: field 0 is time, field N is row N). Undefined
- * when nothing that affects the boxes is set, so core's code runs unchanged.
+ * when nothing that affects the boxes is set, so core's code runs unchanged. `panelBackground`: what is behind the
+ * boxes, the panel background unless given (the dashboard's canvas behind a transparent panel).
  */
 export function getTimelineStyleHooks(
   frame: DataFrame,
   theme: GrafanaTheme2,
-  styling: TimelineStylingOptions = {}
+  styling: TimelineStylingOptions = {},
+  panelBackground?: string
 ): TimelineStyleHooks | undefined {
   const pill = isPillLook(styling);
   const hideOverflow = (styling.valueOverflow ?? (pill ? 'hide' : 'truncate')) === 'hide';
   const radius = styling.cornerRadius ?? 0;
-  const rows = frame.fields.map((field, i) => (i === 0 ? undefined : getRowStyle(field, theme, styling)));
+  const rows = frame.fields.map((field, i) =>
+    i === 0 ? undefined : getRowStyle(field, theme, styling, panelBackground)
+  );
   if (!pill && !hideOverflow && radius <= 0 && !rows.some(Boolean)) {
     return undefined;
   }

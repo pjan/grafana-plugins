@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Named **State timeline plus** in Grafana (was "State timeline ++"); the plugin id stays `pjan-statetimeline-panel`.
+- Colours you choose are drawn as chosen: a **Value color** shade or fixed colour is no longer replaced by black or white when its contrast is below 4.5:1.
+- **Automatic** replaces **Best contrast** (saved as `valueColor.mode: "automatic"`): the first shade of the box's own hue that is readable on it (4.5:1, at least 4.2:1), searched between the theme's page colour and `text.maxContrast`. The Pill look's value text and **Row name color** "Current state color" use the same rule, so they are tinted shades instead of black, white, or theme text.
+- **Fill color** can be a fixed colour.
+- On a transparent panel, **Automatic** and **Current state color** are measured against the dashboard behind the panel, not the panel background.
+- The end-to-end test of switching a panel back to the core panel is gone: only converting to this plugin is supported.
 - Corner radius: tabbing through the unset slider no longer saves 0 (Grafana's slider reports its value when its text box loses focus; the shared slider editor now ignores the value it only shows while the option is unset).
 - The shared colour helpers (shades, colour names, contrast, the colour and slider editors) moved to the workspace package `@pjan/grafana-styling`, shared with the other plugins in the repository. No change in behaviour. `THIRD_PARTY_NOTICES.txt` lists the package.
 - The text contrast guards (Value color, Row name color "Current state color") take their minimum from the shared `getMinTextContrast(fontSize, fontWeight)` (WCAG 2 AA: 3:1 for large text, 4.5:1 otherwise) instead of a fixed 4.5:1. All of this panel's text is 12 px, so it stays 4.5:1: no change in behaviour.

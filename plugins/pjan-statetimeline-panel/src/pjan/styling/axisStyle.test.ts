@@ -9,7 +9,8 @@ import {
   type TimeRange,
 } from '@grafana/data';
 import { FIXED_UNIT, UPlotConfigBuilder } from '@grafana/ui';
-import { getColorNameLookup, getSoftestReadableShadeColor, toCanvasColor } from '@pjan/grafana-styling';
+import { getAutomaticText, getTextContrast, toCanvasColor } from '@pjan/grafana-styling';
+import tinycolor from 'tinycolor2';
 
 import { addAxisStyling, DAY_BOUNDARY_FONT_WEIGHT, getCurrentStateValue, getRowNameStateColor } from './axisStyle';
 import { type TimelineStylingOptions } from './options';
@@ -55,22 +56,31 @@ describe('getRowNameStateColor', () => {
       ],
     },
   });
-  const names = getColorNameLookup(field, theme);
-  const colorOf = (value: string) => getRowNameStateColor(theme, names, field.display!(value).color!);
+  const colorOf = (value: string) => getRowNameStateColor(theme, field.display!(value).color!);
+  const background = theme.colors.background.primary;
 
-  it('is the softest shade of the hue that reaches 4.5:1 on the panel background', () => {
-    // green on white: 1.67, 2.24, 3.02, 4.51, 6.00
-    expect(colorOf('ok')).toBe(toCanvasColor(theme, 'semi-dark-green'));
+  it('is Automatic text from the state colour: the first shade of its hue with 4.5:1 on the panel background', () => {
+    const superLightGreen = field.display!('ok').color!;
+    expect(colorOf('ok')).toBe(getAutomaticText(theme, background, 4.5, { from: superLightGreen }));
+    expect(getTextContrast(theme, colorOf('ok'), background)).toBeGreaterThanOrEqual(4.5);
+    // a shade of green, not the theme's extreme
+    expect(colorOf('ok')).not.toBe(toCanvasColor(theme, theme.colors.text.maxContrast));
   });
 
-  it('is undefined (theme text) when no shade reaches it', () => {
-    // yellow on white: at most 2.50
-    expect(colorOf('warn')).toBeUndefined();
+  it('always gives a colour, also for a hue no named shade of which reaches 4.5:1 (yellow on white)', () => {
+    expect(getTextContrast(theme, colorOf('warn'), background)).toBeGreaterThanOrEqual(4.2);
   });
 
-  it('uses a colour without a name as is when it reaches 4.5:1, otherwise theme text', () => {
+  it('on a transparent panel, measures against the dashboard canvas behind it (hand-computed)', () => {
+    const green = theme.visualization.getColorByName('green'); // #56A64B
+    // 4.5:1 on white (#ffffff) at 21 % towards black, on the light canvas (#fbfbfb) at 22 %
+    expect(getRowNameStateColor(theme, green)).toBe('rgb(68,131,59)');
+    expect(getRowNameStateColor(theme, green, theme.colors.background.canvas)).toBe('rgb(67,129,59)');
+  });
+
+  it('keeps a state colour that is already readable, and moves one that isn’t, named or not', () => {
     expect(colorOf('ink')).toBe('rgb(51,51,51)');
-    expect(colorOf('dim')).toBeUndefined();
+    expect(getTextContrast(theme, colorOf('dim'), background)).toBeGreaterThanOrEqual(4.5);
   });
 });
 
@@ -227,7 +237,8 @@ describe('addAxisStyling', () => {
       hooks.forEach((hook) => hook(u));
       return texts;
     };
-    const readable = (name: string) => getSoftestReadableShadeColor(theme, name, 4.5)!.toLowerCase();
+    const readable = (name: string) =>
+      tinycolor(getRowNameStateColor(theme, theme.visualization.getColorByName(name))).toHexString();
     expect(colors()).toEqual(Array(3).fill(readable('green')));
     // new data for the same plot: row b ends down
     (u.data as unknown[][])[2] = ['up', 'down'];
@@ -240,8 +251,8 @@ describe('addAxisStyling', () => {
     const texts: Array<{ text: string; color: string }> = [];
     jest.spyOn(ctx, 'fillText').mockImplementation((text) => texts.push({ text, color: String(ctx.fillStyle) }));
     style({}, frame).drawAxes.forEach((hook) => hook(u));
-    // green's softest shade with 4.5:1 on white is semi-dark-green
-    const semiDarkGreen = theme.visualization.getColorByName('semi-dark-green').toLowerCase();
-    expect(texts).toEqual(rows.map((text) => ({ text, color: semiDarkGreen })));
+    // green's first shade with 4.5:1 on white
+    const green = tinycolor(getRowNameStateColor(theme, theme.visualization.getColorByName('green'))).toHexString();
+    expect(texts).toEqual(rows.map((text) => ({ text, color: green })));
   });
 });

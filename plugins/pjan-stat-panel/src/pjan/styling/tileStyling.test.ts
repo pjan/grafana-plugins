@@ -10,35 +10,26 @@ import {
   ReducerID,
   ThresholdsMode,
 } from '@grafana/data';
-import { getTextColorForAlphaBackground } from '@grafana/ui';
-import { getRelativeShadeColor, getTextContrast } from '@pjan/grafana-styling';
+import { getAutomaticText, getRelativeShadeColor, getTextContrast } from '@pjan/grafana-styling';
 import { LIGHT, THEMES } from '@pjan/grafana-styling/src/testdata/themes';
 
 import { type StatStyling } from './options';
-import {
-  CORE_TEXT_COLORS,
-  getSmallestValueFontSize,
-  getStatTileStyling,
-  getTileStyling,
-  GRAY,
-  resolveStyling,
-} from './tileStyling';
+import { getSmallestValueFontSize, getStatTileStyling, getTileStyling, GRAY, resolveStyling } from './tileStyling';
 
 const DARK = THEMES['Grafana dark'];
 const color = (theme: GrafanaTheme2, name: string) => theme.visualization.getColorByName(name);
-const [CORE_LIGHT_TEXT, CORE_DARK_TEXT] = CORE_TEXT_COLORS;
 
 describe('resolveStyling', () => {
   it('a series override wins over the panel option, setting by setting', () => {
     const panel: StatStyling = {
       backgroundColor: { mode: 'value' },
-      textColor: { mode: 'contrast' },
+      textColor: { mode: 'automatic' },
       sparklineLineWidth: 2,
     };
     const custom = { backgroundColor: { mode: 'fixed', fixedColor: 'black' }, sparklineFillOpacity: 40 };
     expect(resolveStyling(custom, panel)).toEqual({
       backgroundColor: { mode: 'fixed', fixedColor: 'black' },
-      textColor: { mode: 'contrast' },
+      textColor: { mode: 'automatic' },
       sparklineFillOpacity: 40,
       sparklineLineWidth: 2,
     });
@@ -87,57 +78,92 @@ describe('getTileStyling', () => {
   });
 
   describe('Text color', () => {
-    it('not set, on a background: core’s text colour for that background, for every element', () => {
+    it('not set, on a background: Automatic, at each element’s size', () => {
       const soft = getRelativeShadeColor(DARK, 'green', 'soft')!;
       const tile = getTileStyling(DARK, color(DARK, 'green'), 'green', {
         backgroundColor: { mode: 'shade', shade: 'soft' },
       });
+      const background = DARK.colors.background.primary;
       for (const element of ['value', 'name', 'percent'] as const) {
-        expect(tile.getTextColor(element, 14, 400)).toBe(getTextColorForAlphaBackground(soft, true));
+        expect(tile.getTextColor(element, 14, 400)).toBe(getAutomaticText(DARK, soft, 4.5, { background }));
+      }
+      expect(tile.getTextColor('value', 40, 500)).toBe(getAutomaticText(DARK, soft, 3, { background }));
+    });
+
+    it('Automatic: the first readable shade of the background’s hue, 4.5:1 for small and 3:1 for large text', () => {
+      for (const [theme, name] of [
+        [LIGHT, 'yellow'],
+        [LIGHT, 'dark-blue'],
+        [DARK, 'light-green'],
+      ] as const) {
+        const tile = getTileStyling(theme, color(theme, name), name, {
+          backgroundColor: { mode: 'value' },
+          textColor: { mode: 'automatic' },
+        });
+        const fill = color(theme, name);
+        const background = theme.colors.background.primary;
+        expect(tile.getTextColor('name', 12, 400)).toBe(getAutomaticText(theme, fill, 4.5, { background }));
+        expect(tile.getTextColor('value', 40, 500)).toBe(getAutomaticText(theme, fill, 3, { background }));
+        expect(getTextContrast(theme, tile.getTextColor('name', 12, 400)!, fill)).toBeGreaterThanOrEqual(4.2);
+        expect(getTextContrast(theme, tile.getTextColor('value', 40, 500)!, fill)).toBeGreaterThanOrEqual(3);
       }
     });
 
-    it('best contrast is the one of core’s two text colours with the higher contrast', () => {
-      const onYellow = getTileStyling(LIGHT, color(LIGHT, 'yellow'), 'yellow', {
-        backgroundColor: { mode: 'value' },
-        textColor: { mode: 'contrast' },
-      });
-      expect(onYellow.getTextColor('value', 40, 500)).toBe(CORE_DARK_TEXT);
-      const onBlue = getTileStyling(LIGHT, color(LIGHT, 'dark-blue'), 'dark-blue', {
-        backgroundColor: { mode: 'value' },
-        textColor: { mode: 'contrast' },
-      });
-      expect(onBlue.getTextColor('name', 12, 400)).toBe(CORE_LIGHT_TEXT);
+    it('Automatic on Grafana light’s green tile, worked out by hand', () => {
+      // #56A64B: towards black, 51 % gives 3.03:1 (large text) and 69 % 4.52:1 (small text)
+      const tile = getTileStyling(LIGHT, color(LIGHT, 'green'), 'green', { backgroundColor: { mode: 'value' } });
+      expect(tile.getTextColor('value', 40, 500)).toBe('rgb(42,81,37)');
+      expect(tile.getTextColor('name', 12, 400)).toBe('rgb(27,51,23)');
     });
 
-    it('a colour is kept where it reaches the minimum for the element’s size, else best contrast', () => {
-      // Green on the light panel background: about 3.0:1. Enough for a 40 px value (3:1), not for a 14 px name.
+    it('a translucent background is composited over what is behind the panel (the canvas when transparent)', () => {
+      const styling: StatStyling = { backgroundColor: { mode: 'fixed', fixedColor: 'rgba(255, 255, 255, 0.1)' } };
+      const { primary, canvas } = DARK.colors.background;
+      const onPanel = getTileStyling(DARK, color(DARK, 'green'), 'green', styling, primary);
+      const onCanvas = getTileStyling(DARK, color(DARK, 'green'), 'green', styling, canvas);
+      expect(onPanel.getTextColor('name', 12, 400)).toBe(
+        getAutomaticText(DARK, 'rgba(255, 255, 255, 0.1)', 4.5, { background: primary })
+      );
+      expect(onCanvas.getTextColor('name', 12, 400)).toBe(
+        getAutomaticText(DARK, 'rgba(255, 255, 255, 0.1)', 4.5, { background: canvas })
+      );
+      expect(onCanvas.getTextColor('name', 12, 400)).not.toBe(onPanel.getTextColor('name', 12, 400));
+    });
+
+    it('Automatic without a background keeps the value’s hue (hand-computed on Grafana light’s green)', () => {
+      const tile = getTileStyling(LIGHT, color(LIGHT, 'green'), 'green', { textColor: { mode: 'automatic' } });
+      // #56A64B on white: 3:1 as it is; 4.5:1 21 % towards black
+      expect(tile.getTextColor('value', 40, 500)).toBe('rgb(86,166,75)');
+      expect(tile.getTextColor('name', 12, 400)).toBe('rgb(68,131,59)');
+    });
+
+    it('a value colour is drawn as chosen at every size, whatever its contrast', () => {
+      // Green on the light panel background: about 3.0:1, below 4.5:1 for small text
       const g = color(LIGHT, 'green');
-      const contrast = getTextContrast(LIGHT, g, LIGHT.colors.background.primary);
-      expect(contrast).toBeGreaterThanOrEqual(3);
-      expect(contrast).toBeLessThan(4.5);
+      expect(getTextContrast(LIGHT, g, LIGHT.colors.background.primary)).toBeLessThan(4.5);
       const tile = getTileStyling(LIGHT, g, 'green', { textColor: { mode: 'value' } });
-      expect(tile.getTextColor('value', 40, 500)).toBe(g);
-      expect(tile.getTextColor('value', 23, 500)).toBe(CORE_DARK_TEXT);
-      expect(tile.getTextColor('name', 14, 400)).toBe(CORE_DARK_TEXT);
-      expect(tile.getTextColor('name', 20, 700)).toBe(g); // 18.66 px bold is large text
+      for (const [size, weight] of [
+        [40, 500],
+        [23, 500],
+        [14, 400],
+        [20, 700],
+      ]) {
+        expect(tile.getTextColor('value', size, weight)).toBe(g);
+        expect(tile.getTextColor('name', size, weight)).toBe(g);
+      }
     });
 
-    it('pjan’s example: on a fixed black background, the value colour unless it is too dark (dark blue)', () => {
+    it('pjan’s example: on a fixed black background, the value colour, dark blue included', () => {
       const styling: StatStyling = {
         backgroundColor: { mode: 'fixed', fixedColor: 'black' },
         textColor: { mode: 'value' },
       };
       for (const theme of [LIGHT, DARK]) {
-        const green = getTileStyling(theme, color(theme, 'green'), 'green', styling);
-        expect(green.getTextColor('value', 20, 500)).toBe(color(theme, 'green'));
-        expect(green.getTextColor('name', 12, 400)).toBe(color(theme, 'green'));
-        // Dark blue on black: below 4.5:1 (best contrast below 24 px); 2.8:1 in the light theme (#1250B0, best contrast
-        // at any size), 3.5:1 in the dark theme (#1F60C4, kept for large text)
-        const blue = getTileStyling(theme, color(theme, 'dark-blue'), 'dark-blue', styling);
-        expect(blue.getTextColor('value', 20, 500)).toBe(CORE_LIGHT_TEXT);
-        expect(blue.getTextColor('name', 12, 400)).toBe(CORE_LIGHT_TEXT);
-        expect(blue.getTextColor('value', 30, 500)).toBe(theme.isDark ? color(theme, 'dark-blue') : CORE_LIGHT_TEXT);
+        for (const name of ['green', 'dark-blue']) {
+          const tile = getTileStyling(theme, color(theme, name), name, styling);
+          expect(tile.getTextColor('value', 20, 500)).toBe(color(theme, name));
+          expect(tile.getTextColor('name', 12, 400)).toBe(color(theme, name));
+        }
       }
     });
 
@@ -151,8 +177,10 @@ describe('getTileStyling', () => {
         textColor: { mode: 'fixed', fixedColor: 'black' },
       });
       expect(fixed.getTextColor('value', 30, 500)).toBe(color(LIGHT, 'black'));
+      // a shade of a colour without a name is Automatic: without a background, from the value's own colour; magenta
+      // already reaches 3:1 on white (hand-computed), so it stays as it is
       const unnamed = getTileStyling(LIGHT, '#ff00ff', undefined, { textColor: { mode: 'shade', shade: 'stronger' } });
-      expect(unnamed.getTextColor('value', 60, 500)).toBe(CORE_DARK_TEXT);
+      expect(unnamed.getTextColor('value', 60, 500)).toBe('rgb(255,0,255)');
     });
   });
 
@@ -283,9 +311,7 @@ describe('edge cases', () => {
     expect(() => styling.getTextColor('value', 40, 500)).not.toThrow();
   });
 
-  it('a transparent panel measures against the dashboard canvas, not the panel background', () => {
-    // #767676 is 4.55:1 on the light panel background (#ffffff), 4.39:1 on its canvas (#fbfbfb)
-    const fixed: StatStyling = { textColor: { mode: 'fixed', fixedColor: '#767676' } };
+  it('a transparent panel: Automatic measures against the dashboard canvas; a fixed colour is drawn as chosen', () => {
     const [tile] = getFieldDisplayValues({
       data: [createDataFrame({ fields: [{ name: 'v', type: FieldType.number, values: [1], config: {} }] })],
       reduceOptions: { values: false, calcs: [ReducerID.lastNotNull] },
@@ -293,12 +319,17 @@ describe('edge cases', () => {
       replaceVariables: (v) => v,
       theme: LIGHT,
     });
-    expect(getStatTileStyling(LIGHT, tile, fixed).getTextColor('name', 14, 400)).toBe('#767676');
-    expect(getStatTileStyling(LIGHT, tile, fixed, true).getTextColor('name', 14, 400)).toBe(CORE_DARK_TEXT);
-    // #808080 is 4.36:1 on the dark panel background (#181b1f), 4.75:1 on its canvas (#111217)
-    const grey: StatStyling = { textColor: { mode: 'fixed', fixedColor: '#808080' } };
-    expect(getStatTileStyling(DARK, tile, grey).getTextColor('name', 14, 400)).toBe(CORE_LIGHT_TEXT);
-    expect(getStatTileStyling(DARK, tile, grey, true).getTextColor('name', 14, 400)).toBe('#808080');
+    const automatic: StatStyling = { textColor: { mode: 'automatic' } };
+    const { primary, canvas } = LIGHT.colors.background;
+    const from = tile.display.color;
+    expect(getStatTileStyling(LIGHT, tile, automatic).getTextColor('name', 14, 400)).toBe(
+      getAutomaticText(LIGHT, primary, 4.5, { background: primary, from })
+    );
+    expect(getStatTileStyling(LIGHT, tile, automatic, true).getTextColor('name', 14, 400)).toBe(
+      getAutomaticText(LIGHT, canvas, 4.5, { background: canvas, from })
+    );
+    const fixed: StatStyling = { textColor: { mode: 'fixed', fixedColor: '#808080' } };
+    expect(getStatTileStyling(LIGHT, tile, fixed, true).getTextColor('name', 14, 400)).toBe('#808080');
   });
 });
 
@@ -341,7 +372,7 @@ describe('unset parts follow core: Value mode without a background, Background S
       expect(s).toEqual({ lineColor: line, fillColor: tinycolor(line).setAlpha(0.3).toRgbString(), lineWidth: 1 });
     });
 
-    it('both set; Same as text is the text colour after its contrast fallback', () => {
+    it('both set; Same as text is the text colour as drawn', () => {
       const s = sparkline({ sparklineColor: { mode: 'text' }, sparklineFillOpacity: 10, sparklineLineOpacity: 50 });
       expect(s).toEqual({ lineColor: 'rgba(1, 2, 3, 0.5)', fillColor: 'rgba(1, 2, 3, 0.1)', lineWidth: 1 });
     });

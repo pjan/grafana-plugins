@@ -1,9 +1,7 @@
 {
   "uid": "pjan-statetimeline-styling",
   "title": "State timeline styling: core vs pjan-statetimeline-panel",
-  "tags": [
-    "pjan-statetimeline-panel"
-  ],
+  "tags": ["pjan-statetimeline-panel"],
   "editable": true,
   "schemaVersion": 42,
   "timezone": "utc",
@@ -661,7 +659,7 @@
               {
                 "id": "custom.valueColor",
                 "value": {
-                  "mode": "contrast"
+                  "mode": "automatic"
                 }
               }
             ]
@@ -1015,7 +1013,7 @@
     {
       "id": 15,
       "type": "state-timeline",
-      "title": "best contrast, continuous [state-timeline]",
+      "title": "automatic, continuous [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1060,7 +1058,7 @@
     {
       "id": 16,
       "type": "pjan-statetimeline-panel",
-      "title": "best contrast, continuous [pjan-statetimeline-panel]",
+      "title": "automatic, continuous [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1099,7 +1097,7 @@
           "max": 100,
           "custom": {
             "valueColor": {
-              "mode": "contrast"
+              "mode": "automatic"
             }
           }
         },
@@ -1375,7 +1373,7 @@
     {
       "id": 21,
       "type": "state-timeline",
-      "title": "day boundaries [state-timeline]",
+      "title": "row names, transparent panel [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1424,12 +1422,13 @@
         },
         "overrides": []
       },
-      "options": {}
+      "options": {},
+      "transparent": true
     },
     {
       "id": 22,
       "type": "pjan-statetimeline-panel",
-      "title": "day boundaries [pjan-statetimeline-panel]",
+      "title": "row names, transparent panel [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1476,18 +1475,59 @@
             }
           ]
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "a"
+            },
+            "properties": [
+              {
+                "id": "custom.rowNameColor",
+                "value": {
+                  "mode": "state"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "b"
+            },
+            "properties": [
+              {
+                "id": "custom.rowNameColor",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "purple"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "c"
+            },
+            "properties": [
+              {
+                "id": "custom.rowNameColor",
+                "value": {
+                  "mode": "state"
+                }
+              }
+            ]
+          }
+        ]
       },
-      "options": {
-        "styling": {
-          "dayBoundaries": true
-        }
-      }
+      "options": {},
+      "transparent": true
     },
     {
       "id": 23,
       "type": "state-timeline",
-      "title": "day boundaries, New York, orange [state-timeline]",
+      "title": "day boundaries [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1536,16 +1576,12 @@
         },
         "overrides": []
       },
-      "options": {
-        "timezone": [
-          "America/New_York"
-        ]
-      }
+      "options": {}
     },
     {
       "id": 24,
       "type": "pjan-statetimeline-panel",
-      "title": "day boundaries, New York, orange [pjan-statetimeline-panel]",
+      "title": "day boundaries [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1595,19 +1631,15 @@
         "overrides": []
       },
       "options": {
-        "timezone": [
-          "America/New_York"
-        ],
         "styling": {
-          "dayBoundaries": true,
-          "dayBoundaryColor": "orange"
+          "dayBoundaries": true
         }
       }
     },
     {
       "id": 25,
       "type": "state-timeline",
-      "title": "day boundaries, Europe/Brussels [state-timeline]",
+      "title": "day boundaries, New York, orange [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1657,15 +1689,13 @@
         "overrides": []
       },
       "options": {
-        "timezone": [
-          "Europe/Brussels"
-        ]
+        "timezone": ["America/New_York"]
       }
     },
     {
       "id": 26,
       "type": "pjan-statetimeline-panel",
-      "title": "day boundaries, Europe/Brussels [pjan-statetimeline-panel]",
+      "title": "day boundaries, New York, orange [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1715,18 +1745,17 @@
         "overrides": []
       },
       "options": {
-        "timezone": [
-          "Europe/Brussels"
-        ],
+        "timezone": ["America/New_York"],
         "styling": {
-          "dayBoundaries": true
+          "dayBoundaries": true,
+          "dayBoundaryColor": "orange"
         }
       }
     },
     {
       "id": 27,
       "type": "state-timeline",
-      "title": "day boundaries, Asia/Kolkata [state-timeline]",
+      "title": "day boundaries, Europe/Brussels [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1776,15 +1805,13 @@
         "overrides": []
       },
       "options": {
-        "timezone": [
-          "Asia/Kolkata"
-        ]
+        "timezone": ["Europe/Brussels"]
       }
     },
     {
       "id": 28,
       "type": "pjan-statetimeline-panel",
-      "title": "day boundaries, Asia/Kolkata [pjan-statetimeline-panel]",
+      "title": "day boundaries, Europe/Brussels [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1834,9 +1861,7 @@
         "overrides": []
       },
       "options": {
-        "timezone": [
-          "Asia/Kolkata"
-        ],
+        "timezone": ["Europe/Brussels"],
         "styling": {
           "dayBoundaries": true
         }
@@ -1845,7 +1870,7 @@
     {
       "id": 29,
       "type": "state-timeline",
-      "title": "pill [state-timeline]",
+      "title": "day boundaries, Asia/Kolkata [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1894,12 +1919,14 @@
         },
         "overrides": []
       },
-      "options": {}
+      "options": {
+        "timezone": ["Asia/Kolkata"]
+      }
     },
     {
       "id": 30,
       "type": "pjan-statetimeline-panel",
-      "title": "pill [pjan-statetimeline-panel]",
+      "title": "day boundaries, Asia/Kolkata [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -1949,15 +1976,16 @@
         "overrides": []
       },
       "options": {
+        "timezone": ["Asia/Kolkata"],
         "styling": {
-          "look": "pill"
+          "dayBoundaries": true
         }
       }
     },
     {
       "id": 31,
       "type": "state-timeline",
-      "title": "pill, line width 3 [state-timeline]",
+      "title": "pill [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -2002,10 +2030,7 @@
                 }
               }
             }
-          ],
-          "custom": {
-            "lineWidth": 3
-          }
+          ]
         },
         "overrides": []
       },
@@ -2014,7 +2039,7 @@
     {
       "id": 32,
       "type": "pjan-statetimeline-panel",
-      "title": "pill, line width 3 [pjan-statetimeline-panel]",
+      "title": "pill [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -2059,10 +2084,7 @@
                 }
               }
             }
-          ],
-          "custom": {
-            "lineWidth": 3
-          }
+          ]
         },
         "overrides": []
       },
@@ -2075,7 +2097,7 @@
     {
       "id": 33,
       "type": "state-timeline",
-      "title": "corner radius 4 [state-timeline]",
+      "title": "pill, line width 3 [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -2122,7 +2144,7 @@
             }
           ],
           "custom": {
-            "lineWidth": 1
+            "lineWidth": 3
           }
         },
         "overrides": []
@@ -2132,7 +2154,7 @@
     {
       "id": 34,
       "type": "pjan-statetimeline-panel",
-      "title": "corner radius 4 [pjan-statetimeline-panel]",
+      "title": "pill, line width 3 [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -2179,21 +2201,21 @@
             }
           ],
           "custom": {
-            "lineWidth": 1
+            "lineWidth": 3
           }
         },
         "overrides": []
       },
       "options": {
         "styling": {
-          "cornerRadius": 4
+          "look": "pill"
         }
       }
     },
     {
       "id": 35,
       "type": "state-timeline",
-      "title": "nothing set [state-timeline]",
+      "title": "corner radius 4 [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -2238,7 +2260,10 @@
                 }
               }
             }
-          ]
+          ],
+          "custom": {
+            "lineWidth": 1
+          }
         },
         "overrides": []
       },
@@ -2247,7 +2272,7 @@
     {
       "id": 36,
       "type": "pjan-statetimeline-panel",
-      "title": "nothing set [pjan-statetimeline-panel]",
+      "title": "corner radius 4 [pjan-statetimeline-panel]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -2292,16 +2317,23 @@
                 }
               }
             }
-          ]
+          ],
+          "custom": {
+            "lineWidth": 1
+          }
         },
         "overrides": []
       },
-      "options": {}
+      "options": {
+        "styling": {
+          "cornerRadius": 4
+        }
+      }
     },
     {
       "id": 37,
       "type": "state-timeline",
-      "title": "switched back to core",
+      "title": "nothing set [state-timeline]",
       "datasource": {
         "type": "grafana-testdata-datasource",
         "uid": "trlxrdZVk"
@@ -2346,42 +2378,65 @@
                 }
               }
             }
-          ],
-          "custom": {
-            "fillColor": {
-              "mode": "shade",
-              "shade": "soft"
-            }
-          }
+          ]
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "b"
-            },
-            "properties": [
-              {
-                "id": "custom.rowNameColor",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "purple"
-                }
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 40
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
-      "options": {
-        "styling": {
-          "look": "pill",
-          "gridColor": "red"
+      "options": {}
+    },
+    {
+      "id": 38,
+      "type": "pjan-statetimeline-panel",
+      "title": "nothing set [pjan-statetimeline-panel]",
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "scenarioId": "csv_content",
+          "csvContent": "time,a,b,c\n1761393600000,1,2,3\n1761397200000,1,2,3\n1761400800000,1,2,3\n1761404400000,1,2,3\n1761408000000,1,2,3\n1761411600000,2,3,1\n1761415200000,1,2,3\n1761418800000,1,2,3\n1761422400000,2,3,1\n1761426000000,2,3,1\n1761429600000,2,3,1\n1761433200000,2,3,1\n1761436800000,2,3,1\n1761440400000,3,1,2\n1761444000000,2,3,1\n1761447600000,2,3,1\n1761451200000,3,1,2\n1761454800000,3,1,2\n1761458400000,3,1,2\n1761462000000,3,1,2\n1761465600000,3,1,2\n1761469200000,1,2,3\n1761472800000,3,1,2\n1761476400000,3,1,2\n1761480000000,1,2,3\n1761483600000,1,2,3\n1761487200000,1,2,3\n1761490800000,1,2,3\n1761494400000,1,2,3\n1761498000000,2,3,1\n1761501600000,1,2,3\n1761505200000,1,2,3\n1761508800000,2,3,1\n1761512400000,2,3,1\n1761516000000,2,3,1\n1761519600000,2,3,1\n1761523200000,2,3,1\n1761526800000,3,1,2\n1761530400000,2,3,1\n1761534000000,2,3,1\n1761537600000,3,1,2\n1761541200000,3,1,2\n1761544800000,3,1,2\n1761548400000,3,1,2\n1761552000000,3,1,2\n1761555600000,1,2,3\n1761559200000,3,1,2\n1761562800000,1,3,2"
         }
-      }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 198,
+        "w": 24,
+        "h": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "running",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "degraded",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "3": {
+                  "text": "down",
+                  "color": "red",
+                  "index": 2
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {}
     }
   ]
 }

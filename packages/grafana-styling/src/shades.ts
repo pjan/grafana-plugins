@@ -78,17 +78,3 @@ export function getRelativeShadeColor(
 ): string | undefined {
   return rankHue(theme, getHueOfColorName(colorName))?.colors[RELATIVE_SHADES.indexOf(shade)];
 }
-
-/**
- * The softest shade of a colour name's hue that reaches `minContrast` against the panel background, or undefined when
- * no shade does, or the name has no ranked hue.
- */
-export function getSoftestReadableShadeColor(
-  theme: GrafanaTheme2,
-  colorName: string,
-  minContrast: number
-): string | undefined {
-  const ranked = rankHue(theme, getHueOfColorName(colorName));
-  const index = ranked?.contrasts.findIndex((contrast) => contrast >= minContrast) ?? -1;
-  return index === -1 ? undefined : ranked!.colors[index];
-}
