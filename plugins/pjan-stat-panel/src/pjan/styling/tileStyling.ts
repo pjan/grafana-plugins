@@ -5,7 +5,7 @@ import {
   getAutomaticText,
   getColorNameLookup,
   getMinTextContrast,
-  getRelativeShadeColor,
+  getShadeColor,
   getStylingColor,
   type StylingColor,
   type StylingColorMode,
@@ -13,6 +13,7 @@ import {
 
 import {
   BACKGROUND_COLOR_MODES,
+  type FieldConfigWithStyling,
   SPARKLINE_COLOR_MODES,
   type StatStyling,
   TEXT_COLOR_MODES,
@@ -77,11 +78,11 @@ const validNumber = (value: unknown, [min, max]: [number, number]) =>
   typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : undefined;
 
 /**
- * One tile's settings: its series' override (`custom.*`) wins over the panel option (`styling.*`). A setting that is
- * incomplete or out of range counts as unset (for example a Fixed color before a colour is picked).
+ * One tile's settings: its series' override (`custom.styling.*`) wins over the panel option (`styling.*`). A setting
+ * that is incomplete or out of range counts as unset (for example a Fixed color before a colour is picked).
  */
 export function resolveStyling(fieldCustom: unknown, panelStyling: StatStyling | undefined): StatStyling {
-  const custom = (fieldCustom ?? {}) as Record<string, unknown>;
+  const custom = ((fieldCustom as FieldConfigWithStyling | undefined)?.styling ?? {}) as Record<string, unknown>;
   const panel = (panelStyling ?? {}) as Record<string, unknown>;
   const resolved: StatStyling = {};
   for (const [key, modes] of Object.entries(COLOR_KEYS)) {
@@ -102,18 +103,20 @@ export function resolveStyling(fieldCustom: unknown, panelStyling: StatStyling |
 
 /**
  * A tile's colours with Color mode Custom. `valueColor` is the tile's display colour, `colorName` the Grafana colour
- * name behind it (undefined for a colour without one: hex colours, continuous schemes, a palette of hex colours).
+ * name behind it (undefined for a colour without one: hex colours, continuous schemes, a palette of hex colours). A
+ * shade is of the name's hue, or for a colour without a name of its nearest theme hue (`getShadeColor`); a colour
+ * without either has no shades.
  *
  * - Background: None (or not set) draws none; Value the value's colour; a shade of the value's colour (the value's
- *   colour without a name); a fixed colour.
+ *   colour without shades); a fixed colour.
  * - `panelBackground`: what is behind the tiles (the panel background, or the dashboard's canvas for a transparent
  *   panel).
  * - Text, for the value and the name (and percent change on a background): Automatic (`getAutomaticText`: the first
  *   shade of the background's hue, or without a background of the value colour's hue, that reaches the element's
  *   minimum contrast for its size and weight against what it is drawn on, `getMinTextContrast`), the value's colour, a shade of it, or a fixed colour. A value, shade or fixed colour is drawn
- *   as chosen (pjan, 2026-10-03); a shade of a colour without a name is Automatic. Not set: Automatic on a background;
+ *   as chosen (pjan, 2026-10-03); a shade of a colour without shades is Automatic. Not set: Automatic on a background;
  *   without one, the value in its colour and the name in the panel's text colour (core's Value mode).
- * - Sparkline: the value's colour, a shade of it (the value's colour without a name), the value text's colour, or a
+ * - Sparkline: the value's colour, a shade of it (the value's colour without shades), the value text's colour, or a
  *   fixed colour; line opacity (not set: as the colour, opaque), fill opacity (set: the line's colour at that alpha),
  *   line width (not set: 1).
  * - Other unset parts follow core (pjan, 2026-10-02): without a background (or with None), core's Value mode
@@ -129,7 +132,7 @@ export function getTileStyling(
   panelBackground: string = theme.colors.background.primary
 ): TileStyling {
   const shade = (setting: StylingColor) =>
-    colorName && setting.shade ? getRelativeShadeColor(theme, colorName, setting.shade) : undefined;
+    setting.shade ? getShadeColor(theme, valueColor, colorName, setting.shade) : undefined;
   const fixed = (setting: StylingColor) => theme.visualization.getColorByName(setting.fixedColor!);
 
   const backgroundSetting = styling.backgroundColor;
@@ -164,7 +167,7 @@ export function getTileStyling(
       }
       return element === 'value' ? valueColor : undefined;
     }
-    // A value, shade or fixed colour is drawn as chosen; Automatic, and a shade of a colour without a name, is the
+    // A value, shade or fixed colour is drawn as chosen; Automatic, and a shade of a colour without shades, is the
     // first readable shade of the background's hue
     switch (textSetting.mode) {
       case 'value':

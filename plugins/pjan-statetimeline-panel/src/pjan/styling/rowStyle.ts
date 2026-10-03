@@ -3,7 +3,7 @@ import {
   getAutomaticText,
   getColorNameLookup,
   getMinTextContrast,
-  getRelativeShadeColor,
+  getShadeColor,
   getStylingColor,
   type StylingColor,
   toCanvasColor,
@@ -11,7 +11,8 @@ import {
 
 import {
   FILL_COLOR_MODES,
-  type FieldConfigWithStyling,
+  type FieldStyling,
+  getFieldStyling,
   LINE_COLOR_MODES,
   type TimelineStylingOptions,
   VALUE_COLOR_MODES,
@@ -20,7 +21,7 @@ import {
 // Values are drawn at 12 px, weight 500 (core's timeline.ts), so they need 4.5:1.
 const VALUE_MIN_CONTRAST = getMinTextContrast(12, 500);
 
-type BoxColorOptions = Required<Pick<FieldConfigWithStyling, 'fillColor' | 'lineColor' | 'valueColor'>>;
+type BoxColorOptions = Required<Pick<FieldStyling, 'fillColor' | 'lineColor' | 'valueColor'>>;
 
 /** What the Pill look sets, for the options left unset. It also hides values that don't fit. */
 export const PILL_LOOK: BoxColorOptions = {
@@ -49,8 +50,6 @@ export interface RowStyle {
   getValueText: (stateColor: string, fill: string) => string | undefined;
 }
 
-const getCustom = (field: Field) => (field.config.custom ?? {}) as FieldConfigWithStyling;
-
 const memoize = <T>(fn: (key: string) => T) => {
   const cache = new Map<string, T>();
   return (key: string) => {
@@ -72,24 +71,24 @@ export function getRowStyle(
   styling: TimelineStylingOptions,
   panelBackground?: string
 ): RowStyle | undefined {
-  const custom = getCustom(field);
+  const fieldStyling = getFieldStyling(field.config.custom);
   const look = isPillLook(styling) ? PILL_LOOK : undefined;
-  const fill = getStylingColor(custom.fillColor, FILL_COLOR_MODES) ?? look?.fillColor;
-  const line = getStylingColor(custom.lineColor, LINE_COLOR_MODES) ?? look?.lineColor;
-  const value = getStylingColor(custom.valueColor, VALUE_COLOR_MODES) ?? look?.valueColor;
+  const fill = getStylingColor(fieldStyling.fillColor, FILL_COLOR_MODES) ?? look?.fillColor;
+  const line = getStylingColor(fieldStyling.lineColor, LINE_COLOR_MODES) ?? look?.lineColor;
+  const value = getStylingColor(fieldStyling.valueColor, VALUE_COLOR_MODES) ?? look?.valueColor;
   if (!fill && !line && !value) {
     return undefined;
   }
 
   // The colour names behind the state colours, for the relative shades. A colour without a name (hex, continuous
-  // schemes, a palette of hex colours) has no shades.
+  // schemes, a palette of hex colours) takes the shades of its nearest theme hue, if one is near enough.
   const names = getColorNameLookup(field, theme);
   const resolve = (setting: StylingColor, stateColor: string): string | undefined => {
     if (setting.mode === 'fixed') {
       return toCanvasColor(theme, setting.fixedColor!);
     }
-    const name = setting.mode === 'shade' ? names.get(stateColor) : undefined;
-    const shade = name && getRelativeShadeColor(theme, name, setting.shade!);
+    const shade =
+      setting.mode === 'shade' ? getShadeColor(theme, stateColor, names.get(stateColor), setting.shade!) : undefined;
     return shade ? toCanvasColor(theme, shade) : undefined;
   };
 

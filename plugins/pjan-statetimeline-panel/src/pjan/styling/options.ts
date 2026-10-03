@@ -44,12 +44,19 @@ export interface OptionsWithStyling {
   styling?: TimelineStylingOptions;
 }
 
-/** Field options of the styling (custom field config), set per row with overrides. */
-export interface FieldConfigWithStyling {
+/**
+ * Field options of the styling, set per row with overrides. Like the panel options, under one object: `custom.styling`
+ * (override ids `custom.styling.<key>`), the same key for the same meaning in every plus plugin.
+ */
+export interface FieldStyling {
   fillColor?: StylingColor;
   lineColor?: StylingColor;
   valueColor?: StylingColor;
   rowNameColor?: StylingColor;
+}
+
+export interface FieldConfigWithStyling {
+  styling?: FieldStyling;
 }
 
 export const FILL_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
@@ -66,16 +73,22 @@ export const getStylingOptions = (options: unknown): TimelineStylingOptions =>
 const getCategory = () => [t('state-timeline.category-state-timeline', 'State timeline')];
 const notTime = (field: { type: FieldType }) => field.type !== FieldType.time;
 
+const NO_FIELD_STYLING: FieldStyling = Object.freeze({});
+
+/** A row's styling field options (`field.config.custom.styling`). */
+export const getFieldStyling = (custom: unknown): FieldStyling =>
+  (custom as FieldConfigWithStyling | undefined)?.styling ?? NO_FIELD_STYLING;
+
 function addStylingColorFieldConfig<T>(
   builder: FieldConfigEditorBuilder<T>,
-  path: keyof FieldConfigWithStyling,
+  key: keyof FieldStyling,
   name: string,
   description: string,
   settings: StylingColorEditorSettings
 ) {
   builder.addCustomEditor<StylingColorEditorSettings, StylingColor>({
-    id: path,
-    path,
+    id: `styling.${key}`,
+    path: `styling.${key}`,
     name,
     description,
     category: getCategory(),

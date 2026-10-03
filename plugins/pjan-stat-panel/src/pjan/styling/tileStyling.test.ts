@@ -26,7 +26,7 @@ describe('resolveStyling', () => {
       textColor: { mode: 'automatic' },
       sparklineLineWidth: 2,
     };
-    const custom = { backgroundColor: { mode: 'fixed', fixedColor: 'black' }, sparklineFillOpacity: 40 };
+    const custom = { styling: { backgroundColor: { mode: 'fixed', fixedColor: 'black' }, sparklineFillOpacity: 40 } };
     expect(resolveStyling(custom, panel)).toEqual({
       backgroundColor: { mode: 'fixed', fixedColor: 'black' },
       textColor: { mode: 'automatic' },
@@ -37,10 +37,19 @@ describe('resolveStyling', () => {
 
   it('an incomplete or out-of-range setting counts as unset, so the next level applies', () => {
     const panel: StatStyling = { backgroundColor: { mode: 'value' }, sparklineLineWidth: 3 };
-    expect(resolveStyling({ backgroundColor: { mode: 'fixed' }, sparklineLineWidth: 9 }, panel)).toEqual(panel);
+    expect(resolveStyling({ styling: { backgroundColor: { mode: 'fixed' }, sparklineLineWidth: 9 } }, panel)).toEqual(
+      panel
+    );
     // a mode the setting doesn't offer
-    expect(resolveStyling({ textColor: { mode: 'none' } }, {})).toEqual({});
+    expect(resolveStyling({ styling: { textColor: { mode: 'none' } } }, {})).toEqual({});
     expect(resolveStyling(undefined, undefined)).toEqual({});
+  });
+
+  it('reads the series’ settings from `custom.styling` only', () => {
+    const flat = { backgroundColor: { mode: 'fixed', fixedColor: 'black' } };
+    expect(resolveStyling(flat, { backgroundColor: { mode: 'value' } })).toEqual({
+      backgroundColor: { mode: 'value' },
+    });
   });
 });
 
@@ -70,10 +79,16 @@ describe('getTileStyling', () => {
       expect(getTileStyling(LIGHT, green, 'green', { backgroundColor }).background).toBe(expected);
     });
 
-    it('a shade of a colour without a name falls back to the value colour', () => {
-      expect(
-        getTileStyling(LIGHT, '#8e8e8e', undefined, { backgroundColor: { mode: 'shade', shade: 'soft' } }).background
-      ).toBe('#8e8e8e');
+    it('a shade of a colour without a name: of its nearest hue, or the value colour without one', () => {
+      const soft = { backgroundColor: { mode: 'shade' as const, shade: 'soft' as const } };
+      // a gray hex colour: Grafana's stock themes have no gray hue, Atlas has (a separate implementation of the rule)
+      expect(getTileStyling(LIGHT, '#8e8e8e', undefined, soft).background).toBe('#8e8e8e');
+      const atlas = THEMES['Atlas light'];
+      expect(getTileStyling(atlas, '#8e8e8e', undefined, soft).background).toBe(color(atlas, 'light-gray'));
+      // magenta is nearest Grafana light's purple
+      expect(getTileStyling(LIGHT, '#ff00ff', undefined, soft).background).toBe(
+        getRelativeShadeColor(LIGHT, 'purple', 'soft')
+      );
     });
   });
 
@@ -167,7 +182,7 @@ describe('getTileStyling', () => {
       }
     });
 
-    it('a shade, a fixed colour, and a shade of a colour without a name', () => {
+    it('a shade, a fixed colour, and a shade of a colour without a name (its nearest hue’s, else Automatic)', () => {
       const strong = getRelativeShadeColor(LIGHT, 'green', 'stronger')!;
       const shaded = getTileStyling(LIGHT, color(LIGHT, 'green'), 'green', {
         textColor: { mode: 'shade', shade: 'stronger' },
@@ -177,10 +192,13 @@ describe('getTileStyling', () => {
         textColor: { mode: 'fixed', fixedColor: 'black' },
       });
       expect(fixed.getTextColor('value', 30, 500)).toBe(color(LIGHT, 'black'));
-      // a shade of a colour without a name is Automatic: without a background, from the value's own colour; magenta
-      // already reaches 3:1 on white (hand-computed), so it stays as it is
-      const unnamed = getTileStyling(LIGHT, '#ff00ff', undefined, { textColor: { mode: 'shade', shade: 'stronger' } });
-      expect(unnamed.getTextColor('value', 60, 500)).toBe('rgb(255,0,255)');
+      // magenta is nearest Grafana light's purple (a separate implementation of the rule)
+      const magenta = getTileStyling(LIGHT, '#ff00ff', undefined, { textColor: { mode: 'shade', shade: 'stronger' } });
+      expect(magenta.getTextColor('value', 60, 500)).toBe(getRelativeShadeColor(LIGHT, 'purple', 'stronger'));
+      // CSS teal is near no hue, so its shade is Automatic: without a background, from the value's own colour; teal
+      // already reaches 3:1 on white (hand-computed: luminance 0.170, (1 + 0.05) / (0.170 + 0.05) = 4.77), so it stays
+      const unnamed = getTileStyling(LIGHT, '#008080', undefined, { textColor: { mode: 'shade', shade: 'stronger' } });
+      expect(unnamed.getTextColor('value', 60, 500)).toBe('rgb(0,128,128)');
     });
   });
 
@@ -258,19 +276,18 @@ describe('getStatTileStyling', () => {
     const [a] = tiles(LIGHT, {
       color: { mode: FieldColorModeId.Thresholds },
       thresholds,
-      custom: { backgroundColor: { mode: 'fixed', fixedColor: 'black' } },
+      custom: { styling: { backgroundColor: { mode: 'fixed', fixedColor: 'black' } } },
     });
     expect(getStatTileStyling(LIGHT, a, { backgroundColor: { mode: 'value' } }).background).toBe(color(LIGHT, 'black'));
   });
 
-  it('classic palette slots: named slots have shades, hex slots fall back to the value colour', () => {
+  it('classic palette slots: named slots have their shades, hex slots their nearest hue’s', () => {
     for (const theme of Object.values(THEMES)) {
       const [a] = tiles(theme, { color: { mode: FieldColorModeId.PaletteClassic } });
+      // the first slot: Grafana's `green`, Atlas's lime 600 (light) or lime 400 (dark), nearest Atlas's lime hue
       const slot = theme.visualization.palette[0];
       const tile = getStatTileStyling(theme, a, { backgroundColor: { mode: 'shade', shade: 'stronger' } });
-      expect(tile.background).toBe(
-        slot.startsWith('#') ? a.display.color : getRelativeShadeColor(theme, slot, 'stronger')
-      );
+      expect(tile.background).toBe(getRelativeShadeColor(theme, slot.startsWith('#') ? 'lime' : slot, 'stronger'));
     }
   });
 });
@@ -309,6 +326,11 @@ describe('edge cases', () => {
     });
     expect(styling.background).toBe(GRAY);
     expect(() => styling.getTextColor('value', 40, 500)).not.toThrow();
+    // Gray has no name: a shade of it is the theme's gray hue's (Atlas), or gray itself (stock Grafana has no gray hue)
+    const atlasLight = THEMES['Atlas light'];
+    const soft = { backgroundColor: { mode: 'shade' as const, shade: 'soft' as const } };
+    expect(getStatTileStyling(atlasLight, withoutColor, soft).background).toBe(color(atlasLight, 'light-gray'));
+    expect(getStatTileStyling(LIGHT, withoutColor, soft).background).toBe(GRAY);
   });
 
   it('a transparent panel: Automatic measures against the dashboard canvas; a fixed colour is drawn as chosen', () => {

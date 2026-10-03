@@ -2,7 +2,7 @@ import { type DataFrame, type Field, FieldType, getFieldDisplayName } from '@gra
 
 import { getXAnnotationFrames } from '../../plugins/panel/timeseries/plugins/utils';
 
-import { DEFAULT_ROW_KEY, type FieldConfigWithAnnotationKey, type RowAnnotationsOptions } from './options';
+import { DEFAULT_ROW_KEY, type FieldConfigWithRowAnnotations, type RowAnnotationsOptions } from './options';
 
 /** The annotations of one annotation frame that matched one row, as a frame of their own (sorted by time). */
 export interface RowAnnotationFrame {
@@ -27,10 +27,11 @@ type RowKeyOptions = Pick<RowAnnotationsOptions, 'rowKey' | 'label'>;
  * set, else its display name (as the y axis shows it) or the value of the chosen label. Empty strings are no key.
  */
 function getRowKey(field: Field, frame: DataFrame, options: RowKeyOptions, frames?: DataFrame[]): string | undefined {
-  const custom: FieldConfigWithAnnotationKey | undefined = field.config.custom;
+  const annotationKey = (field.config.custom as FieldConfigWithRowAnnotations | undefined)?.rowAnnotations
+    ?.annotationKey;
   let key: string | undefined;
-  if (custom?.annotationKey) {
-    key = custom.annotationKey;
+  if (annotationKey) {
+    key = annotationKey;
   } else if ((options.rowKey ?? DEFAULT_ROW_KEY) === 'label') {
     key = options.label ? field.labels?.[options.label] : undefined;
   } else {

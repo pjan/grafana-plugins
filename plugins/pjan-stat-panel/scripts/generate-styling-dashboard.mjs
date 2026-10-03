@@ -56,6 +56,17 @@ const MAPPED = {
   overrides: [],
 };
 
+// Colours without a name, from Grafana's classic palette and CSS: a and b are nearest Grafana's green and red in both
+// stock themes, c (CSS teal) is near no hue (a separate implementation of the rule)
+export const HEX = { a: '#629E51', b: '#890F02', c: '#008080' };
+const HEX_COLORS = {
+  defaults: { color: { mode: 'fixed' } },
+  overrides: Object.entries(HEX).map(([name, fixedColor]) => ({
+    matcher: { id: 'byName', options: name },
+    properties: [{ id: 'color', value: { mode: 'fixed', fixedColor } }],
+  })),
+};
+
 const custom = (styling, extra = {}) => ({
   colorMode: 'custom',
   textMode: 'value_and_name',
@@ -150,9 +161,9 @@ export const CASES = [
         {
           matcher: { id: 'byName', options: 'web' },
           properties: [
-            { id: 'custom.backgroundColor', value: { mode: 'fixed', fixedColor: 'purple' } },
-            { id: 'custom.textColor', value: { mode: 'fixed', fixedColor: 'white' } },
-            { id: 'custom.sparklineLineWidth', value: 4 },
+            { id: 'custom.styling.backgroundColor', value: { mode: 'fixed', fixedColor: 'purple' } },
+            { id: 'custom.styling.textColor', value: { mode: 'fixed', fixedColor: 'white' } },
+            { id: 'custom.styling.sparklineLineWidth', value: 4 },
           ],
         },
       ],
@@ -181,23 +192,24 @@ export const CASES = [
     },
   },
 
-  // Colours without a name (a continuous scheme): background shade = the value colour, text shade = Automatic
+  // Colours without a name (hex): a shade is the nearest hue's, or without one the value colour (background) and
+  // Automatic (text)
   {
     id: 70,
-    title: 'continuous, background value',
+    title: 'hex colours, background value',
     options: custom({ backgroundColor: { mode: 'value' } }),
     targets: [series(['a', 'b', 'c'], wave)],
-    fieldConfig: { defaults: { color: { mode: 'continuous-GrYlRd' }, min: 0, max: 100 }, overrides: [] },
+    fieldConfig: HEX_COLORS,
   },
   {
     id: 71,
-    title: 'continuous, shades',
+    title: 'hex colours, shades',
     options: custom({
       backgroundColor: { mode: 'shade', shade: 'softer' },
       textColor: { mode: 'shade', shade: 'stronger' },
     }),
     targets: [series(['a', 'b', 'c'], wave)],
-    fieldConfig: { defaults: { color: { mode: 'continuous-GrYlRd' }, min: 0, max: 100 }, overrides: [] },
+    fieldConfig: HEX_COLORS,
   },
 
   // Automatic text per element, at its own size, on a white tile: 3:1 for the 40 px value, 4.5:1 for the 16 px

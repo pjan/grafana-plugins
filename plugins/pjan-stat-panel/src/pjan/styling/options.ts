@@ -23,10 +23,9 @@ import {
 export const CUSTOM_COLOR_MODE = 'custom';
 
 /**
- * The styling settings, the same keys as panel options (`options.styling.*`) and as field options (`custom.*`, only
- * in the overrides menu). None has a default value: unset is what Custom draws without it (like core's Value mode).
- * The field option names don't reuse the time series' `custom` keys (`fillColor`, `lineColor`, `lineWidth`,
- * `fillOpacity`), which mean something else there.
+ * The styling settings, the same keys as panel options (`options.styling.*`) and as field options (`custom.styling.*`,
+ * only in the overrides menu): the field options mirror the panel options, as in every plus plugin. None has a
+ * default value: unset is what Custom draws without it (like core's Value mode).
  */
 export interface StatStyling {
   backgroundColor?: StylingColor;
@@ -45,6 +44,10 @@ export type StatStylingKey = keyof StatStyling;
 export interface OptionsWithStyling {
   colorMode?: string;
   graphMode?: string;
+  styling?: StatStyling;
+}
+
+export interface FieldConfigWithStyling {
   styling?: StatStyling;
 }
 
@@ -168,15 +171,15 @@ export const sparklineFillOpacityOption = <T>() => panelOption<T>(sparklineSetti
 export const sparklineLineWidthOption = <T>() => panelOption<T>(sparklineSettings()[3], hasSparkline);
 
 /**
- * The same settings as field options (`custom.*`), for one series: hidden from the field defaults, so they only show
- * in the overrides menu. They apply only with Color mode Custom.
+ * The same settings as field options (`custom.styling.*`), for one series: hidden from the field defaults, so they
+ * only show in the overrides menu. They apply only with Color mode Custom.
  */
 export function addStylingFieldConfig<T>(builder: FieldConfigEditorBuilder<T>) {
   const customOnly = t('pjan.stat-styling.custom-only', '(Color mode Custom only)');
   for (const setting of [backgroundSetting(), textSetting(), ...sparklineSettings()]) {
     builder.addCustomEditor({
-      id: setting.key,
-      path: setting.key,
+      id: `styling.${setting.key}`,
+      path: `styling.${setting.key}`,
       name: setting.name,
       // The overrides menu doesn't show the panel's Color mode: say when the setting applies
       description: `${setting.description} ${customOnly}`,

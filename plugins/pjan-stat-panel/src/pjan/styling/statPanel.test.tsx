@@ -22,11 +22,16 @@ const STYLING: StatStyling = {
   sparklineLineWidth: 3,
 };
 
-function renderPanel(options: Partial<Options> & { styling?: StatStyling }, custom?: object) {
+function renderPanel(options: Partial<Options> & { styling?: StatStyling }, fieldStyling?: StatStyling) {
   const frame = toDataFrame({
     fields: [
       { name: 'time', type: FieldType.time, values: [1, 2, 3] },
-      { name: 'value', type: FieldType.number, values: [10, 20, 30], config: custom ? { custom } : {} },
+      {
+        name: 'value',
+        type: FieldType.number,
+        values: [10, 20, 30],
+        config: fieldStyling ? { custom: { styling: fieldStyling } } : {},
+      },
     ],
   });
   const props = getPanelProps<Options>(

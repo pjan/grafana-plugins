@@ -1,7 +1,7 @@
 // Test helper: builds the Atlas theme the way the Atlas theme plugin does (module.js `build()` in
-// pjan/atlas stacks/monitoring/grafana/plugins/atlas-theme-app, 2026-10-01): createTheme() from the theme definition,
-// with `getColorByName` patched to resolve the extra colour names (gray, teal, ...). `atlas-theme.json` is a copy of
-// that plugin's file.
+// pjan/atlas stacks/monitoring/grafana/plugins/atlas-theme-app, 4.1.0): createTheme() from the theme definition, with
+// `getColorByName` patched to resolve the extra colour names (gray, teal, ...), and their hues appended to
+// `theme.visualization.hues`. `atlas-theme.json` is a copy of that plugin's file.
 import { createTheme, type GrafanaTheme2 } from '@grafana/data';
 
 import atlas from '../../testdata/atlas-theme.json';
@@ -40,12 +40,41 @@ function resolve(node: Json): Json {
   return node;
 }
 
+// Grafana's five shade names of a hue, in its own order; the base shade is the primary one.
+const SHADE_PREFIXES = ['super-light-', 'light-', '', 'semi-dark-', 'dark-'];
+
+const own = (names: Record<string, string>, name: string) =>
+  Object.prototype.hasOwnProperty.call(names, name) ? names[name] : undefined;
+
+// The hues of the extra colour names, in the order of names, each with all five shade names (module.js `extraHues`).
+function extraHues(names: Record<string, string>): string[] {
+  const hues: string[] = [];
+  for (const name of Object.keys(names)) {
+    const hue = name.replace(/^(super-light-|light-|semi-dark-|dark-)/, '');
+    const complete = SHADE_PREFIXES.every((prefix) => own(names, prefix + hue) !== undefined);
+    if (complete && !hues.includes(hue)) {
+      hues.push(hue);
+    }
+  }
+  return hues;
+}
+
 export function createAtlasTheme(mode: Mode): GrafanaTheme2 {
   const theme = createTheme(resolve(atlas.themes[mode] as Json) as Parameters<typeof createTheme>[0]);
   const names = resolve(atlas.names[mode] as Json) as Record<string, string>;
   const byName = theme.visualization.getColorByName;
-  theme.visualization.getColorByName = (name: string) =>
-    (name && Object.prototype.hasOwnProperty.call(names, name) ? names[name] : undefined) || byName(name);
+  theme.visualization.getColorByName = (name: string) => (name && own(names, name)) || byName(name);
+  for (const hue of extraHues(names)) {
+    // createTheme() ignores hue names Grafana doesn't have, and its type only allows Grafana's six
+    theme.visualization.hues.push({
+      name: hue,
+      shades: SHADE_PREFIXES.map((prefix) => ({
+        color: theme.visualization.getColorByName(prefix + hue),
+        name: prefix + hue,
+        ...(prefix ? {} : { primary: true }),
+      })),
+    } as unknown as GrafanaTheme2['visualization']['hues'][number]);
+  }
   return theme;
 }
 

@@ -323,6 +323,14 @@ for (const [theme, scale] of [
       expect(await swatches(`fill color [${PLUGIN}]`)).toEqual(await swatches(`fill color [${CORE} ${theme}]`));
     });
 
+    test('Fill color on hex state colours: the shades of their nearest hue, as core draws them by name', async ({
+      page,
+    }) => {
+      const reference = await drawn(page, `fill color [${CORE} ${theme}]`);
+      const plugin = await drawn(page, `fill color, hex states [${PLUGIN}]`);
+      expect(plugin.fingerprint).toBe(reference.fingerprint);
+    });
+
     test('Line color: a fixed colour, and a shade on row b only', async ({ page }) => {
       const reference = await drawn(page, `line color [${CORE} ${theme}]`);
       const plugin = await drawn(page, `line color [${PLUGIN}]`);
@@ -650,7 +658,10 @@ for (const [theme, scale] of [
 interface SavedPanel {
   type: string;
   options: Record<string, unknown>;
-  fieldConfig: { defaults: { custom?: Record<string, unknown> }; overrides: Array<{ properties: unknown[] }> };
+  fieldConfig: {
+    defaults: { custom?: Record<string, unknown> & { styling?: Record<string, unknown> } };
+    overrides: Array<{ properties: unknown[] }>;
+  };
 }
 
 const savedPanel = (page: Page, title: RegExp | string) =>
@@ -686,8 +697,6 @@ const pickColor = (page: Page, name: string) =>
     .last()
     .click();
 
-const STYLING_FIELD_OPTIONS = ['fillColor', 'lineColor', 'valueColor', 'rowNameColor'];
-
 test.describe('saved JSON', () => {
   test.describe.configure({ mode: 'default' });
 
@@ -696,9 +705,25 @@ test.describe('saved JSON', () => {
     await expect.poll(async () => (await savedPanel(page, /.*/))?.type).toBe(PLUGIN);
     const saved = (await savedPanel(page, /.*/))!;
     expect(saved.options).not.toHaveProperty('styling');
-    for (const key of STYLING_FIELD_OPTIONS) {
-      expect(saved.fieldConfig.defaults.custom ?? {}).not.toHaveProperty(key);
-    }
+    expect(saved.fieldConfig.defaults.custom ?? {}).not.toHaveProperty('styling');
+  });
+
+  test('nested field options and their overrides survive loading the dashboard', async ({
+    gotoDashboardPage,
+    page,
+  }) => {
+    const title = `fill color [${PLUGIN}]`;
+    await gotoDashboardPage({ uid: UID });
+    await canvasOf(page, title);
+    await expect.poll(async () => (await savedPanel(page, title))?.options).toHaveProperty('showValue');
+    const saved = (await savedPanel(page, title))!;
+    expect(saved.fieldConfig.defaults.custom?.styling).toEqual({ fillColor: { mode: 'shade', shade: 'stronger' } });
+    expect(saved.fieldConfig.overrides).toEqual([
+      {
+        matcher: { id: 'byName', options: 'b' },
+        properties: [{ id: 'custom.styling.fillColor', value: { mode: 'shade', shade: 'softer' } }],
+      },
+    ]);
   });
 
   test('opening the editor writes nothing; a set value is saved, a cleared one removes its key', async ({
@@ -744,12 +769,14 @@ test.describe('saved JSON', () => {
     await fill.click();
     await page.getByRole('option', { name: /^Softer/ }).click();
     await expect
-      .poll(async () => (await savedPanel(page, title))?.fieldConfig.defaults.custom?.fillColor)
-      .toEqual({ mode: 'shade', shade: 'softer' });
+      .poll(async () => (await savedPanel(page, title))?.fieldConfig.defaults.custom?.styling)
+      .toEqual({ fillColor: { mode: 'shade', shade: 'softer' } });
     await editor('Fill color').getByRole('button', { name: 'Clear value' }).click();
+    // no key, and no empty `styling` object either: the field config is as before
     await expect
       .poll(async () => (await savedPanel(page, title))?.fieldConfig.defaults.custom ?? {})
-      .not.toHaveProperty('fillColor');
+      .not.toHaveProperty('styling');
+    expect((await savedPanel(page, title))?.fieldConfig).toEqual(before?.fieldConfig);
 
     // A fixed colour, picked with Grafana's colour picker
     const line = editor('Line color').getByRole('combobox');
@@ -759,8 +786,8 @@ test.describe('saved JSON', () => {
     await editor('Line color').getByRole('button', { name: 'Choose color' }).click();
     await pickColor(page, 'dark-blue');
     await expect
-      .poll(async () => (await savedPanel(page, title))?.fieldConfig.defaults.custom?.lineColor)
-      .toEqual({ mode: 'fixed', fixedColor: 'dark-blue' });
+      .poll(async () => (await savedPanel(page, title))?.fieldConfig.defaults.custom?.styling)
+      .toEqual({ lineColor: { mode: 'fixed', fixedColor: 'dark-blue' } });
     await page.mouse.move(0, 0); // the colour picker closes when the pointer leaves it (Escape would leave the editor)
 
     // A panel option: a colour, then cleared
@@ -859,7 +886,7 @@ test.describe('row name in the current state colour, across refreshes', () => {
                     mode: 'absolute',
                     steps: THRESHOLDS.map((color, i) => ({ color, value: i === 0 ? null : i * 25 })),
                   },
-                  custom: { fillOpacity: 100, lineWidth: 0, rowNameColor: { mode: 'state' } },
+                  custom: { fillOpacity: 100, lineWidth: 0, styling: { rowNameColor: { mode: 'state' } } },
                 },
                 overrides: [],
               },

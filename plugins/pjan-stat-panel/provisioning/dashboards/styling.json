@@ -634,9 +634,9 @@
           {
             "matcher": { "id": "byName", "options": "web" },
             "properties": [
-              { "id": "custom.backgroundColor", "value": { "mode": "fixed", "fixedColor": "purple" } },
-              { "id": "custom.textColor", "value": { "mode": "fixed", "fixedColor": "white" } },
-              { "id": "custom.sparklineLineWidth", "value": 4 }
+              { "id": "custom.styling.backgroundColor", "value": { "mode": "fixed", "fixedColor": "purple" } },
+              { "id": "custom.styling.textColor", "value": { "mode": "fixed", "fixedColor": "white" } },
+              { "id": "custom.styling.sparklineLineWidth", "value": 4 }
             ]
           }
         ]
@@ -703,7 +703,7 @@
     {
       "id": 70,
       "type": "pjan-stat-panel",
-      "title": "continuous, background value",
+      "title": "hex colours, background value",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -715,8 +715,21 @@
       ],
       "gridPos": { "x": 0, "y": 45, "w": 12, "h": 5 },
       "fieldConfig": {
-        "defaults": { "color": { "mode": "continuous-GrYlRd" }, "min": 0, "max": 100 },
-        "overrides": []
+        "defaults": { "color": { "mode": "fixed" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "a" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#629E51" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "b" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#890F02" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "c" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#008080" } }]
+          }
+        ]
       },
       "options": {
         "colorMode": "custom",
@@ -728,7 +741,7 @@
     {
       "id": 71,
       "type": "pjan-stat-panel",
-      "title": "continuous, shades",
+      "title": "hex colours, shades",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -740,8 +753,21 @@
       ],
       "gridPos": { "x": 12, "y": 45, "w": 12, "h": 5 },
       "fieldConfig": {
-        "defaults": { "color": { "mode": "continuous-GrYlRd" }, "min": 0, "max": 100 },
-        "overrides": []
+        "defaults": { "color": { "mode": "fixed" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "a" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#629E51" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "b" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#890F02" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "c" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#008080" } }]
+          }
+        ]
       },
       "options": {
         "colorMode": "custom",

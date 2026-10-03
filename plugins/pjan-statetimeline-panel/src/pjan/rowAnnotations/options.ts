@@ -2,6 +2,7 @@ import {
   type DataFrame,
   DataTopic,
   type FieldConfigEditorBuilder,
+  FieldType,
   type PanelOptionsEditorBuilder,
 } from '@grafana/data';
 import { t } from '@grafana/i18n';
@@ -32,9 +33,16 @@ export interface OptionsWithRowAnnotations {
   rowAnnotations?: RowAnnotationsOptions;
 }
 
-/** Field option (custom field config) that replaces a row's key; set per row through overrides. */
-export interface FieldConfigWithAnnotationKey {
+/**
+ * Field option that replaces a row's key; set per row through overrides. Like the panel options, under
+ * `custom.rowAnnotations` (override id `custom.rowAnnotations.annotationKey`).
+ */
+export interface FieldRowAnnotations {
   annotationKey?: string;
+}
+
+export interface FieldConfigWithRowAnnotations {
+  rowAnnotations?: FieldRowAnnotations;
 }
 
 export const DEFAULT_ROW_ANNOTATION_FIELD = 'tags';
@@ -157,7 +165,7 @@ export function addRowAnnotationOptions<T>(builder: PanelOptionsEditorBuilder<T>
  */
 export function addAnnotationKeyFieldConfig<T>(builder: FieldConfigEditorBuilder<T>) {
   builder.addTextInput({
-    path: 'annotationKey',
+    path: 'rowAnnotations.annotationKey',
     category: getCategory(),
     name: t('pjan.row-annotations.annotation-key-name', 'Annotation key'),
     description: t(
@@ -165,5 +173,6 @@ export function addAnnotationKeyFieldConfig<T>(builder: FieldConfigEditorBuilder
       'Matches annotations to this row by this key instead of the row key ("Show on matching rows")'
     ),
     hideFromDefaults: true,
+    shouldApply: (field) => field.type !== FieldType.time,
   });
 }

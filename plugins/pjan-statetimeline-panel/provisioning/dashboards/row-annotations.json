@@ -91,7 +91,7 @@
             },
             "properties": [
               {
-                "id": "custom.annotationKey",
+                "id": "custom.rowAnnotations.annotationKey",
                 "value": "toolbox"
               }
             ]
@@ -183,7 +183,7 @@
             },
             "properties": [
               {
-                "id": "custom.annotationKey",
+                "id": "custom.rowAnnotations.annotationKey",
                 "value": "toolbox"
               }
             ]
@@ -430,7 +430,7 @@
             },
             "properties": [
               {
-                "id": "custom.annotationKey",
+                "id": "custom.rowAnnotations.annotationKey",
                 "value": "toolbox"
               }
             ]
@@ -523,7 +523,7 @@
             },
             "properties": [
               {
-                "id": "custom.annotationKey",
+                "id": "custom.rowAnnotations.annotationKey",
                 "value": "toolbox"
               }
             ]
@@ -615,7 +615,7 @@
             },
             "properties": [
               {
-                "id": "custom.annotationKey",
+                "id": "custom.rowAnnotations.annotationKey",
                 "value": "toolbox"
               }
             ]

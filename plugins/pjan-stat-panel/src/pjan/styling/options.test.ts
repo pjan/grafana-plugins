@@ -1,9 +1,15 @@
 import {
+  applyFieldOverrides,
+  createDataFrame,
+  type FieldConfigSource,
+  FieldMatcherID,
   FieldType,
+  getPanelOptionsWithDefaults,
   type PanelOptionsEditorItem,
   PanelOptionsEditorBuilder,
   standardEditorsRegistry,
 } from '@grafana/data';
+import { LIGHT } from '@pjan/grafana-styling/src/testdata/themes';
 import { ClearableSliderEditor, StylingColorEditor } from '@pjan/grafana-styling';
 
 import { plugin } from '../../plugins/panel/stat/module';
@@ -127,9 +133,10 @@ describe('Color mode Custom', () => {
 
   it('each setting is also a field option, only in the overrides menu, for every field but time', () => {
     const ids = plugin.fieldConfigRegistry.list().map((i) => i.id);
-    expect(ids.filter((id) => id.startsWith('custom.'))).toEqual(STYLING_KEYS.map((key) => `custom.${key}`));
+    expect(ids.filter((id) => id.startsWith('custom.'))).toEqual(STYLING_KEYS.map((key) => `custom.styling.${key}`));
     for (const key of STYLING_KEYS) {
-      const field = plugin.fieldConfigRegistry.get(`custom.${key}`);
+      const field = plugin.fieldConfigRegistry.get(`custom.styling.${key}`);
+      expect(field.path).toBe(`styling.${key}`);
       expect(field.hideFromDefaults).toBe(true);
       // the overrides menu doesn't show Color mode: the description says when it applies
       expect(field.description).toMatch(/ \(Color mode Custom only\)$/);
@@ -143,13 +150,86 @@ describe('Color mode Custom', () => {
     }
   });
 
-  it('the field option names don’t reuse the time series’ custom keys', () => {
-    for (const reserved of ['fillColor', 'lineColor', 'lineWidth', 'fillOpacity']) {
-      expect(STYLING_KEYS).not.toContain(reserved);
-    }
+  it('the field options mirror the panel options: `custom.styling.<key>` for `options.styling.<key>`', () => {
+    const builder = new PanelOptionsEditorBuilder();
+    plugin.getPanelOptionsSupplier()(builder as never, { data: [] });
+    const panelStyling = builder
+      .getItems()
+      .map((i) => i.path)
+      .filter((path) => path.startsWith('styling.'));
+    const fieldStyling = plugin.fieldConfigRegistry
+      .list()
+      .filter((i) => i.isCustom)
+      .map((i) => i.path);
+    expect(fieldStyling.sort()).toEqual(panelStyling.sort());
   });
 
   it('adds nothing to a new panel’s field config (no custom defaults)', () => {
     expect(plugin.fieldConfigDefaults.defaults.custom ?? {}).toEqual({});
+  });
+});
+
+// The field options mirror the panel options (`custom.styling.<key>`; pjan's decision 3, 2026-10-03). No core panel
+// uses nested custom paths, so these run Grafana's own code on them. They are override-only, so a panel's defaults
+// never hold them.
+describe('field-option storage: custom.styling', () => {
+  const BLACK = { mode: 'fixed', fixedColor: 'black' };
+  const onSeries = (name: string, properties: Array<{ id: string; value?: unknown }>): FieldConfigSource => ({
+    defaults: {},
+    overrides: [{ matcher: { id: FieldMatcherID.byName, options: name }, properties }],
+  });
+  const load = (fieldConfig: FieldConfigSource) =>
+    getPanelOptionsWithDefaults({
+      plugin,
+      currentOptions: {},
+      currentFieldConfig: fieldConfig,
+      isAfterPluginChange: false,
+    }).fieldConfig;
+  const process = (fieldConfig: FieldConfigSource) =>
+    applyFieldOverrides({
+      data: [
+        createDataFrame({
+          fields: [
+            { name: 'time', type: FieldType.time, values: [1] },
+            { name: 'a', type: FieldType.number, values: [1] },
+            { name: 'b', type: FieldType.number, values: [2] },
+          ],
+        }),
+      ],
+      fieldConfig,
+      fieldConfigRegistry: plugin.fieldConfigRegistry,
+      replaceVariables: (v) => v,
+      theme: LIGHT,
+    })[0].fields.map((field) => field.config.custom?.styling);
+
+  it('an override is kept when the panel loads; the old flat ids are dropped', () => {
+    const fieldConfig = load(
+      onSeries('b', [
+        { id: 'custom.backgroundColor', value: BLACK },
+        { id: 'custom.styling.backgroundColor', value: BLACK },
+        { id: 'custom.styling.sparklineLineWidth', value: 3 },
+      ])
+    );
+    expect(fieldConfig.overrides[0].properties).toEqual([
+      { id: 'custom.styling.backgroundColor', value: BLACK },
+      { id: 'custom.styling.sparklineLineWidth', value: 3 },
+    ]);
+    expect(fieldConfig.defaults.custom ?? {}).toEqual({});
+  });
+
+  it('an override styles its series only', () => {
+    expect(process(onSeries('b', [{ id: 'custom.styling.backgroundColor', value: BLACK }]))).toEqual([
+      undefined,
+      undefined,
+      { backgroundColor: BLACK },
+    ]);
+  });
+
+  it('an override property without a value (cleared in the editor) sets nothing', () => {
+    expect(process(onSeries('b', [{ id: 'custom.styling.backgroundColor' }]))).toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ]);
   });
 });

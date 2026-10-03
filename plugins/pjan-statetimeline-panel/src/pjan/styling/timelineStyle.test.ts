@@ -30,7 +30,9 @@ const frameWith = (fieldConfig: FieldConfigSource) =>
   processFrame(theme, ['a', 'b', 'c'], ['up', 'up'], fieldConfig, config);
 const override = (name: string, id: string, value: unknown): FieldConfigSource => ({
   defaults: {},
-  overrides: [{ matcher: { id: FieldMatcherID.byName, options: name }, properties: [{ id: `custom.${id}`, value }] }],
+  overrides: [
+    { matcher: { id: FieldMatcherID.byName, options: name }, properties: [{ id: `custom.styling.${id}`, value }] },
+  ],
 });
 const green = theme.visualization.getColorByName('green');
 const shade = (name: string, s: Parameters<typeof getRelativeShadeColor>[2]) =>
@@ -46,7 +48,7 @@ describe('getTimelineStyleHooks', () => {
 
   it('an override on row 2 styles row 2 only', () => {
     const frame = frameWith(override('b', 'fillColor', { mode: 'shade', shade: 'stronger' }));
-    expect(frame.fields.map((f) => f.config.custom?.fillColor?.shade)).toEqual([
+    expect(frame.fields.map((f) => f.config.custom?.styling?.fillColor?.shade)).toEqual([
       undefined,
       undefined,
       'stronger',
@@ -74,10 +76,15 @@ describe('getTimelineStyleHooks', () => {
 
   it('the field default applies to every row, not to the time field', () => {
     const frame = frameWith({
-      defaults: { custom: { lineColor: { mode: 'fixed', fixedColor: 'red' } } },
+      defaults: { custom: { styling: { lineColor: { mode: 'fixed', fixedColor: 'red' } } } },
       overrides: [],
     });
-    expect(frame.fields.map((f) => f.config.custom?.lineColor?.fixedColor)).toEqual([undefined, 'red', 'red', 'red']);
+    expect(frame.fields.map((f) => f.config.custom?.styling?.lineColor?.fixedColor)).toEqual([
+      undefined,
+      'red',
+      'red',
+      'red',
+    ]);
   });
 
   it('the Pill look: an opaque fill and a 1 px line on every row, values that don’t fit hidden', () => {
@@ -263,9 +270,9 @@ describe('timeline.ts with the styling hooks', () => {
           {
             matcher: { id: FieldMatcherID.byName, options: 'b' },
             properties: [
-              { id: 'custom.fillColor', value: { mode: 'shade', shade: 'stronger' } },
-              { id: 'custom.lineColor', value: { mode: 'fixed', fixedColor: 'red' } },
-              { id: 'custom.valueColor', value: { mode: 'automatic' } },
+              { id: 'custom.styling.fillColor', value: { mode: 'shade', shade: 'stronger' } },
+              { id: 'custom.styling.lineColor', value: { mode: 'fixed', fixedColor: 'red' } },
+              { id: 'custom.styling.valueColor', value: { mode: 'automatic' } },
             ],
           },
         ],
@@ -290,7 +297,7 @@ describe('timeline.ts with the styling hooks', () => {
         overrides: [
           {
             matcher: { id: FieldMatcherID.byName, options: 'b' },
-            properties: [{ id: 'custom.fillColor', value: { mode: 'fixed', fixedColor: 'purple' } }],
+            properties: [{ id: 'custom.styling.fillColor', value: { mode: 'fixed', fixedColor: 'purple' } }],
           },
         ],
       }),

@@ -165,10 +165,15 @@ sparklineLineOpacity, sparklineFillOpacity, sparklineLineWidth}`.
   - None has a default value: the colours use the shared `StylingColorEditor` (a clearable `Combobox`, with Grafana's
     `ColorPicker` for a fixed colour) and the numbers the shared `ClearableSliderEditor` (its `unsetValue` shows where
     the panel draws an unset option: 100, 20, 1). A cleared option loses its key.
-  - Each is also a field option with the same name (`custom.*`), `hideFromDefaults` (only in the overrides menu), with
-    `override`, `process` and a `shouldApply` that skips time fields. The names don't reuse the time series' `custom`
-    keys (`fillColor`, `lineColor`, `lineWidth`, `fillOpacity`). A new panel saves no `custom` (no defaults).
-- **Per tile** (`tileStyling.ts`, `getStatTileStyling`): the settings are the series' override (`tile.field.custom`)
+  - Each is also a field option with the same key under `custom.styling` (`custom.styling.<key>`, override ids the
+    same: the field options mirror the panel options, pjan's standard for every plus plugin, 2026-10-03; until then
+    they were flat `custom.<key>`, never released), `hideFromDefaults` (only in the overrides menu), with `override`,
+    `process` and a `shouldApply` that skips time fields. Only `styling` of core's `custom` namespace is the plugin's.
+    A new panel saves no `custom` (no defaults). Nested custom paths in Grafana 13.2.3 (no core panel uses them) are
+    described in State timeline plus's `UPSTREAM.md` ("Field-option storage"); here they are override-only, covered by
+    `options.test.ts` (Grafana's load and override code) and `tests/stylingEditor.spec.ts` (an override property set
+    and cleared in the editor).
+- **Per tile** (`tileStyling.ts`, `getStatTileStyling`): the settings are the series' override (`tile.field.custom.styling`)
   over the panel option; an incomplete or out-of-range value counts as unset. The colour name behind the tile's colour
   comes from `getColorNameLookup` on the tile's field (`view.dataFrame.fields[colIndex]`), as the spike showed:
   thresholds (absolute and percentage), value mappings, the fixed colour, classic palette slots (by the series index
@@ -205,8 +210,10 @@ sparklineLineOpacity, sparklineFillOpacity, sparklineLineWidth}`.
   - Sparkline: Value, a shade, Same as text (the value's colour as drawn), or a fixed
     colour; line opacity, fill opacity (set: the line's colour at that alpha) and line width; unset as above. Grafana's public
     `Sparkline` draws exactly the `lineColor`, `fillColor` and `lineWidth` it is given (spike, and `tests/styling.spec.ts`).
-  - Colours without a name (hex colours, continuous schemes, a palette of hex colours such as Atlas's): a Background
-    or Sparkline shade falls back to the value colour, a Text shade to Automatic.
+  - Colours without a name (hex colours, continuous schemes, a palette of hex colours such as Atlas's, CSS names) take the shades
+    of their nearest theme hue (`getShadeColor`; the rule is in `packages/grafana-styling/README.md`), the value drawn
+    gray without a colour included. Without one (or for `text` and `transparent`), a Background or Sparkline shade
+    falls back to the value colour, a Text shade to Automatic.
 - **Override-only field options** say "(Color mode Custom only)" at the end of their description: the overrides menu
   doesn't show the panel's Color mode.
 - **Shared package changes** (same commit series): `getMinTextContrast`, `getTextContrast` compositing a translucent
@@ -340,11 +347,12 @@ suggestions) and `buildConfig.test.ts` (JSX runtime regression guard).
 
 Color mode Custom (`src/pjan/styling/`): `options.test.ts` (the fifth choice; the "Stat styles" list in the plan's
 order; `showIf` with Custom, and Graph mode Area for the sparkline options; no defaults; the editors and their
-settings; the field options hidden from the defaults, with override, process and `shouldApply`; no reuse of the time
-series' `custom` keys; no `custom` defaults), `tileStyling.test.ts` (resolution order, each mode and its fallbacks,
+settings; the field options hidden from the defaults, with override, process and `shouldApply`; the field options
+mirror the panel options under `custom.styling`; no `custom` defaults; Grafana's load and override code on the nested
+ids: an override kept on load, the old flat ids dropped, an override on one series, a cleared override property), `tileStyling.test.ts` (resolution order, each mode and its fallbacks,
 chosen colours drawn as chosen at every size, Automatic per element size and weight, pjan's black-tile example,
 sparkline colours, opacities and width, colour names behind tiles: thresholds, overrides, classic palette slots in
-Grafana's and the Atlas theme), `bigValueLayout.test.tsx` (the copied layout's hooks: nothing set equals Value mode,
+Grafana's and the Atlas theme; shades of colours without a name from their nearest hue), `bigValueLayout.test.tsx` (the copied layout's hooks: nothing set equals Value mode,
 each element at its own size, percent change on and off a background, the sparkline config), `statPanel.test.tsx`
 (with every core mode, styling options and overrides change nothing; with Custom, panel option and override). The
 shared package has its own tests for `getMinTextContrast`, the new modes and the slider's `unsetValue`.
@@ -409,14 +417,16 @@ End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.ya
   Background color mode, each Text color mode, each Sparkline color mode with opacities and widths, the Atlas look
   (soft, Automatic, sparkline as text 45/18), pjan's example (black tiles, text in the state colour, dark blue too),
   Automatic per element on white (3:1 for the large value, 4.5:1 for percent change and the name), at a unit's size,
-  and against the canvas of a transparent panel, an override on one series, percent change on and off a background, a
-  continuous scheme (shades fall back). Automatic is checked against values worked out by hand (Grafana's luminance
+  and against the canvas of a transparent panel, an override on one series, percent change on and off a background, hex
+  colours (two take the shades of Grafana's green and red, the third, CSS teal, falls back to the value colour and
+  Automatic). Automatic is checked against values worked out by hand (Grafana's luminance
   rounded to 3 digits, 1 % steps between the stock theme's page colour and `maxContrast`) as well as against the
   shared helper. "Nothing set" is compared with core's Value mode pixel by pixel. Negative control: without percent
   change following the text, the matching cases fail.
 - `tests/stylingEditor.spec.ts`: the "Stat styles" list in the editor and its `showIf`; selecting Custom saves only
-  `colorMode`; a value set is saved and a cleared one loses its key (colour, shade, slider); opening the editor of a
-  Custom panel writes nothing (3 seconds).
+  `colorMode`; a value set is saved and a cleared one loses its key (colour, shade, slider); an override property set in
+  the editor is saved as `custom.styling.backgroundColor`, and cleared keeps no value; opening the editor of a Custom
+  panel writes nothing (3 seconds).
 - `tests/interaction.spec.ts` (on the parity dashboard, core and plugin alike): one data link renders the tile as a
   link to it; two open the links menu on click and close it with Escape; Tab reaches the link and the menu button
   (`:focus-visible`), Enter opens the menu; the plugin's focused tiles have core's outline and box shadow.
@@ -435,6 +445,10 @@ Negative controls for the explicit colours and Automatic text (2026-10-03): a co
 core's text colour for unset text on a background, or Automatic without a background starting from the panel
 background instead of the value's colour, fails `tileStyling.test.ts`; the shared rule's controls are listed in
 State timeline plus's `UPSTREAM.md`.
+
+Negative controls for the field-option storage and the shades of colours without a name (2026-10-03): the field
+options registered flat again (`options.test.ts`, 4 tests); `resolveStyling` reading flat `custom` (4 tests, the
+rendered panel's override included); shades by name only (`tileStyling.test.ts`, 3 tests).
 
 ## Re-syncing to a newer tag
 

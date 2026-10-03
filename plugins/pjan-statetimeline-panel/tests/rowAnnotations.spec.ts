@@ -476,7 +476,7 @@ test.describe('per-row annotations', () => {
     const { options, custom } = (await saved())!;
     expect(options).toHaveProperty('legend');
     expect(options).not.toHaveProperty('rowAnnotations');
-    expect(custom).not.toHaveProperty('annotationKey');
+    expect(custom).not.toHaveProperty('rowAnnotations');
   });
 });
 

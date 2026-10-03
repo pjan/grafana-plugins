@@ -70,8 +70,8 @@ describe('getRowKeys', () => {
   it('lets a row’s "Annotation key" field option replace its key', () => {
     const frame = timeline([
       { name: 'web' },
-      { name: 'tools', labels: { job: 'tools' }, custom: { annotationKey: 'toolbox' } },
-      { name: 'media', custom: { annotationKey: '' } },
+      { name: 'tools', labels: { job: 'tools' }, custom: { rowAnnotations: { annotationKey: 'toolbox' } } },
+      { name: 'media', custom: { rowAnnotations: { annotationKey: '' } } },
     ]);
     expect(getRowKeys(frame, {})).toEqual(['web', 'toolbox', 'media']);
     expect(getRowKeys(frame, { rowKey: 'label', label: 'job' })).toEqual([undefined, 'toolbox', undefined]);
@@ -99,7 +99,7 @@ describe('getOtherRowKeys', () => {
   it('uses the same key as the drawn rows: override, label', () => {
     const other = timeline([
       { name: 'a', labels: { job: 'tools' } },
-      { name: 'b', labels: { job: 'db' }, custom: { annotationKey: 'database' } },
+      { name: 'b', labels: { job: 'db' }, custom: { rowAnnotations: { annotationKey: 'database' } } },
     ]);
     expect(getOtherRowKeys([other], [], { rowKey: 'label', label: 'job' })).toEqual(['tools', 'database']);
   });

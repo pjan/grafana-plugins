@@ -5,7 +5,7 @@ import { type TimeZone } from '@grafana/schema';
 import { FIXED_UNIT, type UPlotConfigBuilder, UPLOT_AXIS_FONT_SIZE } from '@grafana/ui';
 import { getAutomaticText, getMinTextContrast, getStylingColor, toCanvasColor } from '@pjan/grafana-styling';
 
-import { type FieldConfigWithStyling, ROW_NAME_COLOR_MODES, type TimelineStylingOptions } from './options';
+import { getFieldStyling, ROW_NAME_COLOR_MODES, type TimelineStylingOptions } from './options';
 
 // Row names are drawn in the axis font (12 px, the normal weight), so they need 4.5:1.
 const ROW_NAME_MIN_CONTRAST = getMinTextContrast(UPLOT_AXIS_FONT_SIZE, 400);
@@ -69,7 +69,7 @@ function getRowNameColorFn(
   getTimeRange: () => TimeRange,
   panelBackground?: string
 ): RowNameColorFn | undefined {
-  const setting = getStylingColor((field.config.custom as FieldConfigWithStyling)?.rowNameColor, ROW_NAME_COLOR_MODES);
+  const setting = getStylingColor(getFieldStyling(field.config.custom).rowNameColor, ROW_NAME_COLOR_MODES);
   if (!setting) {
     return undefined;
   }

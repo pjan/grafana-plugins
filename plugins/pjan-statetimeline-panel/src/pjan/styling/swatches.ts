@@ -1,14 +1,27 @@
 import { useMemo } from 'react';
 
-import { type DataFrame, type Field, FieldType, type GrafanaTheme2 } from '@grafana/data';
+import { type DataFrame, type Field, FieldColorModeId, FieldType, type GrafanaTheme2 } from '@grafana/data';
 import { useTheme2, type VizLegendItem } from '@grafana/ui';
-import { getColorNameLookup } from '@pjan/grafana-styling';
+import { getCandidateColorNames } from '@pjan/grafana-styling';
 
 import { type TimelineStylingOptions } from './options';
 import { getRowStyle, type RowStyle } from './rowStyle';
 
 // The swatch of a state shows its fill without Fill opacity, as core's shows the state colour.
 const swatchOf = (row: RowStyle | undefined, stateColor: string) => row?.getFill(stateColor) ?? stateColor;
+
+/**
+ * The colours a row's colour sources produce, named or not (a hex colour can take the shades of its nearest hue). A
+ * classic palette gives each row one slot of the whole palette, so a row with a palette mode produces the colours of
+ * its own values only; otherwise every row would have every slot, and the first row would decide for all.
+ */
+function getRowColors(field: Field, theme: GrafanaTheme2): Set<string | undefined> {
+  const mode = field.config.color?.mode;
+  if (mode === FieldColorModeId.PaletteClassic || mode === FieldColorModeId.PaletteClassicByName) {
+    return new Set(field.values.map((value) => field.display?.(value).color));
+  }
+  return new Set(getCandidateColorNames(field, theme).map((name) => theme.visualization.getColorByName(name)));
+}
 
 /**
  * The legend items with the fill colours drawn. Core's legend has one item per state colour (or threshold) for all
@@ -32,12 +45,12 @@ export function getLegendItemsWithDrawnColors(
   if (!styles.some(Boolean)) {
     return items;
   }
-  const names = fields.map((field) => getColorNameLookup(field, theme));
+  const colors = fields.map((field) => getRowColors(field, theme));
   return items.map((item) => {
     if (!item.color) {
       return item;
     }
-    const i = names.findIndex((lookup) => lookup.has(item.color!));
+    const i = colors.findIndex((produced) => produced.has(item.color!));
     return i === -1 ? item : { ...item, color: swatchOf(styles[i], item.color) };
   });
 }

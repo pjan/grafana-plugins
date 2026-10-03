@@ -126,20 +126,29 @@ const shade = (s) => ({ mode: 'shade', shade: s });
 const fixed = (fixedColor) => ({ mode: 'fixed', fixedColor });
 
 // Fill color: stronger on every row, softer on row b. Core draws the same with the shades' names as mapping colours.
+const fillReferences = {
+  references: Object.fromEntries(
+    ['light', 'dark'].map((theme) => [
+      theme,
+      {
+        defaults: { mappings: shadeMappings(theme, 'stronger') },
+        overrides: [byName('b', { mappings: shadeMappings(theme, 'softer') })],
+      },
+    ])
+  ),
+};
+const fillColor = {
+  custom: { styling: { fillColor: shade('stronger') } },
+  overrides: [byName('b', { 'custom.styling.fillColor': shade('softer') })],
+};
+addCase('fill color', fillColor, fillReferences);
+// The same with hex state colours from Grafana's classic palette, which take the shades of their nearest hue: green,
+// yellow and red in both stock themes (a separate implementation of the rule).
+const HEX = { green: '#629E51', yellow: '#967302', red: '#890F02' };
 addCase(
-  'fill color',
-  { custom: { fillColor: shade('stronger') }, overrides: [byName('b', { 'custom.fillColor': shade('softer') })] },
-  {
-    references: Object.fromEntries(
-      ['light', 'dark'].map((theme) => [
-        theme,
-        {
-          defaults: { mappings: shadeMappings(theme, 'stronger') },
-          overrides: [byName('b', { mappings: shadeMappings(theme, 'softer') })],
-        },
-      ])
-    ),
-  }
+  'fill color, hex states',
+  { ...fillColor, defaults: { mappings: mappingsOf((hue) => HEX[hue]) } },
+  fillReferences
 );
 
 // Line color: purple on every row, the stronger shade on row b; no fill. Core draws the same with the line colours as
@@ -148,8 +157,8 @@ const lineCustom = { lineWidth: 2, fillOpacity: 0 };
 addCase(
   'line color',
   {
-    custom: { ...lineCustom, lineColor: fixed('purple') },
-    overrides: [byName('b', { 'custom.lineColor': shade('stronger') })],
+    custom: { ...lineCustom, styling: { lineColor: fixed('purple') } },
+    overrides: [byName('b', { 'custom.styling.lineColor': shade('stronger') })],
   },
   {
     references: Object.fromEntries(
@@ -166,10 +175,10 @@ addCase(
 );
 
 addCase('value color', {
-  custom: { valueColor: fixed('#1f60c4') },
+  custom: { styling: { valueColor: fixed('#1f60c4') } },
   overrides: [
-    byName('b', { 'custom.valueColor': shade('stronger') }),
-    byName('c', { 'custom.valueColor': { mode: 'automatic' } }),
+    byName('b', { 'custom.styling.valueColor': shade('stronger') }),
+    byName('c', { 'custom.styling.valueColor': { mode: 'automatic' } }),
   ],
 });
 addCase('value overflow', { options: { styling: { valueOverflow: 'hide' } } });
@@ -185,16 +194,16 @@ addCase(
   {
     targets: [numberTarget],
     defaults: numberDefaults,
-    custom: { valueColor: { mode: 'automatic' } },
+    custom: { styling: { valueColor: { mode: 'automatic' } } },
   },
   { core: { targets: [numberTarget], defaults: numberDefaults } }
 );
 addCase('grid and axis text', { options: { styling: { gridColor: 'red', axisTextColor: '#ff7f00' } } });
 addCase('row names', {
   overrides: [
-    byName('a', { 'custom.rowNameColor': { mode: 'state' } }),
-    byName('b', { 'custom.rowNameColor': fixed('purple') }),
-    byName('c', { 'custom.rowNameColor': { mode: 'state' } }),
+    byName('a', { 'custom.styling.rowNameColor': { mode: 'state' } }),
+    byName('b', { 'custom.styling.rowNameColor': fixed('purple') }),
+    byName('c', { 'custom.styling.rowNameColor': { mode: 'state' } }),
   ],
 });
 // The same on a transparent panel: the names are measured against the dashboard's canvas behind it
@@ -203,9 +212,9 @@ addCase(
   {
     transparent: true,
     overrides: [
-      byName('a', { 'custom.rowNameColor': { mode: 'state' } }),
-      byName('b', { 'custom.rowNameColor': fixed('purple') }),
-      byName('c', { 'custom.rowNameColor': { mode: 'state' } }),
+      byName('a', { 'custom.styling.rowNameColor': { mode: 'state' } }),
+      byName('b', { 'custom.styling.rowNameColor': fixed('purple') }),
+      byName('c', { 'custom.styling.rowNameColor': { mode: 'state' } }),
     ],
   },
   { core: { transparent: true } }

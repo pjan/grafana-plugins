@@ -196,6 +196,54 @@ test.describe('Color mode Custom in the editor and the saved JSON', () => {
     expect(await styling()).toEqual({ textColor: { mode: 'shade', shade: 'stronger' } });
   });
 
+  test('an override property is saved as `custom.styling.<key>`; cleared, it keeps no value', async ({
+    gotoDashboardPage,
+    page,
+  }) => {
+    const panel = STYLING.panels.find((p) => p.title === 'custom, nothing set')!;
+    await createDashboard('pjan-stat-styling-override', [{ ...panel, id: 1 }]);
+    await gotoDashboardPage({
+      uid: 'pjan-stat-styling-override',
+      queryParams: new URLSearchParams({ editPanel: '1' }),
+    });
+    await expect(editor(page, 'Background color')).toBeVisible({ timeout: 30_000 });
+    const fieldConfig = async () =>
+      (await savedPanel(page, 1))?.fieldConfig as {
+        defaults: { custom?: object };
+        overrides: Array<{ matcher: object; properties: object[] }>;
+      };
+    const before = await fieldConfig();
+
+    await page.getByTestId('data-testid Value picker button Add field override').click();
+    await page.getByRole('option', { name: /^Fields with name\s*Set properties for a specific field/ }).click();
+    await page
+      .getByTestId('data-testid panel-options-override-0 Fields with name field property editor')
+      .getByRole('combobox')
+      .click();
+    await page.getByRole('option', { name: 'web', exact: true }).click();
+    await page.getByTestId('data-testid Value picker button Add override property').click();
+    await page.getByRole('option', { name: /^Stat styles > Background color/ }).click();
+    // The property's row: the innermost element with its remove button and its editor
+    const row = page
+      .locator('div')
+      .filter({ has: page.getByRole('button', { name: 'Remove property' }) })
+      .filter({ has: page.getByRole('combobox') })
+      .last();
+    await row.getByRole('combobox').click();
+    await page.getByRole('option', { name: /^Value/ }).click();
+    // Grafana's editor also saves the matcher's scope
+    const matcher = expect.objectContaining({ id: 'byName', options: 'web' });
+    await expect
+      .poll(async () => (await fieldConfig())?.overrides)
+      .toEqual([{ matcher, properties: [{ id: 'custom.styling.backgroundColor', value: { mode: 'value' } }] }]);
+
+    await row.getByRole('button', { name: 'Clear value' }).click();
+    await expect
+      .poll(async () => (await fieldConfig())?.overrides)
+      .toEqual([{ matcher, properties: [{ id: 'custom.styling.backgroundColor' }] }]);
+    expect((await fieldConfig())?.defaults).toEqual(before?.defaults);
+  });
+
   test('opening the editor of a Custom panel writes nothing', async ({ gotoDashboardPage, page }) => {
     await gotoDashboardPage({ uid: STYLING.uid });
     await panelContent(page, ATLAS_ID).scrollIntoViewIfNeeded();

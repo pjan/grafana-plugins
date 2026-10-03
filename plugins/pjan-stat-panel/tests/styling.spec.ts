@@ -171,17 +171,12 @@ const readTiles = (page: Page, id: number): Promise<DrawnTile[]> =>
     });
   });
 
-// What a tile should draw, by the rules of Color mode Custom (README, UPSTREAM.md), for its state colour name
-function expected(
-  theme: GrafanaTheme2,
-  styling: Styling,
-  colorName: string | undefined,
-  valueColor: string,
-  tile: DrawnTile
-) {
+// What a tile should draw, by the rules of Color mode Custom (README, UPSTREAM.md), for its state colour name. Named
+// state colours only: colours without a name take their nearest hue's shades, which the hex colour test checks
+// against hues worked out separately.
+function expected(theme: GrafanaTheme2, styling: Styling, colorName: string, valueColor: string, tile: DrawnTile) {
   const named = (name: string) => theme.visualization.getColorByName(name);
-  const shade = (s: StylingColor) =>
-    colorName && s.shade ? getRelativeShadeColor(theme, colorName, s.shade) : undefined;
+  const shade = (s: StylingColor) => (s.shade ? getRelativeShadeColor(theme, colorName, s.shade) : undefined);
   const resolve = (s: StylingColor | undefined): string | undefined => {
     switch (s?.mode) {
       case 'value':
@@ -202,8 +197,8 @@ function expected(
       background: theme.colors.background.primary,
       from: background ? undefined : valueColor,
     });
-  // A value, shade or fixed colour as chosen; Automatic (and a shade without a name, and unset on a background) is the
-  // first readable shade of what the text is drawn on
+  // A value, shade or fixed colour as chosen; Automatic (and unset on a background) is the first readable shade of
+  // what the text is drawn on
   const text = (fontSize: number, weight: number, element: 'value' | 'name'): string | undefined => {
     const setting = styling.textColor;
     if (!setting) {
@@ -498,19 +493,31 @@ for (const scale of [1, 2]) {
         }
       });
 
-      test('colours without a name: a background shade is the value colour, a text shade Automatic', async ({
+      test('colours without a name: the shades of the nearest hue; without one, the value colour and Automatic', async ({
         page,
       }) => {
-        const values = await tilesOf(page, 70);
-        const shades = await tilesOf(page, 71);
-        expect(shades.map((t) => rgb(t.background))).toEqual(values.map((t) => rgb(t.background)));
-        for (const tile of shades) {
-          const minContrast = getMinTextContrast(tile.value.smallestFontSize, 500);
-          expect(rgb(tile.value.color)).toBe(
-            rgb(getAutomaticText(theme, tile.background, minContrast, { background: theme.colors.background.primary }))
-          );
+        const idOf = (title: string) => DASHBOARD.panels.find((p) => p.title === title)!.id;
+        const values = await tilesOf(page, idOf('hex colours, background value'));
+        const shades = await tilesOf(page, idOf('hex colours, shades'));
+        expect(shades.map((t) => t.name)).toEqual(['a', 'b', 'c']);
+        // a and b are nearest Grafana's green and red in both stock themes, c (CSS teal) near no hue (a separate implementation of the rule)
+        const hues: Record<string, string | undefined> = { a: 'green', b: 'red', c: undefined };
+        for (const [index, tile] of shades.entries()) {
+          const hue = hues[tile.name];
+          if (hue) {
+            expect(rgb(tile.background), tile.name).toBe(rgb(getRelativeShadeColor(theme, hue, 'softer')!));
+            expect(rgb(tile.value.color), tile.name).toBe(rgb(getRelativeShadeColor(theme, hue, 'stronger')!));
+          } else {
+            expect(rgb(tile.background), tile.name).toBe(rgb(values[index].background));
+            const minContrast = getMinTextContrast(tile.value.smallestFontSize, 500);
+            expect(rgb(tile.value.color), tile.name).toBe(
+              rgb(
+                getAutomaticText(theme, tile.background, minContrast, { background: theme.colors.background.primary })
+              )
+            );
+          }
         }
-        expect(panelById(71).options.styling?.textColor?.mode).toBe('shade');
+        expect(rgb(values[2].background)).toBe('rgb(0, 128, 128)');
       });
     });
   }

@@ -1,14 +1,21 @@
 import { renderHook } from '@testing-library/react';
 import { type ReactNode } from 'react';
 
-import { type FieldConfig, FieldMatcherID, type FieldConfigSource, MappingType, ThemeContext } from '@grafana/data';
+import {
+  type FieldConfig,
+  FieldColorModeId,
+  FieldMatcherID,
+  type FieldConfigSource,
+  MappingType,
+  ThemeContext,
+} from '@grafana/data';
 import { type VizLegendItem } from '@grafana/ui';
 import { getRelativeShadeColor, toCanvasColor } from '@pjan/grafana-styling';
 
 import { prepareTimelineLegendItems } from '../../core/components/TimelineChart/utils';
 
 import { getLegendItemsWithDrawnColors, useFieldsWithDrawnColors } from './swatches';
-import { LIGHT as theme, processFrame } from './testdata/fixtures';
+import { LIGHT as theme, processFrame, THEMES } from './testdata/fixtures';
 
 const config: FieldConfig = {
   mappings: [
@@ -23,7 +30,7 @@ const frameWith = (fieldConfig: FieldConfigSource) =>
 const onRow = (name: string, value: unknown): FieldConfigSource => ({
   defaults: {},
   overrides: [
-    { matcher: { id: FieldMatcherID.byName, options: name }, properties: [{ id: 'custom.fillColor', value }] },
+    { matcher: { id: FieldMatcherID.byName, options: name }, properties: [{ id: 'custom.styling.fillColor', value }] },
   ],
 });
 const legendOf = (fieldConfig: FieldConfigSource, look?: 'pill') => {
@@ -46,7 +53,7 @@ describe('getLegendItemsWithDrawnColors', () => {
 
   it('shows the fill drawn: the default for every row', () => {
     const items = legendOf({
-      defaults: { custom: { fillColor: { mode: 'shade', shade: 'stronger' } } },
+      defaults: { custom: { styling: { fillColor: { mode: 'shade', shade: 'stronger' } } } },
       overrides: [],
     });
     expect(colorsOf(items)).toEqual([
@@ -64,6 +71,60 @@ describe('getLegendItemsWithDrawnColors', () => {
     expect(colorsOf(legendOf(onRow('a', { mode: 'shade', shade: 'softer' })))).toEqual([
       ['up', shade('green', 'softer')],
       ['down', shade('red', 'softer')],
+    ]);
+  });
+
+  it('a hex state colour shows the shade of its nearest hue that the boxes are drawn in', () => {
+    // #629E51 (Grafana's classic palette) is nearest Grafana light's green (a separate implementation of the rule)
+    const hexConfig: FieldConfig = {
+      mappings: [{ type: MappingType.ValueToText, options: { up: { color: '#629E51', index: 0 } } }],
+    };
+    const frames = [
+      processFrame(
+        theme,
+        ['a'],
+        ['up'],
+        { defaults: { custom: { styling: { fillColor: { mode: 'shade', shade: 'softer' } } } }, overrides: [] },
+        hexConfig
+      ),
+    ];
+    const items = prepareTimelineLegendItems(frames, { showLegend: true } as never, theme);
+    expect(colorsOf(getLegendItemsWithDrawnColors(items, frames, theme, {}))).toEqual([
+      ['up', shade('green', 'softer')],
+    ]);
+  });
+
+  it('a classic palette: each row’s own slot decides, so an override on a later row shows in its item', () => {
+    // Atlas light's palette is hex: series 0, 1, 2 are lime, violet and cyan 600; only row c is styled
+    const atlas = THEMES['Atlas light'];
+    const frames = [
+      processFrame(
+        atlas,
+        ['a', 'b', 'c'],
+        ['up'],
+        {
+          defaults: { color: { mode: FieldColorModeId.PaletteClassic } },
+          overrides: [
+            {
+              matcher: { id: FieldMatcherID.byName, options: 'c' },
+              properties: [{ id: 'custom.styling.fillColor', value: { mode: 'shade', shade: 'softer' } }],
+            },
+          ],
+        },
+        { color: { mode: FieldColorModeId.PaletteClassic } }
+      ),
+    ];
+    const cyan = frames[0].fields[3].display!('up').color!;
+    expect(cyan).toBe(atlas.visualization.palette[2]);
+    const items: VizLegendItem[] = frames[0].fields.slice(1).map((field, i) => ({
+      label: field.name,
+      color: field.display!('up').color!,
+      yAxis: i,
+    }));
+    expect(colorsOf(getLegendItemsWithDrawnColors(items, frames, atlas, {}))).toEqual([
+      ['a', atlas.visualization.palette[0]],
+      ['b', atlas.visualization.palette[1]],
+      ['c', toCanvasColor(atlas, getRelativeShadeColor(atlas, 'cyan', 'softer')!)],
     ]);
   });
 

@@ -2,7 +2,9 @@
 export { getStylingColor, type StylingColor, type StylingColorMode } from './stylingColor';
 export {
   getHueOfColorName,
+  getNearestHue,
   getRelativeShadeColor,
+  getShadeColor,
   rankHue,
   RELATIVE_SHADES,
   type RankedHue,

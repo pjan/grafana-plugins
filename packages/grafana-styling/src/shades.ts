@@ -1,3 +1,5 @@
+import tinycolor from 'tinycolor2';
+
 import { colorManipulator, type GrafanaTheme2 } from '@grafana/data';
 
 /** Relative shades of a state colour, from the least to the most contrast with the panel background. */
@@ -77,4 +79,147 @@ export function getRelativeShadeColor(
   shade: RelativeShade
 ): string | undefined {
   return rankHue(theme, getHueOfColorName(colorName))?.colors[RELATIVE_SHADES.indexOf(shade)];
+}
+
+// Grafana's names for a theme's own colours (createVisualizationColors.ts): never a hue's shade.
+const SPECIAL_COLOR_NAMES = new Set(['transparent', 'text', 'panel-bg']);
+
+/**
+ * The colour of a relative shade of a colour: of its name's hue when it has a Grafana colour name (a hue's shade name
+ * the theme ranks), otherwise of its nearest theme hue (`getNearestHue`): a hex or rgb() colour, or a CSS name such as
+ * `lime` in a theme without a lime hue. Grafana's special names (`transparent`, `text`, `panel-bg`) have no shades.
+ * Undefined when there is no hue: the caller then draws the colour itself.
+ */
+export function getShadeColor(
+  theme: GrafanaTheme2,
+  color: string,
+  colorName: string | undefined,
+  shade: RelativeShade
+): string | undefined {
+  const index = RELATIVE_SHADES.indexOf(shade);
+  const named = colorName ? rankHue(theme, getHueOfColorName(colorName)) : undefined;
+  if (named) {
+    return named.colors[index];
+  }
+  if (colorName && SPECIAL_COLOR_NAMES.has(colorName)) {
+    return undefined;
+  }
+  const hue = getNearestHue(theme, color);
+  return hue ? rankHue(theme, hue)?.colors[index] : undefined;
+}
+
+/** OKLCH chroma below this is gray: such colours and shades don't take part in hue matching. */
+export const HUE_CHROMA_FLOOR = 0.04;
+/** The nearest hue's closest shade must be within this many degrees of the colour's hue angle, … */
+export const HUE_MAX_DISTANCE = 15;
+/** … and the second-nearest hue at least this many degrees further away. */
+export const HUE_MIN_MARGIN = 5;
+
+interface Oklch {
+  l: number;
+  c: number;
+  /** Hue angle in degrees, 0–360 */
+  h: number;
+}
+
+const toLinear = (channel: number) => {
+  const c = channel / 255;
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+};
+
+/**
+ * A colour in OKLCH (Björn Ottosson's OKLab), from its sRGB channels. Alpha is ignored, so a fully transparent colour
+ * reads as its channels (`rgba(0,0,0,0)` as black). Undefined if unreadable.
+ */
+export function toOklch(color: string): Oklch | undefined {
+  const parsed = tinycolor(color);
+  if (!parsed.isValid()) {
+    return undefined;
+  }
+  const { r, g, b } = parsed.toRgb();
+  const [lr, lg, lb] = [r, g, b].map(toLinear);
+  const l = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
+  const m = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
+  const s = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
+  const okL = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
+  const okA = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+  const okB = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+  const h = (Math.atan2(okB, okA) * 180) / Math.PI;
+  return { l: okL, c: Math.hypot(okA, okB), h: h < 0 ? h + 360 : h };
+}
+
+const angleBetween = (a: number, b: number) => {
+  const d = Math.abs(a - b) % 360;
+  return Math.min(d, 360 - d);
+};
+
+interface HueAngles {
+  /** The first hue whose shades are all gray, if any */
+  gray?: string;
+  /** Every other hue, with the angles of its shades that aren't gray */
+  chromatic: Array<{ hue: string; angles: number[] }>;
+  nearest: Map<string, string | null>;
+}
+
+// Per theme object, as the ranking.
+const hueAngleCache = new WeakMap<GrafanaTheme2, HueAngles>();
+
+function getHueAngles(theme: GrafanaTheme2): HueAngles {
+  let angles = hueAngleCache.get(theme);
+  if (!angles) {
+    angles = { chromatic: [], nearest: new Map() };
+    for (const { name, shades } of theme.visualization.hues) {
+      const colors = shades.map((shade) => toOklch(shade.color)).filter((c): c is Oklch => c !== undefined);
+      if (colors.length === 0) {
+        continue; // no shade the rule can read
+      }
+      const chromatic = colors.filter((c) => c.c >= HUE_CHROMA_FLOOR);
+      if (chromatic.length === 0) {
+        angles.gray ??= name;
+      } else {
+        angles.chromatic.push({ hue: name, angles: chromatic.map((c) => c.h) });
+      }
+    }
+    hueAngleCache.set(theme, angles);
+  }
+  return angles;
+}
+
+/**
+ * The theme hue (`theme.visualization.hues`) a colour without a Grafana name belongs to, so it can take that hue's
+ * named shades (pjan, 2026-10-03). In OKLCH:
+ * - hues whose shades are all below the chroma floor are gray and don't take part in hue matching; nor do the shades
+ *   of other hues below the floor, nor hues without a readable shade;
+ * - a colour below the floor takes the theme's gray hue (the first), or none if the theme has none;
+ * - otherwise the hue with the shade nearest the colour's hue angle wins, if that shade is within `HUE_MAX_DISTANCE`
+ *   and the second-nearest hue's nearest shade is at least `HUE_MIN_MARGIN` further away; else none.
+ *
+ * Undefined when no hue wins, or the colour can't be read.
+ */
+export function getNearestHue(theme: GrafanaTheme2, color: string): string | undefined {
+  const { gray, chromatic, nearest } = getHueAngles(theme);
+  let hue = nearest.get(color);
+  if (hue === undefined) {
+    hue = findNearestHue(color, gray, chromatic);
+    nearest.set(color, hue);
+  }
+  return hue ?? undefined;
+}
+
+function findNearestHue(color: string, gray: string | undefined, chromatic: HueAngles['chromatic']): string | null {
+  const oklch = toOklch(color);
+  if (!oklch) {
+    return null;
+  }
+  if (oklch.c < HUE_CHROMA_FLOOR) {
+    return gray ?? null;
+  }
+  const distances = chromatic
+    .map(({ hue, angles }) => ({ hue, distance: Math.min(...angles.map((angle) => angleBetween(oklch.h, angle))) }))
+    .sort((a, b) => a.distance - b.distance);
+  const [first, second] = distances;
+  if (!first || first.distance > HUE_MAX_DISTANCE) {
+    return null;
+  }
+  return !second || second.distance - first.distance >= HUE_MIN_MARGIN ? first.hue : null;
 }

@@ -1,5 +1,9 @@
-import { arrayToDataFrame, DataTopic, FieldType, toDataFrame } from '@grafana/data';
+import { arrayToDataFrame, DataTopic, FieldMatcherID, FieldType, toDataFrame } from '@grafana/data';
 
+import { plugin } from '../../plugins/panel/state-timeline/module';
+import { LIGHT, processFrame } from '../styling/testdata/fixtures';
+
+import { getRowKeys } from './matchRowAnnotations';
 import { getAnnotationFieldOptions, getRowLabelOptions } from './options';
 
 describe('getAnnotationFieldOptions', () => {
@@ -39,5 +43,36 @@ describe('getRowLabelOptions', () => {
     ];
     expect(getRowLabelOptions(series).map((o) => o.value)).toEqual(['env', 'instance', 'job']);
     expect(getRowLabelOptions(undefined)).toEqual([]);
+  });
+});
+
+describe('the "Annotation key" field option', () => {
+  it('is `custom.rowAnnotations.annotationKey`, mirroring the panel options, offered in overrides only', () => {
+    const item = plugin.fieldConfigRegistry.get('custom.rowAnnotations.annotationKey');
+    expect(item.path).toBe('rowAnnotations.annotationKey');
+    expect(item.hideFromDefaults).toBe(true);
+    expect(item.override).toBeDefined();
+    expect(item.process).toBeDefined();
+    expect(item.defaultValue).toBeUndefined();
+    expect(item.shouldApply({ type: FieldType.time } as never)).toBe(false);
+    expect(item.shouldApply({ type: FieldType.string } as never)).toBe(true);
+  });
+
+  it('an override replaces the key of its row only', () => {
+    const frame = processFrame(LIGHT, ['web', 'db'], ['up'], {
+      defaults: {},
+      overrides: [
+        {
+          matcher: { id: FieldMatcherID.byName, options: 'db' },
+          properties: [{ id: 'custom.rowAnnotations.annotationKey', value: 'database' }],
+        },
+      ],
+    });
+    expect(frame.fields.map((field) => field.config.custom?.rowAnnotations)).toEqual([
+      undefined,
+      undefined,
+      { annotationKey: 'database' },
+    ]);
+    expect(getRowKeys(frame, {})).toEqual(['web', 'database']);
   });
 });

@@ -197,7 +197,7 @@ describe('addAxisStyling', () => {
       overrides: [
         {
           matcher: { id: FieldMatcherID.byName, options: 'b' },
-          properties: [{ id: 'custom.rowNameColor', value: { mode: 'fixed', fixedColor: 'purple' } }],
+          properties: [{ id: 'custom.styling.rowNameColor', value: { mode: 'fixed', fixedColor: 'purple' } }],
         },
       ],
     });
@@ -213,7 +213,7 @@ describe('addAxisStyling', () => {
 
   it('Row name color: the first and last names are cleared within the plot’s height, not into the time labels', () => {
     const frame = frameWith({
-      defaults: { custom: { rowNameColor: { mode: 'fixed', fixedColor: 'purple' } } },
+      defaults: { custom: { styling: { rowNameColor: { mode: 'fixed', fixedColor: 'purple' } } } },
       overrides: [],
     });
     const { u, ctx } = fakePlot();
@@ -228,7 +228,7 @@ describe('addAxisStyling', () => {
   });
 
   it('Row name color "Current state color": reads the plot’s data when drawn (a refresh keeps the config)', () => {
-    const frame = frameWith({ defaults: { custom: { rowNameColor: { mode: 'state' } } }, overrides: [] });
+    const frame = frameWith({ defaults: { custom: { styling: { rowNameColor: { mode: 'state' } } } }, overrides: [] });
     const { u, ctx } = fakePlot();
     const hooks = style({}, frame).drawAxes;
     const colors = () => {
@@ -246,7 +246,7 @@ describe('addAxisStyling', () => {
   });
 
   it('Row name color "Current state color": the state of the last value in the time range', () => {
-    const frame = frameWith({ defaults: { custom: { rowNameColor: { mode: 'state' } } }, overrides: [] });
+    const frame = frameWith({ defaults: { custom: { styling: { rowNameColor: { mode: 'state' } } } }, overrides: [] });
     const { u, ctx } = fakePlot();
     const texts: Array<{ text: string; color: string }> = [];
     jest.spyOn(ctx, 'fillText').mockImplementation((text) => texts.push({ text, color: String(ctx.fillStyle) }));
