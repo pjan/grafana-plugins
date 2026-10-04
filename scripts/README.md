@@ -47,7 +47,7 @@ For each path where two or more plugins have a stand-in (pjan, 2026-10-04: share
 
 Why "unique content" rather than "the plugin chooses": it makes the list exact both ways from the files alone (as for the marked copies), and it can't hide drift: if one of two shared stand-ins changes, both become unique, and the check fails until both plugins list them, or the change is made in both.
 
-Today this covers `src/packages/grafana-data/internal.ts`: the `@grafana/data/internal` names each plugin's copied code needs (Stat plus `findNumericFieldMinMax`; State timeline plus `nullToUndefThreshold`, the join helpers and `convertFieldType`), so both plugins list it. Stand-ins Time series plus is planned to share with State timeline plus (`core/app_events.ts`, `features/dashboard/services/TimeSrv.ts`) must be identical copies of State timeline plus's, or be listed by both.
+Today this covers `src/packages/grafana-data/internal.ts`: the `@grafana/data/internal` names each plugin's copied code needs (Stat plus `findNumericFieldMinMax`; State timeline plus and Time series plus `nullToUndefThreshold`, the join helpers and `convertFieldType`, with each plugin's id in an error message), so all three plugins list it. Time series plus shares three stand-ins with State timeline plus byte for byte (`core/app_events.ts`, `features/dashboard/services/TimeSrv.ts`, `packages/grafana-runtime/internal.ts`), and has wider versions of two (`packages/grafana-ui/internal.ts`, `packages/grafana-e2e-selectors/index.ts`), which both plugins list.
 
 ### Normalisation (deviation from the plan's "byte-identical")
 

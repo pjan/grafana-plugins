@@ -1,15 +1,22 @@
 # pjan-timeseries-panel
 
-**Time series plus** (its name in Grafana's visualization picker): a port of Grafana's core time series panel, from grafana/grafana **v13.2.3**, into a panel plugin, planned as a drop-in replacement for the core panel with opt-in additions (first the colour model, then threshold lines). The plan is `plans/atlas-timeseries-panel.md` in pjan/atlas. `src/README.md` is the user-facing description (shown in Grafana).
+**Time series plus** (its name in Grafana's visualization picker): a port of Grafana's core time series panel, from grafana/grafana **v13.2.3**, into a panel plugin. With nothing configured it is a drop-in replacement for the core panel. Opt-in additions (first the colour model, then threshold lines) are planned, not built yet. The plan is `plans/atlas-timeseries-panel.md` in pjan/atlas. `src/README.md` is the user-facing description (shown in Grafana).
 
-**Status: scaffold only.** The workspace is set up like the other plugins (build, tests, licences, dev server), but no Grafana code is copied yet. The panel is a **placeholder**: `@grafana/create-plugin` 7.11.0's sample panel (`src/components/SimplePanel.tsx`, `src/types.ts`, and its options in `src/module.ts`), kept so the plugin builds, loads and has something to test. The parity port replaces it: `src/module.ts` then re-exports `plugin` from the copied `src/plugins/panel/timeseries/module.tsx`, and the placeholder files go.
+**Status:** the port is done. On 2026-10-04 the full end-to-end suite passed once (45 of 45 tests, one worker: the then 98 parity cases in 8 theme and pixel ratio states, the annotation cases, interaction and saved JSON; `UPSTREAM.md`, "Test runs"). No additions yet.
 
-- **Upstream:** `UPSTREAM.md` will list every copied file, every change beyond import rewrites, what is left off and why, and the re-sync steps, as for the other plugins. Many files are the same upstream files State timeline plus copies; `scripts/check-upstream-copies.mjs` (repository root) keeps those copies identical, and `scripts/resync-upstream.mjs` re-syncs all plugins at once (`scripts/README.md`).
+- **Upstream:** `UPSTREAM.md` covers:
+  - every copied file, from upstream path to plugin path (the core panel, its overlays, GraphNG and the TimeSeries chart, and helpers from `@grafana/ui` and `@grafana/data`);
+  - every change beyond import rewrites, the stand-ins for modules plugins can't use, and what was left off, with the reasons;
+  - the panel-change handler;
+  - the tests, the negative controls, and the steps to re-sync with a newer Grafana tag.
+
+  Many copies are the same upstream files State timeline plus copies; `scripts/check-upstream-copies.mjs` (repository root) keeps those copies identical, and `scripts/resync-upstream.mjs` re-syncs all plugins at once (`scripts/README.md`). Keep copied files as close to upstream as possible, so the next re-sync stays a diff.
+
 - **Layout** (as in `plugins/pjan-statetimeline-panel`):
-  - `src/core/`, `src/features/`, `src/packages/`, `src/plugins/`: mirrored from grafana/grafana, with relaxed lint rules (`eslint.config.mjs`). Not there yet.
-  - `src/pjan/`: plugin-authored code, with the scaffold's normal lint rules. Don't put it in the mirrored tree, and don't add `src/pjan/` to the relaxed list.
+  - `src/core/`, `src/features/`, `src/packages/`, `src/plugins/`: mirrored from grafana/grafana, with relaxed lint rules (`eslint.config.mjs`).
+  - `src/pjan/`: plugin-authored code (the panel-change handler and the plugin's own tests), with the scaffold's normal lint rules. Don't put it in the mirrored tree, and don't add `src/pjan/` to the relaxed list.
 - **Build setup:** `webpack.config.ts` extends the scaffold's config (automatic JSX runtime, licence notices in `dist/`). The `build`/`dev` scripts must keep using it: after `npx @grafana/create-plugin update`, check them (`src/pjan/buildConfig.test.ts` fails if they point at `.config/` again).
-- **Licence:** AGPL-3.0 (`LICENSE`), because the panel will be derived from Grafana's core code; copied package code is Apache-2.0 (`LICENSE_APACHE2`); Grafana's `NOTICE.md`. `dist/` also gets `THIRD_PARTY_NOTICES.txt` for the bundled npm packages.
+- **Licence:** AGPL-3.0 (`LICENSE`); copied package code is Apache-2.0 (`LICENSE_APACHE2`); Grafana's `NOTICE.md`. `dist/` also gets `THIRD_PARTY_NOTICES.txt` for the bundled npm packages.
 
 ## Development
 
@@ -23,6 +30,13 @@ Install from the repository root (`npm install`). From this directory:
 | `npm run server`                                       | Start a Grafana 13.2.3 OSS dev server on http://localhost:3000 with this plugin mounted and `provisioning/` loaded |
 | `npm run e2e`                                          | Playwright tests against that server (`npm exec playwright install chromium` once)                                 |
 
-Every plugin's dev server uses port 3000: run one at a time. The dev server rotates login sessions every 2 hours instead of Grafana's 10 minutes (`docker-compose.yaml`), and Playwright allows 60 s per test and 10 s per assertion with four workers (`playwright.config.ts`), as for Stat plus.
+Every plugin's dev server uses port 3000: run one at a time. On a busy machine, run the end-to-end tests with one browser at a time: `npx playwright test --workers=1` (the full suite then takes a long while; the parity tests run 8 × 97 comparisons). `PARITY_CASES=<regular expression>` limits the parity tests to the cases whose title matches. The dev server also mounts State timeline plus's `dist/` (build it first, `npm run build` at the root), for the crosshair check between the two plugins. It rotates login sessions every 2 hours instead of Grafana's 10 minutes (`docker-compose.yaml`), and Playwright allows 60 s per test and 10 s per assertion with four workers (`playwright.config.ts`), as for Stat plus.
 
-End-to-end tests: only the scaffold's `tests/panel.spec.ts` for the placeholder panel (with `provisioning/dashboards/dashboard.json`), renamed to the plugin's name. The parity suite comes with the port.
+End-to-end tests (details in `UPSTREAM.md`, "Tests"):
+
+- `provisioning/dashboards/parity.json` and `parity-swapped.json` (`tests/parity.spec.ts`, with `tests/parity.ts`) have 97 parity cases, each a core and a plugin panel with the same query and settings, one above the other. They are generated: edit `scripts/generate-parity-dashboard.mjs` and run `node scripts/generate-parity-dashboard.mjs`. Every case is compared in the light and the dark theme, and after a live theme switch each way, at pixel ratio 1 and 2: canvas bytes, every attribute of every element, and screenshots byte by byte, each panel with the panel at the same place in the other dashboard (core and plugin swapped). The annotation cases are on their own pair of dashboards, `parity-annotations*.json` (`tests/parityAnnotations.spec.ts`), which creates their annotations through the HTTP API and deletes them afterwards.
+- `tests/interaction.spec.ts`: tooltips (hover, a series hidden from the tooltip, no tooltip, pinning, data link, action), long data in the panel editor, drag to zoom, keyboard, the legend (isolate, toggle, colour picker, sort, Series visibility filter and pinning), crosshair sync (with the state timelines too) and adding an annotation, core and plugin alike; and values worked out by hand (a tooltip, the legend's last and max, where threshold lines are drawn).
+- `tests/savedJson.spec.ts`: the saved JSON of a new panel, opening the editor, converting by `type` (and by `vizConfig.group` in a v2 dashboard), and switching a core Time series panel to Time series plus in the panel editor (plugin module loaded or not).
+- Look panels up by title in the generated dashboards, never by id: adding a case shifts the ids.
+- Dashboard time ranges with absolute times must be ISO strings (`"2025-10-01T00:00:00.000Z"`); Grafana shows epoch-millisecond strings as "Invalid date". Dashboard uids are at most 40 characters.
+- If you change the `uid` of a provisioned dashboard while the dev server runs, Grafana 13.2.3 refuses to save it ("deprecatedInternalID … is already in use"); recreate the server with `docker compose down` and `npm run server`.

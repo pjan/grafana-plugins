@@ -8,7 +8,12 @@ services:
         # The OSS image and version Atlas runs, so the comparison with the core panel is like for like.
         grafana_image: grafana
         grafana_version: 13.2.3
+    volumes:
+      # State timeline plus (this repository, built with `npm run build`), for the crosshair sync check between the two
+      # plugins in tests/interaction.spec.ts.
+      - ../pjan-statetimeline-panel/dist:/var/lib/grafana/plugins/pjan-statetimeline-panel
     environment:
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: pjan-timeseries-panel,pjan-statetimeline-panel
       # The end-to-end tests share one login (Playwright's stored session) for a run of about ten minutes. Grafana
       # rotates session tokens every 10 minutes by default, and once one test rotates it, the others are sent to the
       # login page. Rotating every 2 hours keeps a run on one token. Dev server only.

@@ -1,0 +1,40 @@
+// Copied from grafana/grafana v13.2.3: public/app/features/visualization/data-hover/ExemplarTooltip.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: none.
+import { type LinkModel } from '@grafana/data';
+import { t } from '@grafana/i18n';
+import {
+  type VizTooltipItem,
+  VizTooltipContent,
+  VizTooltipFooter,
+  VizTooltipHeader,
+  VizTooltipWrapper,
+} from '@grafana/ui';
+
+export interface Props {
+  items: VizTooltipItem[];
+  links?: LinkModel[];
+  isPinned: boolean;
+  maxHeight?: number;
+}
+
+export const ExemplarTooltip = ({ items, links, isPinned, maxHeight }: Props) => {
+  const timeItem = items.find((val) => val.label === 'Time');
+
+  return (
+    <VizTooltipWrapper>
+      <VizTooltipHeader
+        item={{
+          label: t('exemplar-tooltip-header', 'Exemplar'),
+          value: timeItem?.value ?? '',
+        }}
+        isPinned={isPinned}
+      />
+      <VizTooltipContent
+        items={items.filter((item) => item !== timeItem)}
+        isPinned={isPinned}
+        maxHeight={maxHeight}
+        scrollable={maxHeight != null}
+      />
+      <VizTooltipFooter dataLinks={links} />
+    </VizTooltipWrapper>
+  );
+};

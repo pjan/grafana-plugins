@@ -80,4 +80,11 @@ export default defineConfig([
       'no-redeclare': 'off',
     },
   },
+  {
+    // The copied TimezonesEditor.tsx reassigns its `value` prop, as upstream does.
+    files: ['src/plugins/panel/timeseries/TimezonesEditor.tsx'],
+    rules: {
+      'react-hooks/immutability': 'off',
+    },
+  },
 ]);

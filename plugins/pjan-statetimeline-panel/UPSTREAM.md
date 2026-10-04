@@ -160,6 +160,10 @@ here exactly when no other plugin's stand-in at that path has the same content.
 
 - `src/packages/grafana-data/internal.ts`: its own `@grafana/data/internal` names (`nullToUndefThreshold`, the join
   helpers, `convertFieldType`), for the copied code of this plugin.
+- `src/packages/grafana-e2e-selectors/index.ts`: the three annotation strings only (Time series plus also needs the
+  exemplar marker's).
+- `src/packages/grafana-ui/internal.ts`: without the names only Time series plus needs (`PlotLegend`,
+  `hasVisibleLegendSeries`, `optsWithHideZeros`).
 
 ## Pruned and left off
 

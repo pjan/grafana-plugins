@@ -29,6 +29,18 @@ global.MessageChannel = class {
   }
 };
 
+// mock the intersection observer and just say everything is in view
+// (@grafana/ui's ScrollIndicators in the Select menu, opened by react-select-event in TimezonesEditor.test.tsx and
+// ThresholdsStyleEditor.test.tsx)
+const mockIntersectionObserver = jest.fn().mockImplementation((callback) => ({
+  observe: jest.fn().mockImplementation((elem) => {
+    callback([{ target: elem, isIntersecting: true }]);
+  }),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+global.IntersectionObserver = mockIntersectionObserver;
+
 // jsdom's URL predates URL.canParse, which @braintree/sanitize-url (textUtil.sanitizeUrl) calls.
 if (typeof URL.canParse !== 'function') {
   URL.canParse = (url, base) => {
