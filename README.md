@@ -7,10 +7,11 @@ pjan's Grafana plugins. Each plugin is an npm workspace in its own directory und
 - Emotion styles through `useStyles2`;
 - Jest tests next to the code.
 
-| Plugin                                                          | Type  | What it is                                                                                                                                                                             | Licence                                                                            |
-| --------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`pjan-statetimeline-panel`](plugins/pjan-statetimeline-panel/) | panel | **State timeline plus**: Grafana's state timeline as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions: per-row annotations and styling (both built). | AGPL-3.0: it starts from Grafana's own state-timeline code (see its `UPSTREAM.md`) |
-| [`pjan-stat-panel`](plugins/pjan-stat-panel/)                   | panel | **Stat plus**: Grafana's stat panel as a plugin: a drop-in replacement that behaves like the core panel. Opt-in addition: Color mode Custom (background, text and sparkline colours).  | AGPL-3.0: it starts from Grafana's own stat code (see its `UPSTREAM.md`)           |
+| Plugin                                                          | Type  | What it is                                                                                                                                                                             | Licence                                                                             |
+| --------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [`pjan-statetimeline-panel`](plugins/pjan-statetimeline-panel/) | panel | **State timeline plus**: Grafana's state timeline as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions: per-row annotations and styling (both built). | AGPL-3.0: it starts from Grafana's own state-timeline code (see its `UPSTREAM.md`)  |
+| [`pjan-stat-panel`](plugins/pjan-stat-panel/)                   | panel | **Stat plus**: Grafana's stat panel as a plugin: a drop-in replacement that behaves like the core panel. Opt-in addition: Color mode Custom (background, text and sparkline colours).  | AGPL-3.0: it starts from Grafana's own stat code (see its `UPSTREAM.md`)            |
+| [`pjan-timeseries-panel`](plugins/pjan-timeseries-panel/)       | panel | **Time series plus**: Grafana's time series panel as a plugin (planned: a drop-in replacement, then opt-in colours and threshold lines). Scaffold only so far: a placeholder panel.    | AGPL-3.0: it will start from Grafana's own time series code (see its `UPSTREAM.md`) |
 
 Code shared by several plugins lives in workspace packages under `packages/`, which the plugins bundle from source:
 
@@ -25,8 +26,15 @@ Colour options work the same in every plugin (`packages/grafana-styling/README.m
 - **Requirements:** Node 22 or later (`.nvmrc`) and npm.
   - On a network that inspects TLS, set `NODE_EXTRA_CA_CERTS` to a PEM file with its CA before running `npm`.
 - **Install:** `npm install` at the root installs every plugin and package.
-- **Checks:** from the root, across all plugins and packages: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. CI (`.github/workflows/ci.yml`) runs the same four.
+- **Checks:** from the root, across all plugins and packages: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. Repository-wide: `npm run check:upstream-copies` (the plugins' copies of the same grafana/grafana file are identical, see below) and `npm run test:scripts` (the tests of `scripts/`). CI (`.github/workflows/ci.yml`) runs all six.
 - **One plugin:** `npm run <script> -w plugins/<plugin-id>`. Each plugin also has the scaffold's own scripts (`dev`, `e2e`, `server`), run from its directory.
+
+## Upstream copies shared by several plugins
+
+The plugins start from Grafana's own code, copied into each plugin's mirrored tree (`src/core/`, `src/features/`, `src/packages/`, `src/plugins/`; each plugin's `UPSTREAM.md`). Where two plugins copy the same upstream file, each keeps its own copy, and `scripts/` keeps the copies equal (details, limits and negative controls in `scripts/README.md`):
+
+- `scripts/check-upstream-copies.mjs` (CI): copies of the same upstream file in two or more plugins must be byte-identical, apart from the `Changes:` text of their header line. A plugin's copy may differ only in hunks with a line marked `pjan-<plugin-id>` (in a comment), and only if its `UPSTREAM.md` lists the copy under `## Copies with marked changes` (every copy with a marked line, and only those). Stand-ins (`// Plugin stand-in for ...`) at the same path in two or more plugins must be byte-identical, except a stand-in whose content no other plugin shares: its plugin lists it under `## Stand-ins of its own`.
+- `scripts/resync-upstream.mjs --grafana <grafana/grafana clone> <from-tag> <to-tag>`: moves every plugin's copies to a new Grafana tag at once. Copies that differ from upstream only by the import rewrites are re-copied; the others get the upstream diff as a 3-way merge (`git merge-file`), so marked hooks stay, and conflicts are left marked in the file.
 
 ## Adding a plugin
 
@@ -43,7 +51,8 @@ Colour options work the same in every plugin (`packages/grafana-styling/README.m
    - the plugin's `webpack.config.ts` must list workspace packages in `THIRD_PARTY_NOTICES.txt` and fail on duplicate packages (`ThirdPartyNoticesPlugin`, `WORKSPACE_PACKAGES_DIR`);
    - pin `@grafana/*` to the versions the package expects (its `peerDependencies`): a different version gets its own copy, and a second `@grafana/i18n` would never be initialised (the build fails on it);
    - only the package's `src/index.ts` exports are for plugin code; `src/testdata/` is for tests.
-7. Add it to the table above, with its licence.
+7. If it copies grafana/grafana files: give its `UPSTREAM.md` a `## Copies with marked changes` section (see above and `scripts/README.md`), and run `npm run check:upstream-copies`.
+8. Add it to the table above, with its licence.
 
 ## Releasing
 

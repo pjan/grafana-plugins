@@ -133,6 +133,34 @@ Verified in Grafana 13.2.3: merge, row height, show/align values, page size, leg
 **Renaming `type` from `state-timeline` to `pjan-statetimeline-panel` in the dashboard JSON stays the lossless
 conversion** (and the only one for library panels and provisioned dashboards).
 
+## Copies with marked changes
+
+The copies with lines marked `pjan-statetimeline-panel` (the changes above that are not pure removals or import
+changes). `scripts/check-upstream-copies.mjs` (repository root, run in CI; `scripts/README.md`) reads this list: another
+plugin's copy of the same upstream file may differ from one listed here only in hunks with a marked line; every other
+copy that another plugin also has must be identical to it, apart from the header's `Changes:` text. Every copy with a
+marked line is listed, and only those.
+
+- `src/core/components/TimelineChart/TimelineChart.tsx`
+- `src/core/components/TimelineChart/timeline.ts`
+- `src/core/components/TimelineChart/utils.ts`
+- `src/features/actions/utils.test.ts`
+- `src/packages/grafana-ui/src/components/uPlot/utils.ts`
+- `src/plugins/panel/state-timeline/StateTimelinePanel.test.tsx`
+- `src/plugins/panel/state-timeline/StateTimelinePanel.tsx`
+- `src/plugins/panel/state-timeline/StateTimelineTooltip.tsx`
+- `src/plugins/panel/state-timeline/module.tsx`
+
+## Stand-ins of its own
+
+The stand-ins (files starting `// Plugin stand-in for ...`) that another plugin also has at the same path, but with
+different content. `scripts/check-upstream-copies.mjs` reads this list: a stand-in at a path another plugin also has
+must be byte-identical to the other plugins' unlisted stand-ins there, unless it is listed here; a stand-in is listed
+here exactly when no other plugin's stand-in at that path has the same content.
+
+- `src/packages/grafana-data/internal.ts`: its own `@grafana/data/internal` names (`nullToUndefThreshold`, the join
+  helpers, `convertFieldType`), for the copied code of this plugin.
+
 ## Pruned and left off
 
 | Feature                                                              | Upstream code                                                   | Status and reason                                                                                                                                                                                           |
@@ -296,6 +324,9 @@ Atlas hues) are in
 2. For every file below, copy the upstream file to the plugin path, apply the import rewrites above, prepend the header,
    then re-apply the "Changes beyond import rewrites" (each is a few lines, marked `pjan-statetimeline-panel:` in the
    code where it is not a pure removal). `diff` against the previous upstream tag shows what Grafana changed.
+   `scripts/resync-upstream.mjs` (repository root, `scripts/README.md`) does this for every plugin at once: it
+   re-copies the copies that differ from upstream only by the import rewrites, and merges the upstream changes into the
+   others (a 3-way merge), which then need a review.
 3. Check each name the copied code imports from `packages/grafana-*/internal` against the new tag: prefer a public
    export if one appeared; otherwise re-copy the Apache helper. Re-check the partial copies (`features/annotations/api.ts`,
    `PanelQueryRunner.ts`, `uPlot/utils.ts`, `joinDataFrames.ts`) and the panel-editor flow that

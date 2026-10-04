@@ -10,7 +10,9 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test:ci --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "check:upstream-copies": "node scripts/check-upstream-copies.mjs",
+    "test:scripts": "node --test 'scripts/*.test.mjs'"
   },
   "engines": {
     "node": ">=22"

@@ -26,6 +26,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Check the plugins' copies of shared upstream files
+        run: npm run check:upstream-copies
+      - name: Test the repository scripts
+        run: npm run test:scripts
       - name: Check types
         run: npm run typecheck
       - name: Lint
