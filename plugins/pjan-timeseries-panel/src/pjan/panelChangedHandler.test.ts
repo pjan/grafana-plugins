@@ -21,11 +21,11 @@ import {
   StackingMode,
   TooltipDisplayMode,
 } from '@grafana/schema';
+import { useApplyFieldConfigChangedInPlace } from '@pjan/grafana-panel-utils';
 
 import { graphPanelChangedHandler } from '../plugins/panel/timeseries/migrations';
 import { plugin } from '../plugins/panel/timeseries/module';
 
-import { useApplyFieldConfigChangedInPlace } from './fieldConfigRefresh';
 import { panelChangedHandler } from './panelChangedHandler';
 import { fillEditorRegistry } from './testdata/editorRegistry';
 

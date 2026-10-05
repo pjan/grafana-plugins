@@ -16,7 +16,7 @@
 
 - **Layout** (as in `plugins/pjan-statetimeline-panel`):
   - `src/core/`, `src/features/`, `src/packages/`, `src/plugins/`: mirrored from grafana/grafana, with relaxed lint rules (`eslint.config.mjs`).
-  - `src/pjan/`: plugin-authored code (the panel-change handler, Color mode Custom in `styling/`, the module wiring test), with the scaffold's normal lint rules. Don't put it in the mirrored tree, and don't add `src/pjan/` to the relaxed list.
+  - `src/pjan/`: plugin-authored code (the panel-change handler, which re-applies the field config with `@pjan/grafana-panel-utils`, Color mode Custom in `styling/`, the module wiring test), with the scaffold's normal lint rules. Don't put it in the mirrored tree, and don't add `src/pjan/` to the relaxed list.
 - **Build setup:** `webpack.config.ts` extends the scaffold's config (automatic JSX runtime, licence notices in `dist/`). The `build`/`dev` scripts must keep using it: after `npx @grafana/create-plugin update`, check them (`src/pjan/buildConfig.test.ts` fails if they point at `.config/` again).
 - **Licence:** AGPL-3.0 (`LICENSE`); copied package code is Apache-2.0 (`LICENSE_APACHE2`); Grafana's `NOTICE.md`. `dist/` also gets `THIRD_PARTY_NOTICES.txt` for the bundled npm packages.
 

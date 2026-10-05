@@ -15,9 +15,10 @@ pjan's Grafana plugins. Each plugin is an npm workspace in its own directory und
 
 Code shared by several plugins lives in workspace packages under `packages/`, which the plugins bundle from source:
 
-| Package                                              | What it is                                                                                         | Licence    |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------- |
-| [`@pjan/grafana-styling`](packages/grafana-styling/) | Opt-in styling helpers: relative shades, colour names, contrast, and the colour and slider editors | Apache-2.0 |
+| Package                                                      | What it is                                                                                           | Licence    |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------- |
+| [`@pjan/grafana-styling`](packages/grafana-styling/)         | Opt-in styling helpers: relative shades, colour names, contrast, and the colour and slider editors   | Apache-2.0 |
+| [`@pjan/grafana-panel-utils`](packages/grafana-panel-utils/) | Panel helpers that are not styling: the field config refresh after a panel type switch in the editor | Apache-2.0 |
 
 Colour options work the same in every plugin (`packages/grafana-styling/README.md`, "Colour rules for every plugin"): colours you choose are drawn as chosen, and **Automatic** text is the first shade of the same hue that is readable on what it is drawn on.
 
@@ -46,11 +47,11 @@ The plugins start from Grafana's own code, copied into each plugin's mirrored tr
    - `tsconfig.json`: add `"typeRoots": ["./node_modules/@types", "../../node_modules/@types"]`, because npm workspaces hoist `@types/*` to the root and the scaffold only looks in the plugin's own `node_modules`.
    - Code that uses the automatic JSX runtime (no `import React`, as in Grafana's own code) also needs `"jsx": "react-jsx"` in `tsconfig.json`, a root `webpack.config.ts` that extends `.config/webpack/webpack.config.ts` and sets the swc rule's `jsc.transform.react.runtime` to `'automatic'` (with `build`/`dev` in `package.json` pointing at it), and the same swc setting in `jest.config.js`. Never edit `.config/`; `create-plugin update` overwrites it, and also resets the `build`/`dev` scripts.
 6. To use a shared package (see `plugins/pjan-statetimeline-panel`):
-   - add `"@pjan/grafana-styling": "*"` to the plugin's `dependencies` and run `npm install` at the root;
-   - the package's code uses the automatic JSX runtime, so the plugin's webpack and Jest configs need it too (step 5; copy `src/pjan/buildConfig.test.ts`);
+   - add it (`"@pjan/grafana-styling": "*"`, `"@pjan/grafana-panel-utils": "*"`) to the plugin's `dependencies` and run `npm install` at the root;
+   - `@pjan/grafana-styling`'s code uses the automatic JSX runtime, so a plugin that uses it needs the runtime in its webpack and Jest configs too (step 5; copy `src/pjan/buildConfig.test.ts`); `@pjan/grafana-panel-utils` has no JSX;
    - the plugin's `webpack.config.ts` must list workspace packages in `THIRD_PARTY_NOTICES.txt` and fail on duplicate packages (`ThirdPartyNoticesPlugin`, `WORKSPACE_PACKAGES_DIR`);
    - pin `@grafana/*` to the versions the package expects (its `peerDependencies`): a different version gets its own copy, and a second `@grafana/i18n` would never be initialised (the build fails on it);
-   - only the package's `src/index.ts` exports are for plugin code; `src/testdata/` is for tests.
+   - only the package's `src/index.ts` exports are for plugin code (the plugin's `eslint.config.mjs` restricts imports to the entry point, one pattern per package); `src/testdata/` is for tests.
 7. If it copies grafana/grafana files: give its `UPSTREAM.md` a `## Copies with marked changes` section (see above and `scripts/README.md`), and run `npm run check:upstream-copies`.
 8. Add it to the table above, with its licence.
 

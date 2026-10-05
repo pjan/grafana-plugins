@@ -1,11 +1,10 @@
 import { cloneDeep } from 'lodash';
 
 import { type FieldConfigSource, type PanelModel } from '@grafana/data';
+import { markFieldConfigChanged } from '@pjan/grafana-panel-utils';
 
 import { graphPanelChangedHandler } from '../plugins/panel/timeseries/migrations';
 import { type Options } from '../plugins/panel/timeseries/panelcfg.gen';
-
-import { markFieldConfigChanged } from './fieldConfigRefresh';
 
 /**
  * Panel-change handler of pjan-timeseries-panel (plugin-only, not in grafana/grafana).
@@ -25,9 +24,9 @@ import { markFieldConfigChanged } from './fieldConfigRefresh';
  * `defaults.custom`, the override rules and `defaults.color` are restored on that object in place (the colour is
  * removed if the previous field config has none; Grafana normally applies Time series' default, the classic
  * palette, on load, so core's always has one). The panel then applies that field config again
- * (`fieldConfigRefresh.ts`), because when the plugin's module is already loaded Grafana has drawn the panel with the
- * changed field config and cached it. If a future Grafana passes a copy instead, the options still carry over and the
- * field config is reset as for any other panel type switch.
+ * (`fieldConfigRefresh` in `@pjan/grafana-panel-utils`), because when the plugin's module is already loaded Grafana
+ * has drawn the panel with the changed field config and cached it. If a future Grafana passes a copy instead, the
+ * options still carry over and the field config is reset as for any other panel type switch.
  *
  * Renaming `type` in the dashboard JSON stays the lossless conversion.
  */

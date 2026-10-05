@@ -1,0 +1,40 @@
+{
+  "name": "@pjan/grafana-panel-utils",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Panel helpers shared by pjan's Grafana panel plugins, bundled into each plugin from source",
+  "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "test": "jest --watch --onlyChanged",
+    "test:ci": "jest --passWithNoTests --maxWorkers 4",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint --cache .",
+    "lint:fix": "npm run lint -- --fix && prettier --write --list-different ."
+  },
+  "peerDependencies": {
+    "@grafana/data": "13.2.3",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@grafana/data": "13.2.3",
+    "@grafana/eslint-config": "^9.0.0",
+    "@grafana/tsconfig": "^2.2.0",
+    "@swc/core": "^1.15.0",
+    "@swc/jest": "^0.2.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^29.5.0",
+    "@types/react": "^19.0.0",
+    "eslint": "^9.32.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.6.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

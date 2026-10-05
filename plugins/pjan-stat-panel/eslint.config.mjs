@@ -44,7 +44,7 @@ export default defineConfig([
     },
   },
   {
-    // Plugin code imports the shared package through its entry point only; its src/testdata/ is for tests. Keeps
+    // Plugin code imports the shared packages through their entry points only; src/testdata/ is for tests. Keeps
     // Grafana's own `moment` restriction (@grafana/eslint-config), which this rule would otherwise replace.
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['src/**/*.test.{ts,tsx}', 'src/**/testdata/**'],
@@ -57,6 +57,10 @@ export default defineConfig([
             {
               group: ['@pjan/grafana-styling/*'],
               message: 'Import from @pjan/grafana-styling (its src/index.ts); its src/testdata/ is for tests.',
+            },
+            {
+              group: ['@pjan/grafana-panel-utils/*'],
+              message: 'Import from @pjan/grafana-panel-utils (its src/index.ts).',
             },
           ],
         },

@@ -1,11 +1,10 @@
 import { cloneDeep } from 'lodash';
 
 import { type FieldConfigSource, type PanelModel } from '@grafana/data';
+import { markFieldConfigChanged } from '@pjan/grafana-panel-utils';
 
 import { statPanelChangedHandler } from '../plugins/panel/stat/StatMigrations';
 import { type Options } from '../plugins/panel/stat/panelcfg.gen';
-
-import { markFieldConfigChanged } from './fieldConfigRefresh';
 
 /**
  * Panel-change handler of pjan-stat-panel (plugin-only, not in grafana/grafana).
@@ -19,9 +18,9 @@ import { markFieldConfigChanged } from './fieldConfigRefresh';
  * prefers thresholds. Only the returned options are applied afterwards. `panel.fieldConfig` is the VizPanel's own
  * field config object, so the colour is restored on that object in place (or removed, when core had none: Grafana's
  * default applies, and core never saved `thresholds`). The panel then applies that field config again
- * (`fieldConfigRefresh.ts`), because when the plugin's module is already loaded Grafana has drawn the panel with the
- * adapted colour and cached it. If a future Grafana passes a copy instead, the options still carry over and the colour
- * mode is adapted as for any other panel type switch.
+ * (`fieldConfigRefresh` in `@pjan/grafana-panel-utils`), because when the plugin's module is already loaded Grafana
+ * has drawn the panel with the adapted colour and cached it. If a future Grafana passes a copy instead, the options
+ * still carry over and the colour mode is adapted as for any other panel type switch.
  *
  * Renaming `type` in the dashboard JSON stays the lossless conversion.
  */

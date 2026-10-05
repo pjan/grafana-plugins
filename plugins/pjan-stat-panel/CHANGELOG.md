@@ -2,6 +2,7 @@
 
 ## 1.0.0 (unreleased)
 
+- The field config refresh after switching a core Stat panel to this plugin in the panel editor (`fieldConfigRefresh`) moved to the workspace package `@pjan/grafana-panel-utils`, shared with the other plugins in the repository. No change in behaviour. `THIRD_PARTY_NOTICES.txt` lists the package.
 - The per-series settings (field options, in the overrides menu) are saved under `custom.styling` (override properties `custom.styling.backgroundColor`, …), mirroring the panel options `styling`, as in every plus plugin.
 - **Shades of colours without a name:** a hex value colour, a continuous scheme's colour, a palette of hex colours (such as the Atlas theme's classic palette) or a CSS colour name takes the shades of its nearest theme hue, when one is near enough (OKLCH: within 15°, at least 5° closer than the next hue; gray colours the theme's gray hue). Until now a Background or Sparkline shade fell back to the value colour and a Text shade to Automatic; they still do without a near hue.
 - Named **Stat plus** in Grafana. Only converting a core Stat panel to this plugin is supported; the tests and notes for switching back are gone.

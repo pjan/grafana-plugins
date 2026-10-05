@@ -183,8 +183,8 @@ test.describe('saved JSON', () => {
       );
       const preview = panelEditPage.panel.locator.getByTestId('data-testid panel content');
       // Inline style declarations sorted: when the panel is drawn first with Grafana's adapted colour and then with
-      // the restored one (plugin already loaded, see src/pjan/fieldConfigRefresh.ts), React updates the existing
-      // elements, and the browser lists the properties it changed last. Same declarations, other order.
+      // the restored one (plugin already loaded, see fieldConfigRefresh in @pjan/grafana-panel-utils), React updates
+      // the existing elements, and the browser lists the properties it changed last. Same declarations, other order.
       const tiles = () =>
         preview.evaluate((root) =>
           Array.from(root.querySelectorAll('*')).map((el) => {
@@ -209,6 +209,8 @@ test.describe('saved JSON', () => {
       expect(settings(await savedPanel(page, 1))).toEqual(settings(core));
       // and it draws with them: the same tiles, in the same colours
       await expect.poll(tiles).toEqual(coreTiles);
+      // and the field config applied again after the restore saves the same
+      expect(settings(await savedPanel(page, 1))).toEqual(settings(core));
     });
   }
 });

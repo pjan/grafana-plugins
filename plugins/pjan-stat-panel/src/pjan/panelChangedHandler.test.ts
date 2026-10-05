@@ -15,11 +15,11 @@ import {
   BigValueTextMode,
   PercentChangeColorMode,
 } from '@grafana/schema';
+import { useApplyFieldConfigChangedInPlace } from '@pjan/grafana-panel-utils';
 
 import { statPanelChangedHandler } from '../plugins/panel/stat/StatMigrations';
 import { type Options } from '../plugins/panel/stat/panelcfg.gen';
 
-import { useApplyFieldConfigChangedInPlace } from './fieldConfigRefresh';
 import { panelChangedHandler } from './panelChangedHandler';
 
 const coreOptions = {

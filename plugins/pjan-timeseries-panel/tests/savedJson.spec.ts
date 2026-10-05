@@ -348,6 +348,8 @@ test.describe('saved JSON', () => {
       // and it draws with them: the same canvas
       await page.mouse.move(0, 0);
       await expect.poll(async () => JSON.stringify(await canvasPrint(page, preview))).toBe(coreCanvas);
+      // and the field config applied again after the restore saves the same
+      expect(settings(await savedPanel(page, 1))).toEqual(settings(core));
     });
   }
 });

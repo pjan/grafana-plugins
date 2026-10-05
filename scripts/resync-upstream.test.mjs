@@ -230,6 +230,31 @@ describe('resync-upstream', () => {
     );
   });
 
+  test('rewrites @grafana/ui/unstable everywhere, tests included, and no other /unstable entry point', () => {
+    const source = (v) =>
+      `import { TableNG } from '@grafana/ui/unstable';\nimport { z } from '@grafana/data/unstable';\nimport { r } from '@grafana/runtime/unstable';\njest.mock("@grafana/ui/unstable", () => ({}));\nexport const v = ${v};\n`;
+    const files = (v) => ({ 'public/app/core/table.tsx': source(v), 'public/app/core/table.test.tsx': source(v) });
+    const grafana = makeGrafana([files(1), files(2)]);
+    const rewritten = (v) =>
+      source(v)
+        .replace("'@grafana/ui/unstable'", "'packages/grafana-ui/unstable'")
+        .replace('"@grafana/ui/unstable"', '"packages/grafana-ui/unstable"');
+    const root = makeRepo({
+      'plugins/pjan-a-panel/UPSTREAM.md': upstreamMd(),
+      'plugins/pjan-a-panel/src/core/table.tsx': header('public/app/core/table.tsx') + rewritten(1),
+      'plugins/pjan-a-panel/src/core/table.test.tsx': header('public/app/core/table.test.tsx') + rewritten(1),
+    });
+    const { status, output } = resync(grafana, root, 'v1', 'v2');
+    assert.equal(status, 0, output);
+    assert.match(output, /2 unchanged copies re-copied \(2 updated\), 0 changed copies merged/);
+    for (const file of ['table.tsx', 'table.test.tsx']) {
+      const copy = read(root, `plugins/pjan-a-panel/src/core/${file}`);
+      assert.equal(copy, header(`public/app/core/${file}`, 'v2') + rewritten(2));
+      assert.match(copy, /'@grafana\/data\/unstable'/);
+      assert.match(copy, /'@grafana\/runtime\/unstable'/);
+    }
+  });
+
   test('reports a file removed upstream, leaves it as is, and fails', () => {
     const grafana = makeGrafana([{ [UTILS]: UTILS_V1, 'public/app/core/keep.ts': 'x\n' }, { [UTILS]: null }]);
     const root = makeRepo({

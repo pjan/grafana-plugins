@@ -70,7 +70,8 @@ The plan asked for byte-identical copies apart from listed files. The only diffe
 **For each copy** (as above, in every plugin):
 
 1. The copy's header must be at `<from>` (else it is reported and left as is). The upstream file must exist at `<from>`, and at `<to>` (else "gone in `<to>`": removed or moved upstream, left as is for a person to decide).
-2. Both upstream versions get the mechanical import rewrites every plugin applies (`UPSTREAM.md`, "Import rewrites"): `'app/<path>'` → `'<path>'`, `'@grafana/{ui,data,runtime}/internal'` → `'packages/grafana-{ui,data,runtime}/internal'`, and outside `*.test.ts(x)` files `'@grafana/e2e-selectors'` → `'packages/grafana-e2e-selectors'`.
+2. Both upstream versions get the mechanical import rewrites every plugin applies (`UPSTREAM.md`, "Import rewrites"): `'app/<path>'` → `'<path>'`, `'@grafana/{ui,data,runtime}/internal'` → `'packages/grafana-{ui,data,runtime}/internal'`, `'@grafana/ui/unstable'` → `'packages/grafana-ui/unstable'` (tests included, as for `/internal`), and outside `*.test.ts(x)` files `'@grafana/e2e-selectors'` → `'packages/grafana-e2e-selectors'`.
+   - `@grafana/ui/unstable` (added 2026-10-05, for Table plus: core Table imports `TableNG` from it) is shared with plugins at runtime, but Grafana declares it not for plugins. A plugin whose copies import it keeps a stand-in at `src/packages/grafana-ui/unstable.ts`, as for `/internal`; the check needs no change for that (a stand-in at a mirrored path, compared like the others). No current plugin's copies import `/unstable`, so the rewrite changes none of them. Only `@grafana/ui/unstable` is rewritten: `@grafana/data/unstable` and `@grafana/runtime/unstable` stay as they are until a plugin needs a stand-in for them.
 3. **Unchanged copy** (its body is the rewritten `<from>` file): replaced by the rewritten `<to>` file.
 4. **Changed copy** (anything else: marked hooks, unmarked removals, partial copies, other import changes): a 3-way merge, `git merge-file -p --diff3` with the copy as ours, the rewritten `<from>` file as base and the rewritten `<to>` file as theirs. Upstream changes away from the plugin's changes apply cleanly, and the plugin's changes stay. Where they overlap, the file gets conflict markers (with the base section) to resolve by hand.
 5. The header's tag becomes `<to>`; the rest of the header (`Changes:`) stays.
@@ -83,9 +84,9 @@ It prints every changed copy with its result (updated, no change, or the number 
 
 ## Tests and negative controls
 
-`npm run test:scripts` (`node --test 'scripts/*.test.mjs'`): 34 tests for the check, 12 for the re-sync. Each test builds its fixtures in a temporary directory: a repository of fake plugins and, for the re-sync, a fake grafana/grafana git repository with tags `v1` and `v2`. The scripts run without the user's or the system's git configuration (`GIT_CONFIG_GLOBAL=/dev/null`), as on CI; a global `merge.conflictStyle=diff3` once hid a missing `--diff3`.
+`npm run test:scripts` (`node --test 'scripts/*.test.mjs'`): 34 tests for the check, 13 for the re-sync. Each test builds its fixtures in a temporary directory: a repository of fake plugins and, for the re-sync, a fake grafana/grafana git repository with tags `v1` and `v2`. The scripts run without the user's or the system's git configuration (`GIT_CONFIG_GLOBAL=/dev/null`), as on CI; a global `merge.conflictStyle=diff3` once hid a missing `--diff3`.
 
-Negative controls (2026-10-04): each behaviour below was broken on purpose in the script, and the named test failed; then the script was restored and all tests passed again.
+Negative controls (2026-10-04; the `ui/unstable` row 2026-10-05): each behaviour below was broken on purpose in the script, and the named test failed; then the script was restored and all tests passed again.
 
 | Broken on purpose                                                                        | Failing test(s)                                                                                                     |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -111,6 +112,7 @@ Negative controls (2026-10-04): each behaviour below was broken on purpose in th
 | Re-sync: conflicts not reported / `--diff3` dropped                                      | leaves conflict markers where an upstream change overlaps a plugin change, and fails                                |
 | Re-sync: Jest snapshots not re-synced                                                    | re-copies Jest snapshots without adding a header                                                                    |
 | Re-sync: `@grafana/e2e-selectors` rewritten in tests too / `/internal` not rewritten     | rewrites @grafana/\*/internal everywhere, and @grafana/e2e-selectors outside tests only                             |
+| Re-sync: `ui/unstable` not rewritten / not in tests / another `/unstable` rewritten      | rewrites @grafana/ui/unstable everywhere, tests included, and no other /unstable entry point                        |
 | Re-sync: a file removed upstream emptied instead of reported                             | reports a file removed upstream, leaves it as is, and fails                                                         |
 | Re-sync: header tag not checked against `<from>`                                         | leaves a copy whose header is at another tag as is, and fails                                                       |
 | Re-sync: `--dry-run` writes                                                              | --dry-run reports and writes nothing                                                                                |

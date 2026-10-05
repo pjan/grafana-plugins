@@ -1,6 +1,7 @@
 import { cloneDeep } from 'lodash';
 
 import { type FieldConfigSource, type PanelModel } from '@grafana/data';
+import { markFieldConfigChanged } from '@pjan/grafana-panel-utils';
 
 import { timelinePanelChangedHandler } from '../plugins/panel/state-timeline/migrations';
 import { type Options } from '../plugins/panel/state-timeline/panelcfg.gen';
@@ -13,7 +14,9 @@ import { type Options } from '../plugins/panel/state-timeline/panelcfg.gen';
  *
  * Grafana's panel editor clears `fieldConfig.defaults.custom` and the custom override rules before calling this
  * handler, and only applies the returned options. Grafana 13.2.3 (scenes 8.13.5) passes the VizPanel's own field
- * config object as `panel.fieldConfig`, so the custom config is restored on that object in place. If a future
+ * config object as `panel.fieldConfig`, so the custom config is restored on that object in place. The panel then
+ * applies that field config again (`fieldConfigRefresh` in `@pjan/grafana-panel-utils`), because when the plugin's
+ * module is already loaded Grafana has drawn the panel with the cleared custom config and cached it. If a future
  * Grafana passes a copy instead, the options still carry over and the custom field config falls back to this
  * panel's defaults, as for any other panel type switch.
  *
@@ -30,6 +33,7 @@ export const panelChangedHandler = (
       const fieldConfig: FieldConfigSource = panel.fieldConfig;
       fieldConfig.defaults.custom = { ...fieldConfig.defaults.custom, ...cloneDeep(prevFieldConfig.defaults.custom) };
       fieldConfig.overrides = cloneDeep(prevFieldConfig.overrides);
+      markFieldConfigChanged(fieldConfig);
     }
 
     return cloneDeep(prevOptions);

@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props; opt-in styling (src/pjan/styling/): legend items and tooltip swatches in the colours drawn, and the canvas behind a transparent panel.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props; opt-in styling (src/pjan/styling/): legend items and tooltip swatches in the colours drawn, and the canvas behind a transparent panel; onFieldConfigChange passed to useApplyFieldConfigChangedInPlace (@pjan/grafana-panel-utils), which applies the field config again after the panel-change handler restored it in place.
 import { useCallback, useMemo, useState } from 'react';
 
 import { DashboardCursorSync, type DataFrame, type PanelProps, useDataLinksContext } from '@grafana/data';
@@ -20,6 +20,8 @@ import {
   TimelineMode,
 } from 'core/components/TimelineChart/utils';
 import { getFilterByGroupedLabels } from 'features/panel/filters/adhoc';
+// pjan-statetimeline-panel: applies the field config again after the panel-change handler restored it (shared package).
+import { useApplyFieldConfigChangedInPlace } from '@pjan/grafana-panel-utils';
 
 // pjan-statetimeline-panel: per-row annotations (src/pjan/); renders core's AnnotationsPlugin unchanged when off.
 import { StateTimelineAnnotations } from '../../../pjan/rowAnnotations/StateTimelineAnnotations';
@@ -49,7 +51,9 @@ export const StateTimelinePanel = ({
   onChangeTimeRange,
   id: panelId,
   transparent, // pjan-statetimeline-panel: what is behind the boxes (opt-in styling)
+  onFieldConfigChange, // pjan-statetimeline-panel
 }: TimelinePanelProps) => {
+  useApplyFieldConfigChangedInPlace(fieldConfig, onFieldConfigChange); // pjan-statetimeline-panel
   const theme = useTheme2();
 
   // temp range set for adding new annotation set by TooltipPlugin2, consumed by AnnotationPlugin2

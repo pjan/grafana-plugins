@@ -30,7 +30,8 @@ Copied files mirror their upstream path under `src/`:
 - `packages/grafana-<pkg>/src/<path>` is copied to `src/packages/grafana-<pkg>/src/<path>`.
 - `src/packages/grafana-{ui,data,runtime}/internal.ts` and `src/packages/grafana-e2e-selectors/index.ts` stand in
   for package entry points that a plugin cannot use at runtime (see below).
-- `src/pjan/` is plugin-authored code (not from grafana/grafana): the panel-change handler, and the opt-in
+- `src/pjan/` is plugin-authored code (not from grafana/grafana): the panel-change handler (which re-applies the field
+  config with `fieldConfigRefresh` from the workspace package `@pjan/grafana-panel-utils`), and the opt-in
   additions (`rowAnnotations/`: per-row annotations; `styling/`: opt-in styling). It gets the scaffold's normal lint
   rules (see "Plugin build configuration"). The colour helpers it shares with the other plugins of the repository are
   in the workspace package `@pjan/grafana-styling` (`packages/grafana-styling/`, Apache-2.0, bundled from source).
@@ -107,6 +108,7 @@ One non-mechanical import change: `src/features/panel/options/builder/CanvasCont
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `plugins/panel/state-timeline/module.tsx`                                                                                                | `.setSuggestionsSupplier(showDefaultSuggestion(...))` left off.                                                                                                                                                                                                                       | Deliberate, see "Left off".                                                                                                                                                                                                                                                                                                                                                                             |
 | `plugins/panel/state-timeline/module.tsx`                                                                                                | `.setPanelChangeHandler(panelChangedHandler)` from `src/pjan/panelChangedHandler.ts` instead of `timelinePanelChangedHandler` (plugin-only, marked in the code).                                                                                                                      | Switching a core `state-timeline` panel to this plugin in the panel editor keeps every option, the custom field config and the custom override rules. Any other previous panel type goes to core's `timelinePanelChangedHandler` unchanged (`migrations.ts` itself is unmodified). Details below.                                                                                                       |
+| `plugins/panel/state-timeline/StateTimelinePanel.tsx`                                                                                    | Takes `onFieldConfigChange` from its props and calls `useApplyFieldConfigChangedInPlace(fieldConfig, onFieldConfigChange)` from `@pjan/grafana-panel-utils` (plugin-only, marked).                                                                                                    | After the panel-change handler restored the custom field config in place, the panel applies its field config again; see "Panel type switch". Does nothing otherwise.                                                                                                                                                                                                                                    |
 | `plugins/panel/state-timeline/module.tsx`                                                                                                | `addRowAnnotationOptions(builder)` after `addAnnotationOptions(builder)`, `addAnnotationKeyFieldConfig(builder)` after `addAxisWidth(builder)`, and their import (plugin-only, marked).                                                                                               | Per-row annotations: the panel options in the "Annotations" group and the "Annotation key" field option. See "Plugin addition: per-row annotations".                                                                                                                                                                                                                                                    |
 | `plugins/panel/state-timeline/StateTimelinePanel.tsx`                                                                                    | `<AnnotationsPlugin>` rendered as `<StateTimelineAnnotations>` (from `src/pjan/`) with three extra props, `alignedFrame`, `frames` and `panelOptions`; the `AnnotationsPlugin` import replaced by the `StateTimelineAnnotations` import (plugin-only, marked).                        | Per-row annotations. With the option off, `StateTimelineAnnotations` renders `AnnotationsPlugin` with exactly the props core passes.                                                                                                                                                                                                                                                                    |
 | `core/components/TimelineChart/timeline.ts`, `core/components/TimelineChart/utils.ts`, `core/components/TimelineChart/TimelineChart.tsx` | Opt-in styling hooks (plugin-only, marked): the `pjanStyle` core option for box, line and value colours, rounded corners, value overflow and the hover highlight's radius; the Pill look's line width for each series; `addAxisStyling` after the axes; `'styling'` in `propsToDiff`. | Opt-in styling, see "Plugin addition: opt-in styling". With nothing set, `pjanStyle` is undefined and `addAxisStyling` adds no hook, so core's code runs unchanged. Also `pjanPanelBackground` from `StateTimelinePanel` (the canvas behind a transparent panel), for Automatic text and row names.                                                                                                     |
@@ -129,6 +131,26 @@ restore takes effect. This relies on scenes passing that object by reference: if
 options still carry over and the custom field config falls back to this plugin's defaults, as for any panel type switch.
 Verified in Grafana 13.2.3: merge, row height, show/align values, page size, legend (table, right, calcs), tooltip
 (multi, sort), custom field config, custom overrides and mappings all survive the switch.
+
+**When the plugin's module is already loaded** (another State timeline plus panel was drawn in the session),
+`VizPanel._loadPlugin` loads it synchronously, inside the click on the visualization card, so React renders the panel
+before `changePluginType` reaches the handler. That render applies the field config the editor left (`custom` at this
+plugin's defaults, no custom override properties), and `VizPanel.applyFieldConfig` caches the result for as long as
+the data object stays the same. Until 2026-10-05 the panel kept drawing that (fill opacity 70, line width 0, no custom
+overrides) while the saved JSON had the restored field config, until the next query (found for Stat plus; reproduced
+here by `tests/savedJson.spec.ts`, below). The handler now marks the field config it changed (`fieldConfigRefresh` in
+the workspace package `@pjan/grafana-panel-utils`, shared with Stat plus and Time series plus), and the copied
+`StateTimelinePanel` calls `onFieldConfigChange` (public `PanelProps`, `VizPanel.onFieldConfigChange`, which clears
+that cache) with that same field config once after its next render. The content is unchanged, so the saved JSON is the
+same. When the module isn't loaded yet, the handler runs before the first render, and that extra call only applies the
+same field config again, re-normalised against this plugin's field config registry (`getPanelOptionsWithDefaults`): no
+change while the registry contains every option of the core state timeline's. The colour mode needs no restore here: the state timeline supports colours by value and
+prefers no mode, so Grafana's `adaptFieldColorMode` keeps it.
+
+Verified by `tests/savedJson.spec.ts`: a core state timeline with options, custom field config (fill opacity 30, line
+width 3) and a custom override (fill opacity 100 on one row) away from the defaults, switched to State timeline plus in
+the editor with the plugin's module loaded and not loaded, saves the same options and field config and draws the same
+canvas (size and an FNV hash of its RGBA bytes) as core did before the switch.
 
 **Renaming `type` from `state-timeline` to `pjan-statetimeline-panel` in the dashboard JSON stays the lossless
 conversion** (and the only one for library panels and provisioned dashboards).
@@ -218,7 +240,9 @@ one row in core as well. Not fixed here (drop-in parity).
 - `eslint.config.mjs`: `react/react-in-jsx-scope` off for `src/` (automatic runtime). For the mirrored tree only
   (`src/{core,features,packages,plugins}/**`): `react-hooks/refs`, `react-hooks/set-state-in-effect`,
   `@typescript-eslint/array-type`, `no-redeclare` off and unused disable directives not reported. Upstream code is not
-  rewritten to satisfy newer rules. `src/pjan/**` keeps the scaffold's rules.
+  rewritten to satisfy newer rules. `src/pjan/**` keeps the scaffold's rules. Plugin code imports `@pjan/grafana-styling`
+  and `@pjan/grafana-panel-utils` through their entry points only (`@pjan/grafana-styling`'s `src/testdata/` is for
+  tests).
 - i18n: `t()`/`<Trans>` come from the bundled `@grafana/i18n` (scaffold default). `src/module.ts` calls
   `await initPluginTranslations(pluginJson.id)`. The plugin ships no translations, so every string renders its
   in-source English default; keys and defaults are unchanged from core. Core shows these labels translated in
@@ -229,7 +253,8 @@ one row in core as well. Not fixed here (drop-in parity).
   positioning), `react-hook-form` 7.62.0 (annotation editor form), `react-select` 5.10.2 (tag picker components passed
   to `@grafana/ui`'s `MultiSelect`), `tinycolor2` 1.6.0, `micro-memoize` 4.2.0, `react-use` 17.6.1, plus
   `@grafana/schema` and `@grafana/i18n` 13.2.3. `lodash` 4.18.1 is a shared external at runtime.
-  The workspace package `@pjan/grafana-styling` is bundled from source and uses the plugin's copies of these.
+  The workspace packages `@pjan/grafana-styling` (which uses the plugin's copies of these) and
+  `@pjan/grafana-panel-utils` (the field config refresh after a panel type switch) are bundled from source.
 
 ## plugin.json
 
@@ -270,8 +295,8 @@ Not ported:
 - `timeseries/ThresholdsStyleEditor.test.tsx`: needs `react-select-event`, not a dependency here (the editor is unused by
   the state timeline; it is only reachable through `timeseries/config.ts`).
 
-Plugin-authored tests (`src/pjan/`): `panelChangedHandler.test.ts` (panel type switch), `buildConfig.test.ts` (JSX
-runtime regression guard), and `rowAnnotations/*.test.ts(x)` (options, row keys and matching incl. rows not drawn, row geometry against
+Plugin-authored tests (`src/pjan/`): `panelChangedHandler.test.ts` (panel type switch, and the panel applying
+its field config again after a restore), `buildConfig.test.ts` (JSX runtime regression guard), and `rowAnnotations/*.test.ts(x)` (options, row keys and matching incl. rows not drawn, row geometry against
 the boxes `timeline.ts` draws, clustering per row, the row a new annotation goes on, rendering and resizing of the row
 markers, and the option-off pass-through), and `styling/*.test.ts(x)` (colour names for every colour source, shade
 ranking in the stock and Atlas themes, colour resolution and its fallbacks, Automatic text, the Pill look, value
@@ -286,6 +311,9 @@ atlas-theme-app 4.0.1; its test helper builds the theme as 4.1.0 does, extra hue
 End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.yaml`):
 
 - `tests/panel.spec.ts` with `provisioning/dashboards/dashboard.json`: one core/plugin pair; canvas, legend and pixels.
+- `tests/savedJson.spec.ts` (2026-10-05): a core state timeline switched to State timeline plus in the panel editor,
+  with the plugin's module loaded and not loaded (see "Panel type switch"); creates and deletes its dashboards through
+  the HTTP API.
 - `tests/rowAnnotations.spec.ts` with `provisioning/dashboards/row-annotations.json`: per-row annotations (see the
   plugin `README.md`); creates and deletes its annotations through the HTTP API.
 - `tests/styling.spec.ts` with `provisioning/dashboards/styling.json` (generated by
@@ -321,6 +349,17 @@ swatch), or a classic-palette row by the whole palette (the palette swatch with 
 Atlas hues) are in
 `packages/grafana-styling` (`shades.test.ts`).
 
+The field config refresh, reproduced and its negative controls (2026-10-05; each control built and seen failing):
+
+- Before the fix (the handler without `markFieldConfigChanged`, the panel without the hook), `tests/savedJson.spec.ts`
+  reproduced the bug in two runs: "plugin already loaded" failed on the canvas (hash `1184388517` drawn after the
+  switch, `173994006` drawn by core), with the saved JSON equal to core's; "plugin not loaded" passed.
+- With the fix built, both pass. Without `markFieldConfigChanged` in the handler, or without the
+  `useApplyFieldConfigChangedInPlace` call in `StateTimelinePanel.tsx`, "plugin already loaded" fails again on the
+  same canvas hashes; without the custom restore in the handler, both tests fail on the saved JSON.
+- Jest: without `markFieldConfigChanged`, "has the panel apply its field config again after restoring it"
+  (`panelChangedHandler.test.ts`) fails.
+
 ## Re-syncing to a newer tag
 
 1. Re-run the dependency closure from `public/app/plugins/panel/state-timeline/{module.tsx,StateTimelinePanel.tsx,StateTimelineTooltip.tsx,hooks.tsx,migrations.ts,panelcfg.gen.ts,styles.ts}`
@@ -334,7 +373,8 @@ Atlas hues) are in
 3. Check each name the copied code imports from `packages/grafana-*/internal` against the new tag: prefer a public
    export if one appeared; otherwise re-copy the Apache helper. Re-check the partial copies (`features/annotations/api.ts`,
    `PanelQueryRunner.ts`, `uPlot/utils.ts`, `joinDataFrames.ts`) and the panel-editor flow that
-   `src/pjan/panelChangedHandler.ts` relies on (`PanelOptionsPane`, `VizPanel.changePluginType` in `@grafana/scenes`),
+   `src/pjan/panelChangedHandler.ts` relies on (`PanelOptionsPane`, `VizPanel.changePluginType` in `@grafana/scenes`,
+   and the field config cache that `fieldConfigRefresh` clears: `VizPanel.applyFieldConfig`, `onFieldConfigChange`),
    and the modules the per-row annotations and the styling depend on (see "Plugin addition: per-row annotations" and
    "Plugin addition: opt-in styling").
 4. Bump `@grafana/*` and the bundled dependency versions to the new tag's (`package.json` and `yarn.lock` of
@@ -537,7 +577,7 @@ dayBoundaries, dayBoundaryColor}`; `'styling'` is in `TimelineChart`'s `propsToD
 | `public/app/plugins/panel/barchart/distribute.ts`                                              | `src/plugins/panel/barchart/distribute.ts`                                              |    47 | imports only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `public/app/plugins/panel/barchart/quadtree.ts`                                                | `src/plugins/panel/barchart/quadtree.ts`                                                |   148 | imports only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `public/app/plugins/panel/canvas/panelcfg.gen.ts`                                              | `src/plugins/panel/canvas/panelcfg.gen.ts`                                              |   167 | imports only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx`                               | `src/plugins/panel/state-timeline/StateTimelinePanel.tsx`                               |   190 | imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props; opt-in styling (src/pjan/styling/): legend items and tooltip swatches in the colours drawn; the canvas behind a transparent panel as pjanPanelBackground                                                                                                                                                                                                                                |
+| `public/app/plugins/panel/state-timeline/StateTimelinePanel.tsx`                               | `src/plugins/panel/state-timeline/StateTimelinePanel.tsx`                               |   190 | imports; AnnotationsPlugin rendered through StateTimelineAnnotations from src/pjan/ (per-row annotations, off by default), with alignedFrame, frames and panelOptions as extra props; opt-in styling (src/pjan/styling/): legend items and tooltip swatches in the colours drawn; the canvas behind a transparent panel as pjanPanelBackground; `onFieldConfigChange` to `useApplyFieldConfigChangedInPlace` from `@pjan/grafana-panel-utils` (marked)                                                                                                                        |
 | `public/app/plugins/panel/state-timeline/StateTimelineTooltip.tsx`                             | `src/plugins/panel/state-timeline/StateTimelineTooltip.tsx`                             |   115 | imports; opt-in styling (src/pjan/styling/): `styling` prop, the swatches show the colours drawn                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `public/app/plugins/panel/state-timeline/hooks.tsx`                                            | `src/plugins/panel/state-timeline/hooks.tsx`                                            |    71 | imports only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `public/app/plugins/panel/state-timeline/migrations.ts`                                        | `src/plugins/panel/state-timeline/migrations.ts`                                        |   144 | imports only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |

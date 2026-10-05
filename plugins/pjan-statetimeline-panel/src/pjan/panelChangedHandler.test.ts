@@ -1,5 +1,8 @@
+import { renderHook } from '@testing-library/react';
+
 import { type FieldConfigSource, MappingType } from '@grafana/data';
 import { LegendDisplayMode, SortOrder, TooltipDisplayMode, VisibilityMode } from '@grafana/schema';
+import { useApplyFieldConfigChangedInPlace } from '@pjan/grafana-panel-utils';
 
 import { timelinePanelChangedHandler } from '../plugins/panel/state-timeline/migrations';
 
@@ -59,9 +62,24 @@ describe('panelChangedHandler', () => {
 
   it('still returns the options when no previous field config is passed', () => {
     const panel = editorPanel();
+    const onFieldConfigChange = jest.fn();
 
     expect(panelChangedHandler(panel, 'state-timeline', coreOptions)).toEqual(coreOptions);
     expect(panel.fieldConfig.defaults.custom).toEqual({ fillOpacity: 70, lineWidth: 0 });
+    renderHook(() => useApplyFieldConfigChangedInPlace(panel.fieldConfig, onFieldConfigChange));
+    expect(onFieldConfigChange).not.toHaveBeenCalled();
+  });
+
+  it('has the panel apply its field config again after restoring it', () => {
+    const panel = editorPanel();
+    const onFieldConfigChange = jest.fn();
+
+    panelChangedHandler(panel, 'state-timeline', coreOptions, coreFieldConfig);
+    const { rerender } = renderHook(() => useApplyFieldConfigChangedInPlace(panel.fieldConfig, onFieldConfigChange));
+    rerender();
+
+    expect(onFieldConfigChange).toHaveBeenCalledTimes(1);
+    expect(onFieldConfigChange).toHaveBeenCalledWith(panel.fieldConfig);
   });
 
   it('uses the core handler for any other previous panel type', () => {

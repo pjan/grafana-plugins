@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; Grafana Assistant tooltip button pruned (the assistantContext prop, its getAssistantTooltipContext import and the `title` prop only it used); onFieldConfigChange to useApplyFieldConfigChangedInPlace from src/pjan/ (applies the field config again after the panel-change handler restored it in place); the tooltip gets the aligned frame with each series' Line color as its swatch colour (src/pjan/styling/swatches.ts); the legend's colour picker also sets the Line color of a series that has one (src/pjan/styling/legendColor.ts).
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; Grafana Assistant tooltip button pruned (the assistantContext prop, its getAssistantTooltipContext import and the `title` prop only it used); onFieldConfigChange to useApplyFieldConfigChangedInPlace from @pjan/grafana-panel-utils (applies the field config again after the panel-change handler restored it in place); the tooltip gets the aligned frame with each series' Line color as its swatch colour (src/pjan/styling/swatches.ts); the legend's colour picker also sets the Line color of a series that has one (src/pjan/styling/legendColor.ts).
 import { useCallback, useMemo, useState } from 'react';
 
 import {
@@ -35,8 +35,8 @@ import { OutsideRangePlugin } from './plugins/OutsideRangePlugin';
 import { getXAnnotationFrames } from './plugins/utils';
 import { getPrepareTimeseriesSuggestion } from './suggestions';
 import { getTimezones, prepareGraphableFields } from './utils';
-// pjan-timeseries-panel: applies the field config again after the panel-change handler restored it (src/pjan/).
-import { useApplyFieldConfigChangedInPlace } from '../../../pjan/fieldConfigRefresh';
+// pjan-timeseries-panel: applies the field config again after the panel-change handler restored it (shared package).
+import { useApplyFieldConfigChangedInPlace } from '@pjan/grafana-panel-utils';
 // pjan-timeseries-panel: the tooltip's swatches show the drawn line colour (the colour model)
 import { withLineSwatchDisplay } from '../../../pjan/styling/swatches';
 // pjan-timeseries-panel: a colour picked in the legend is drawn as picked (the colour model)

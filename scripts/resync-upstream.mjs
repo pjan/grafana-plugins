@@ -42,13 +42,15 @@ const dryRun = values['dry-run'];
 
 /**
  * The mechanical import rewrites every plugin applies to its copies (each plugin's UPSTREAM.md, "Import rewrites"):
- * `app/<path>` resolves from the plugin's src/, and the `/internal` entry points and `@grafana/e2e-selectors` (outside
- * tests) are the plugin's stand-ins. Applied to both upstream versions, so that they line up with the copies.
+ * `app/<path>` resolves from the plugin's src/, and the `/internal` entry points, `@grafana/ui/unstable` and
+ * `@grafana/e2e-selectors` (outside tests) are the plugin's stand-ins. Applied to both upstream versions, so that they
+ * line up with the copies.
  */
 function rewriteImports(text, upstreamPath) {
   let result = text
     .replace(/(['"])app\/([^'"\n]*)\1/g, '$1$2$1')
-    .replace(/(['"])@grafana\/(ui|data|runtime)\/internal\1/g, '$1packages/grafana-$2/internal$1');
+    .replace(/(['"])@grafana\/(ui|data|runtime)\/internal\1/g, '$1packages/grafana-$2/internal$1')
+    .replace(/(['"])@grafana\/ui\/unstable\1/g, '$1packages/grafana-ui/unstable$1');
   if (!/\.test\.tsx?$/.test(upstreamPath)) {
     result = result.replace(/(['"])@grafana\/e2e-selectors\1/g, '$1packages/grafana-e2e-selectors$1');
   }
