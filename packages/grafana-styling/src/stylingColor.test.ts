@@ -17,6 +17,7 @@ describe('getStylingColor', () => {
     });
     expect(getStylingColor({ mode: 'automatic' }, VALUE_COLOR_MODES)).toEqual({ mode: 'automatic' });
     expect(getStylingColor({ mode: 'state' }, ROW_NAME_COLOR_MODES)).toEqual({ mode: 'state' });
+    expect(getStylingColor({ mode: 'series' }, ['series', 'shade', 'fixed'])).toEqual({ mode: 'series' });
   });
 
   it.each([
@@ -27,6 +28,7 @@ describe('getStylingColor', () => {
     [{ mode: 'automatic' }, LINE_COLOR_MODES],
     [{ mode: 'state' }, VALUE_COLOR_MODES],
     ['red', ROW_NAME_COLOR_MODES],
+    [{ mode: 'series' }, LINE_COLOR_MODES],
   ])('counts %o as unset', (value, modes) => {
     expect(getStylingColor(value, modes)).toBeUndefined();
   });

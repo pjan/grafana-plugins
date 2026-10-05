@@ -12,13 +12,17 @@ export interface StylingColorEditorSettings {
   modes: StylingColorMode[];
   /** Shown while the option is unset: what the panel draws then */
   placeholder: string;
+  /** The heading of the five shades in the select (default: "Shade of the state color") */
+  shadeGroup?: string;
 }
 
 const isShade = (key: string): key is RelativeShade => (RELATIVE_SHADES as readonly string[]).includes(key);
 
 /** The choices of the select, for the modes an option offers. Their values are `toStylingColor`'s keys. */
-export function getStylingColorOptions(modes: StylingColorMode[]): Array<ComboboxOption<string>> {
-  const shadeGroup = t('pjan.styling.shade-group', 'Shade of the state color');
+export function getStylingColorOptions(
+  modes: StylingColorMode[],
+  shadeGroup = t('pjan.styling.shade-group', 'Shade of the state color')
+): Array<ComboboxOption<string>> {
   const shades: Array<ComboboxOption<string>> = [
     {
       value: 'softer',
@@ -67,6 +71,14 @@ export function getStylingColorOptions(modes: StylingColorMode[]): Array<Combobo
         return [{ value: 'text', label: t('pjan.styling.same-as-text', 'Same as text') }];
       case 'none':
         return [{ value: 'none', label: t('pjan.styling.none', 'None') }];
+      case 'series':
+        return [
+          {
+            value: 'series',
+            label: t('pjan.styling.series-color', 'Series color'),
+            description: t('pjan.styling.series-color-desc', 'The series’ own color (Color scheme or override)'),
+          },
+        ];
       case 'fixed':
         return [{ value: 'fixed', label: t('pjan.styling.fixed-color', 'Fixed color') }];
     }
@@ -107,7 +119,7 @@ export const StylingColorEditor = ({
     <div className={styles.group}>
       <Combobox<string>
         id={id}
-        options={getStylingColorOptions(settings?.modes ?? [])}
+        options={getStylingColorOptions(settings?.modes ?? [], settings?.shadeGroup)}
         value={selected}
         placeholder={settings?.placeholder}
         isClearable

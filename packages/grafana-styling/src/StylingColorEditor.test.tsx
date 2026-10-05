@@ -44,6 +44,27 @@ describe('getStylingColorOptions', () => {
   });
 });
 
+describe('getStylingColorOptions for Time series plus', () => {
+  it('offers Series color, and names the shade group as asked', () => {
+    expect(
+      getStylingColorOptions(['series', 'shade', 'fixed'], 'Shade of the series color').map((o) => [
+        o.value,
+        o.label,
+        o.group,
+      ])
+    ).toEqual([
+      ['series', 'Series color', undefined],
+      ['softer', 'Softer', 'Shade of the series color'],
+      ['soft', 'Soft', 'Shade of the series color'],
+      ['base', 'Base', 'Shade of the series color'],
+      ['strong', 'Strong', 'Shade of the series color'],
+      ['stronger', 'Stronger', 'Shade of the series color'],
+      ['fixed', 'Fixed color', undefined],
+    ]);
+    expect(toStylingColor('series', undefined)).toEqual({ mode: 'series' });
+  });
+});
+
 describe('getStylingColorOptions for Stat plus', () => {
   it('offers None, Value and Same as text where asked, in the order given', () => {
     expect(getStylingColorOptions(['none', 'value', 'shade', 'fixed']).map((o) => o.label)).toEqual([

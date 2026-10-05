@@ -7,9 +7,10 @@ import { RELATIVE_SHADES, type RelativeShade } from './shades';
  * - `state`: the row's current state colour (State timeline plus row names);
  * - `value`: the state (value) colour itself (Stat plus);
  * - `text`: the same colour as the text (Stat plus sparkline);
- * - `none`: nothing is drawn (Stat plus background).
+ * - `none`: nothing is drawn (Stat plus background);
+ * - `series`: the series colour itself, where an unset option follows another colour (Time series plus fill and points).
  */
-export type StylingColorMode = 'shade' | 'fixed' | 'automatic' | 'state' | 'value' | 'text' | 'none';
+export type StylingColorMode = 'shade' | 'fixed' | 'automatic' | 'state' | 'value' | 'text' | 'none' | 'series';
 
 /** A colour option of the styling. Like Grafana's own field colour, a mode and what that mode needs. */
 export interface StylingColor {

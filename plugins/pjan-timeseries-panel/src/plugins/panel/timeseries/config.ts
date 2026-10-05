@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/timeseries/config.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports only.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/timeseries/config.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; the colour model's Line color, Fill color and Point color options registered right after Line width, Gradient mode and Point size (src/pjan/styling/options.ts).
 /* istanbul ignore file */
 import {
   FieldColorModeId,
@@ -25,6 +25,8 @@ import { getGraphFieldOptions, commonOptionsBuilder } from '@grafana/ui';
 
 import { InsertNullsEditor } from './InsertNullsEditor';
 import { LineStyleEditor } from './LineStyleEditor';
+// pjan-timeseries-panel: the colour model's options (Line, Fill and Point color)
+import { addFillColorOption, addLineColorOption, addPointColorOption } from '../../../pjan/styling/options';
 import { SpanNullsEditor } from './SpanNullsEditor';
 import { ThresholdsStyleEditor } from './ThresholdsStyleEditor';
 export const defaultGraphConfig: GraphFieldConfig = {
@@ -130,7 +132,9 @@ export function getGraphFieldConfig(cfg: GraphFieldConfig, isTime = true): SetFi
             ariaLabelForHandle: t('timeseries.config.get-graph-field-config.aria-label-line-width', 'Line width'),
           },
           showIf: (config) => config.drawStyle !== GraphDrawStyle.Points,
-        })
+        });
+      addLineColorOption(builder, categoryStyles); // pjan-timeseries-panel: right after Line width
+      builder
         .addSliderInput({
           path: 'fillOpacity',
           name: t('timeseries.config.get-graph-field-config.name-fill-opacity', 'Fill opacity'),
@@ -153,7 +157,9 @@ export function getGraphFieldConfig(cfg: GraphFieldConfig, isTime = true): SetFi
             options: graphFieldOptions.fillGradient,
           },
           showIf: (config) => config.drawStyle !== GraphDrawStyle.Points,
-        })
+        });
+      addFillColorOption(builder, categoryStyles); // pjan-timeseries-panel: right after Gradient mode
+      builder
         .addFieldNamePicker({
           path: 'fillBelowTo',
           name: t('timeseries.config.get-graph-field-config.name-fill-below-to', 'Fill below to'),
@@ -233,6 +239,7 @@ export function getGraphFieldConfig(cfg: GraphFieldConfig, isTime = true): SetFi
           },
           showIf: (config) => config.showPoints !== VisibilityMode.Never || config.drawStyle === GraphDrawStyle.Points,
         });
+      addPointColorOption(builder, categoryStyles); // pjan-timeseries-panel: right after Point size
 
       commonOptionsBuilder.addStackingConfig(builder, cfg.stacking, categoryStyles);
 

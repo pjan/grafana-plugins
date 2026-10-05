@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; Grafana Assistant tooltip button pruned (the assistantContext prop, its getAssistantTooltipContext import and the `title` prop only it used); onFieldConfigChange to useApplyFieldConfigChangedInPlace from src/pjan/ (applies the field config again after the panel-change handler restored it in place).
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; Grafana Assistant tooltip button pruned (the assistantContext prop, its getAssistantTooltipContext import and the `title` prop only it used); onFieldConfigChange to useApplyFieldConfigChangedInPlace from src/pjan/ (applies the field config again after the panel-change handler restored it in place); the tooltip gets the aligned frame with each series' Line color as its swatch colour (src/pjan/styling/swatches.ts); the legend's colour picker also sets the Line color of a series that has one (src/pjan/styling/legendColor.ts).
 import { useCallback, useMemo, useState } from 'react';
 
 import {
@@ -16,6 +16,7 @@ import { TooltipDisplayMode, VizOrientation } from '@grafana/schema';
 import {
   EventBusPlugin,
   KeyboardPlugin,
+  PanelContextProvider, // pjan-timeseries-panel: for legendContext
   TooltipPlugin2,
   usePanelContext,
   useTheme2,
@@ -36,6 +37,10 @@ import { getPrepareTimeseriesSuggestion } from './suggestions';
 import { getTimezones, prepareGraphableFields } from './utils';
 // pjan-timeseries-panel: applies the field config again after the panel-change handler restored it (src/pjan/).
 import { useApplyFieldConfigChangedInPlace } from '../../../pjan/fieldConfigRefresh';
+// pjan-timeseries-panel: the tooltip's swatches show the drawn line colour (the colour model)
+import { withLineSwatchDisplay } from '../../../pjan/styling/swatches';
+// pjan-timeseries-panel: a colour picked in the legend is drawn as picked (the colour model)
+import { hasLineColor, withPickedColor } from '../../../pjan/styling/legendColor';
 
 interface TimeSeriesPanelProps extends PanelProps<Options> {}
 
@@ -108,6 +113,21 @@ export const TimeSeriesPanel = ({
     return { frames };
   }, [data.series, timeRange, theme]);
 
+  // pjan-timeseries-panel: the legend's colour picker sets the Line color too where one is drawn (legendColor.ts)
+  const panelContext = usePanelContext(); // pjan-timeseries-panel
+  const legendContext = useMemo(
+    () => ({
+      ...panelContext,
+      onSeriesColorChange:
+        panelContext.onSeriesColorChange &&
+        ((label: string, color: string) =>
+          hasLineColor(frames, label, theme)
+            ? onFieldConfigChange(withPickedColor(fieldConfig, label, color))
+            : panelContext.onSeriesColorChange!(label, color)),
+    }),
+    [panelContext, frames, theme, fieldConfig, onFieldConfigChange]
+  ); // pjan-timeseries-panel
+
   const timezones = useMemo(() => getTimezones(options.timezone, timeZone), [options.timezone, timeZone]);
   const suggestions = useMemo(() => {
     if (frames?.length && frames.every((df) => df.meta?.type === DataFrameType.TimeSeriesLong)) {
@@ -154,6 +174,8 @@ export const TimeSeriesPanel = ({
   }
 
   return (
+    // pjan-timeseries-panel: legendContext around the chart and its legend
+    <PanelContextProvider value={legendContext}>
     <TimeSeries
       frames={frames}
       structureRev={data.structureRev}
@@ -207,7 +229,7 @@ export const TimeSeriesPanel = ({
                   return (
                     // not sure it header time here works for annotations, since it's taken from nearest datapoint index
                     <TimeSeriesTooltip
-                      series={alignedFrame}
+                      series={withLineSwatchDisplay(alignedFrame, theme)} // pjan-timeseries-panel
                       dataIdxs={dataIdxs}
                       seriesIdx={seriesIdx}
                       mode={viaSync ? TooltipDisplayMode.Multi : options.tooltip.mode}
@@ -256,5 +278,6 @@ export const TimeSeriesPanel = ({
         );
       }}
     </TimeSeries>
-  );
+    </PanelContextProvider>
+  ); // pjan-timeseries-panel: </PanelContextProvider>
 };

@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimeSeries/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; dropped one `eslint-disable-next-line import/order` comment (the plugin's ESLint has no import plugin).
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimeSeries/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; dropped one `eslint-disable-next-line import/order` comment (the plugin's ESLint has no import plugin); the colour model's line, fill and point colours, and the axis colour Series from the line colour (src/pjan/styling/seriesColors.ts).
 import { isNumber } from 'lodash';
 import uPlot from 'uplot';
 
@@ -100,6 +100,8 @@ import {
 } from 'packages/grafana-ui/internal';
 
 import { ANNOTATION_LANE_SIZE } from '../../../plugins/panel/timeseries/plugins/utils';
+// pjan-timeseries-panel: the colour model (Line, Fill and Point color)
+import { applyFillAndPointColors, getSeriesColors } from '../../../pjan/styling/seriesColors';
 
 // See UPlotAxisBuilder.ts::calculateAxisSize for default axis size calculation
 const UPLOT_DEFAULT_AXIS_SIZE = 17;
@@ -363,7 +365,8 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn = ({
         ) {
           axisColor = getScaleGradientFn(1, theme, colorMode, field.config.thresholds);
         } else {
-          axisColor = seriesColor;
+          // pjan-timeseries-panel: the drawn line colour (the colour model)
+          axisColor = getSeriesColors(field, theme)?.line ?? seriesColor;
         }
       }
 
@@ -578,6 +581,8 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn = ({
       dynamicSeriesColor = (seriesIdx) => getFieldSeriesColor(alignedFrame.fields[seriesIdx], theme).color;
     }
 
+    const pjanColors = getSeriesColors(field, theme, fillOpacity); // pjan-timeseries-panel: the colour model
+
     builder.addSeries({
       pathBuilder,
       pointsBuilder,
@@ -589,7 +594,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn = ({
       theme,
       dynamicSeriesColor,
       drawStyle: customConfig.drawStyle!,
-      lineColor: customConfig.lineColor ?? seriesColor,
+      lineColor: pjanColors?.line ?? customConfig.lineColor ?? seriesColor, // pjan-timeseries-panel
       lineWidth: customConfig.lineWidth,
       lineInterpolation: customConfig.lineInterpolation,
       lineStyle: resolveLineStyle(customConfig.lineStyle, seriesIdx),
@@ -609,6 +614,11 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn = ({
       dataFrameFieldIndex: field.state?.origin,
       showValues: customConfig.showValues,
     });
+
+    // pjan-timeseries-panel: the colour model's fill and point colours
+    if (pjanColors) {
+      applyFillAndPointColors(builder, pjanColors, customConfig.gradientMode, fillOpacity, theme);
+    }
 
     seriesIdx++;
 

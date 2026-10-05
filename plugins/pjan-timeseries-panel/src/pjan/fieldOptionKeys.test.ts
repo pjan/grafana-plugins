@@ -92,6 +92,15 @@ describe('field option keys', () => {
     );
   });
 
+  it('the plugin’s own field options are the colour model’s, under custom.styling', () => {
+    expect(
+      plugin.fieldConfigRegistry
+        .list()
+        .filter((item) => item.isCustom && !(CORE_CUSTOM_IDS_V13_2_3 as readonly string[]).includes(item.id))
+        .map((item) => item.id)
+    ).toEqual(['custom.styling.lineColor', 'custom.styling.fillColor', 'custom.styling.pointColor']);
+  });
+
   it('no field option of the plugin reuses a GraphFieldConfig key', () => {
     expect(ownCustomKeys(plugin.fieldConfigRegistry).filter((key) => keys.includes(key))).toEqual([]);
   });
@@ -102,11 +111,11 @@ describe('field option keys', () => {
       useCustomConfig: (builder) => {
         getGraphFieldConfig(defaultGraphConfig).useCustomConfig!(builder);
         builder.addTextInput({ path: 'lineColor', name: 'Line color' });
-        builder.addTextInput({ path: 'styling.lineColor', name: 'Line color' });
+        builder.addTextInput({ path: 'styling.markerColor', name: 'Marker color' });
       },
     });
 
-    expect(ownCustomKeys(withOwnOptions.fieldConfigRegistry)).toEqual(['lineColor', 'styling']);
+    expect([...new Set(ownCustomKeys(withOwnOptions.fieldConfigRegistry))].sort()).toEqual(['lineColor', 'styling']);
     expect(ownCustomKeys(withOwnOptions.fieldConfigRegistry).filter((key) => keys.includes(key))).toEqual([
       'lineColor',
     ]);
@@ -122,7 +131,8 @@ describe('field option keys', () => {
     const ids = new PanelPlugin(() => null)
       .useFieldConfig(getGraphFieldConfig(defaultGraphConfig))
       .fieldConfigRegistry.list()
-      .filter((item) => item.isCustom)
+      // the plugin's own options, registered in the copied config.ts by marked lines (src/pjan/styling/options.ts)
+      .filter((item) => item.isCustom && !item.id.startsWith('custom.styling.'))
       .map((item) => item.id);
     expect(ids.sort()).toEqual([...CORE_CUSTOM_IDS_V13_2_3].sort());
   });

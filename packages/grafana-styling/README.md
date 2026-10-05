@@ -1,6 +1,6 @@
 # @pjan/grafana-styling
 
-Opt-in styling helpers shared by pjan's Grafana panel plugins (State timeline plus and Stat plus). A private npm workspace: plugins depend on it as `"@pjan/grafana-styling": "*"` and bundle its TypeScript source; it is never built or published on its own. Apache-2.0 (`LICENSE`); the plugins that bundle it list it in their `THIRD_PARTY_NOTICES.txt`.
+Opt-in styling helpers shared by pjan's Grafana panel plugins (State timeline plus, Stat plus and Time series plus). A private npm workspace: plugins depend on it as `"@pjan/grafana-styling": "*"` and bundle its TypeScript source; it is never built or published on its own. Apache-2.0 (`LICENSE`); the plugins that bundle it list it in their `THIRD_PARTY_NOTICES.txt`.
 
 ## What it holds
 
