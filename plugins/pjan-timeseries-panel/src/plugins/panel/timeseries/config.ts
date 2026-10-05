@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/timeseries/config.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; the colour model's Line color, Fill color and Point color options registered right after Line width, Gradient mode and Point size (src/pjan/styling/options.ts).
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/timeseries/config.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; the colour model's Line color, Fill color and Point color options registered right after Line width, Gradient mode and Point size, and the threshold line options right after Show thresholds (src/pjan/styling/options.ts).
 /* istanbul ignore file */
 import {
   FieldColorModeId,
@@ -26,7 +26,12 @@ import { getGraphFieldOptions, commonOptionsBuilder } from '@grafana/ui';
 import { InsertNullsEditor } from './InsertNullsEditor';
 import { LineStyleEditor } from './LineStyleEditor';
 // pjan-timeseries-panel: the colour model's options (Line, Fill and Point color)
-import { addFillColorOption, addLineColorOption, addPointColorOption } from '../../../pjan/styling/options';
+import {
+  addFillColorOption,
+  addLineColorOption,
+  addPointColorOption,
+  addThresholdLineOptions, // pjan-timeseries-panel: the threshold line options
+} from '../../../pjan/styling/options';
 import { SpanNullsEditor } from './SpanNullsEditor';
 import { ThresholdsStyleEditor } from './ThresholdsStyleEditor';
 export const defaultGraphConfig: GraphFieldConfig = {
@@ -288,6 +293,8 @@ export function getGraphFieldConfig(cfg: GraphFieldConfig, isTime = true): SetFi
         process: identityOverrideProcessor,
         shouldApply: () => true,
       });
+      // pjan-timeseries-panel: the threshold line options, right after Show thresholds, in its category
+      addThresholdLineOptions(builder, [t('timeseries.config.get-graph-field-config.category-thresholds', 'Thresholds')]);
     },
   };
 }

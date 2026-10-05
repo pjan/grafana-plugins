@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/core/components/TimeSeries/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; dropped one `eslint-disable-next-line import/order` comment (the plugin's ESLint has no import plugin); the colour model's line, fill and point colours, and the axis colour Series from the line colour (src/pjan/styling/seriesColors.ts).
+// Copied from grafana/grafana v13.2.3: public/app/core/components/TimeSeries/utils.ts. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; dropped one `eslint-disable-next-line import/order` comment (the plugin's ESLint has no import plugin); the colour model's line, fill and point colours, and the axis colour Series from the line colour (src/pjan/styling/seriesColors.ts); threshold lines added through addThresholdLines (src/pjan/styling/thresholdLines.ts) in place of builder.addThresholds.
 import { isNumber } from 'lodash';
 import uPlot from 'uplot';
 
@@ -102,6 +102,7 @@ import {
 import { ANNOTATION_LANE_SIZE } from '../../../plugins/panel/timeseries/plugins/utils';
 // pjan-timeseries-panel: the colour model (Line, Fill and Point color)
 import { applyFillAndPointColors, getSeriesColors } from '../../../pjan/styling/seriesColors';
+import { addThresholdLines } from '../../../pjan/styling/thresholdLines'; // pjan-timeseries-panel: threshold lines
 
 // See UPlotAxisBuilder.ts::calculateAxisSize for default axis size calculation
 const UPLOT_DEFAULT_AXIS_SIZE = 17;
@@ -626,7 +627,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn = ({
     if (customConfig.thresholdsStyle && config.thresholds) {
       const thresholdDisplay = customConfig.thresholdsStyle.mode ?? GraphThresholdsStyleMode.Off;
       if (thresholdDisplay !== GraphThresholdsStyleMode.Off) {
-        builder.addThresholds({
+        addThresholdLines(builder, customConfig, { // pjan-timeseries-panel: threshold line options, one set per scale
           config: customConfig.thresholdsStyle,
           thresholds: config.thresholds,
           scaleKey,

@@ -92,13 +92,20 @@ describe('field option keys', () => {
     );
   });
 
-  it('the plugin’s own field options are the colour model’s, under custom.styling', () => {
+  it('the plugin’s own field options are the colour model’s and the threshold line options, under custom.styling', () => {
     expect(
       plugin.fieldConfigRegistry
         .list()
         .filter((item) => item.isCustom && !(CORE_CUSTOM_IDS_V13_2_3 as readonly string[]).includes(item.id))
         .map((item) => item.id)
-    ).toEqual(['custom.styling.lineColor', 'custom.styling.fillColor', 'custom.styling.pointColor']);
+    ).toEqual([
+      'custom.styling.lineColor',
+      'custom.styling.fillColor',
+      'custom.styling.pointColor',
+      'custom.styling.thresholdLineColor',
+      'custom.styling.thresholdLineOpacity',
+      'custom.styling.thresholdLineWidth',
+    ]);
   });
 
   it('no field option of the plugin reuses a GraphFieldConfig key', () => {

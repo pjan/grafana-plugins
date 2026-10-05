@@ -72,6 +72,13 @@ const TRANSPARENT_BASE_THRESHOLDS = thresholds([
   [70, 'red'],
 ]);
 
+// Other steps, for a second series' thresholds
+const OTHER_THRESHOLDS = thresholds([
+  [null, 'green'],
+  [40, 'blue'],
+  [60, 'purple'],
+]);
+
 const DISK_IO = series(['read', 'write'], (i, k) => (20 + i * 10 + 15 * Math.sin((k + i * 11) / 5)).toFixed(2));
 
 const cases = [
@@ -399,6 +406,89 @@ const cases = [
     title: 'thresholds dashed, transparent base step',
     targets: [series(names(2), wave)],
     fieldConfig: custom({ thresholdsStyle: { mode: 'dashed' } }, { thresholds: TRANSPARENT_BASE_THRESHOLDS }),
+  },
+  // One set of threshold lines per scale: core draws those of the first series of a scale whose Show thresholds isn't
+  // Off, hidden or not (UPlotConfigBuilder.addThresholds); the threshold line options rely on the same rule. Filled,
+  // so that the panels count as painted (tests/parity.ts).
+  {
+    title: 'thresholds per series by override, one scale',
+    targets: [series(names(2), wave)],
+    fieldConfig: {
+      defaults: { custom: { fillOpacity: 20 } },
+      overrides: [
+        byName('s1', { 'custom.thresholdsStyle': { mode: 'line' }, thresholds: WAVE_THRESHOLDS }),
+        byName('s2', { 'custom.thresholdsStyle': { mode: 'dashed' }, thresholds: OTHER_THRESHOLDS }),
+      ],
+    },
+  },
+  {
+    title: 'thresholds off on the first series, line on the second, one scale',
+    targets: [series(names(2), wave)],
+    fieldConfig: {
+      defaults: { custom: { fillOpacity: 20, thresholdsStyle: { mode: 'off' } }, thresholds: WAVE_THRESHOLDS },
+      overrides: [byName('s2', { 'custom.thresholdsStyle': { mode: 'line' }, thresholds: OTHER_THRESHOLDS })],
+    },
+  },
+  {
+    title: 'thresholds on two scales',
+    targets: [series(names(2), wave)],
+    fieldConfig: {
+      defaults: { custom: { fillOpacity: 20, thresholdsStyle: { mode: 'line' } }, thresholds: WAVE_THRESHOLDS },
+      overrides: [
+        byName('s2', {
+          unit: 'percent',
+          'custom.axisPlacement': 'right',
+          'custom.thresholdsStyle': { mode: 'dashed' },
+          thresholds: OTHER_THRESHOLDS,
+        }),
+      ],
+    },
+  },
+  {
+    title: 'thresholds of a hidden first series',
+    targets: [series(names(2), wave)],
+    fieldConfig: {
+      defaults: { custom: { fillOpacity: 20 } },
+      overrides: [
+        byName('s1', {
+          'custom.hideFrom': { viz: true, legend: false, tooltip: false },
+          'custom.thresholdsStyle': { mode: 'line' },
+          thresholds: WAVE_THRESHOLDS,
+        }),
+        byName('s2', { 'custom.thresholdsStyle': { mode: 'dashed' }, thresholds: OTHER_THRESHOLDS }),
+      ],
+    },
+  },
+  {
+    // the first transparent step at index 2: the lines at 50 and 70 take the previous step's colour
+    title: 'thresholds line, transparent mid step',
+    targets: [series(names(2), wave)],
+    fieldConfig: custom(
+      { fillOpacity: 20, thresholdsStyle: { mode: 'line' } },
+      {
+        min: 0,
+        max: 100,
+        thresholds: thresholds([
+          [null, 'green'],
+          [50, 'red'],
+          [70, 'transparent'],
+          [90, 'blue'],
+        ]),
+      }
+    ),
+  },
+  {
+    title: 'thresholds line, rgba step',
+    targets: [series(names(2), wave)],
+    fieldConfig: custom(
+      { fillOpacity: 20, thresholdsStyle: { mode: 'line' } },
+      {
+        thresholds: thresholds([
+          [null, 'green'],
+          [60, 'rgba(255, 0, 0, 0.4)'],
+        ]),
+      }
+    ),
   },
 
   // 10. Colour modes

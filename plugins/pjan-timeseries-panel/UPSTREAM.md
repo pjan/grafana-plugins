@@ -37,7 +37,8 @@ Copied files mirror their upstream path under `src/`:
 - `src/packages/grafana-{ui,data,runtime}/internal.ts` and `src/packages/grafana-e2e-selectors/index.ts` stand in for
   package entry points that a plugin cannot use at runtime (see below).
 - `src/pjan/` is plugin-authored code (not from grafana/grafana): the panel-change handler (`panelChangedHandler.ts`,
-  with `fieldConfigRefresh.ts`), the colour model (`styling/`, see "The colour model") and the plugin's own tests. It
+  with `fieldConfigRefresh.ts`), the colour model and the threshold line options (`styling/`, see "The colour model" and
+  "Threshold lines") and the plugin's own tests. It
   gets the scaffold's normal lint rules (see "Plugin build configuration"). The colour helpers shared with the other
   plugins of the repository are in the workspace package `@pjan/grafana-styling` (`packages/grafana-styling/`,
   Apache-2.0, bundled from source).
@@ -113,6 +114,7 @@ in core.
 | `plugins/panel/timeseries/module.tsx`                                                                                                                                                                                                                                                                                                                                                                                            | `.setSuggestionsSupplier(timeseriesSuggestionsSupplier)` left off (a marked line where it was).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Deliberate, see "Pruned and left off".                                                                                                                                                                                                                                                                                                                                                                    |
 | `plugins/panel/timeseries/TimeSeriesPanel.tsx`                                                                                                                                                                                                                                                                                                                                                                                   | Takes `onFieldConfigChange` from its props and calls `useApplyFieldConfigChangedInPlace(fieldConfig, onFieldConfigChange)` from `src/pjan/fieldConfigRefresh.ts` (marked).                                                                                                                                                                                                                                                                                                                                                                                                                                 | After the panel-change handler restored the field config in place, the panel applies it again; see "Panel type switch". Does nothing otherwise.                                                                                                                                                                                                                                                           |
 | `plugins/panel/timeseries/config.ts`, `core/components/TimeSeries/utils.ts`, `core/components/TimeSeries/TimeSeries.tsx`, `plugins/panel/timeseries/TimeSeriesPanel.tsx`                                                                                                                                                                                                                                                         | The colour model's hooks (marked): `config.ts` registers Line color, Fill color and Point color right after Line width, Gradient mode and Point size (a chained builder call is split there); `utils.ts` passes the resolved line colour as `lineColor` (and as the axis colour Series) and post-processes the series' fill and points; `TimeSeries.tsx` gives the legend, and `TimeSeriesPanel.tsx` the tooltip, the frames with the line colour as swatch colour; `TimeSeriesPanel.tsx` also provides the panel context with an `onSeriesColorChange` that sets the Line color of a series that has one. | Opt-in addition, see "The colour model". Unset, each hook returns Grafana's own value or object.                                                                                                                                                                                                                                                                                                          |
+| `plugins/panel/timeseries/config.ts`, `core/components/TimeSeries/utils.ts`, `packages/grafana-ui/src/components/uPlot/config/UPlotThresholds.ts`                                                                                                                                                                                                                                                                                | The threshold line options' hooks (marked): `config.ts` registers Threshold line color, opacity and width right after Show thresholds; `utils.ts` calls `addThresholdLines` (`src/pjan/styling/thresholdLines.ts`) where upstream calls `builder.addThresholds` (one changed line, and its import); the new copy of `UPlotThresholds.ts` takes an optional `lines` option for each line's colour and the width.                                                                                                                                                                                            | Opt-in addition, see "Threshold lines". Unset, `addThresholdLines` calls Grafana's own `builder.addThresholds`.                                                                                                                                                                                                                                                                                           |
 | `plugins/panel/timeseries/TimeSeriesPanel.tsx`                                                                                                                                                                                                                                                                                                                                                                                   | The `assistantContext` prop of `TimeSeriesTooltip`, the `getAssistantTooltipContext` import and the `title` prop (only the Assistant context used it) removed (marked lines where they were).                                                                                                                                                                                                                                                                                                                                                                                                              | Grafana Assistant button pruned, as State timeline plus did in `TimeSeriesTooltip.tsx` (which this plugin shares unchanged).                                                                                                                                                                                                                                                                              |
 | `plugins/panel/timeseries/migrations.ts`                                                                                                                                                                                                                                                                                                                                                                                         | `addAnnotationsToDashboard` does nothing (marked); the imports only it used (`DashboardSrv`, `TimeSrv`, `DashboardAnnotationsDataLayer`, `DashboardScene`, `dashboardSceneGraph`) and its `dashboardRefreshDebouncer` removed (marked lines).                                                                                                                                                                                                                                                                                                                                                              | Plan decision 6. Upstream adds a Graph panel's time regions to the current dashboard as annotation layers, through scenes or `DashboardSrv`, which plugins can't reach. The branch that calls it (an Angular `graph` panel) is unreachable in a plugin: Grafana auto-migrates old graph panels to core `timeseries`, never to a plugin. The conversion itself (`graphToTimeseriesOptions`) is upstream's. |
 | `plugins/datasource/grafana/types.ts`                                                                                                                                                                                                                                                                                                                                                                                            | Partial copy; `GrafanaQuery`'s `search` and `searchNext` fields left off (marked).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | See "Stand-ins and partial copies for core app modules".                                                                                                                                                                                                                                                                                                                                                  |
@@ -220,6 +222,62 @@ and unset by default, and Grafana's colour scheme list can't take an extra choic
 - **Clearing** an option leaves no `custom.styling: {}` (Grafana's `cleanProperties`), as in State timeline plus;
   checked end to end.
 
+## Threshold lines (`src/pjan/styling/thresholdLines.ts`)
+
+Three field options in **Thresholds**, saved under `custom.styling.*`, none with a default value: **Threshold line
+color** (a shade of each line's colour, or Fixed), **Threshold line opacity** (0–100) and **Threshold line width**
+(1–5). The design was approved by pjan on 2026-10-05. Verified in the Grafana 13.2.3 source (paths in grafana/grafana):
+
+- **One set of lines per scale.** `UPlotConfigBuilder.addThresholds`
+  (`packages/grafana-ui/src/components/uPlot/config/UPlotConfigBuilder.ts:103-107`) keeps the first options per scale
+  key in a private map (`thresholds`, line 67) and adds a `drawClear` hook only for that one.
+  `public/app/core/components/TimeSeries/utils.ts:615-630` calls it for every series whose `thresholdsStyle.mode`
+  isn't Off: any other mode claims the scale, Area and the JSON-only `series` included. Hidden series
+  (`hideFrom.viz`) only get `show: false` (line 601) and still claim their scale.
+- **The hook** (`UPlotThresholds.ts`, `getThresholdsDrawHook`) runs on `drawClear`, under the axes and the series. Lines
+  (lines 27-76): `ctx.lineWidth = 2` and dashes `[10, 10]` in canvas pixels; each line in its step's colour
+  (`getColorByName`), at alpha 0.7 only when the colour's alpha is exactly 1; if the first transparent step (by name
+  `transparent`) is at index k ≥ 1, the lines of steps 1…k take the previous step's colour (k = 0, or none: no
+  shift); later transparent steps, `#rrggbb00` and `rgba(…, 0)` draw invisible alpha-0 lines; positions are
+  `Math.round(valToPos(…, true))`. Areas (lines 78-98) are a scale gradient at alpha 0.15. Percentage steps are mapped
+  with `getGradientRange` and the claiming series' hard and soft min and max (lines 113-121).
+- **Placement:** registered by a marked line in the copied `config.ts` right after `thresholdsStyle`
+  (upstream `public/app/plugins/panel/timeseries/config.ts:268-282`), with the same category (the same `t()` key,
+  `timeseries.config.get-graph-field-config.category-thresholds`); the editor lists custom options in registration
+  order (see "The colour model").
+- **No preset** sets `thresholdsStyle` or `custom.styling` (`public/app/plugins/panel/timeseries/presets.ts`).
+
+How the plugin draws them:
+
+- **Unset = core.** The copied `TimeSeries/utils.ts` calls `addThresholdLines(builder, customConfig, {...})` where
+  upstream calls `builder.addThresholds({...})` (same options object). With no option applying, it calls Grafana's
+  `builder.addThresholds` unchanged; the parity suite covers it (six cases with thresholds on shared scales, below).
+- **One set per scale, either way:** a `WeakMap<UPlotConfigBuilder, Set<string>>` records the scales already claimed
+  (the copied `utils.ts` builds a new builder per prepared config). The first series of a scale claims it; later ones
+  add nothing, on both paths, so options on a later series of a claimed scale do nothing, and options on the first
+  series never add lines next to Grafana's.
+- **When options apply** (judged on the claiming series' effective custom config, defaults and overrides, as the editor
+  shows it): Show thresholds draws lines (Line, Dashed, Line+Area, Dashed+Area) and at least one option is set (a
+  complete colour per `getStylingColor`, or a finite number). Then the plugin adds its own `drawClear` hook: an
+  Apache-2.0 copy of `UPlotThresholds.ts` whose marked `lines` option gives each line's colour (from the colour Grafana
+  would draw it in, after its 0.7 rule, and the step colour it was resolved from) and the width. Areas, positions and
+  dashes are upstream's.
+- **Colour:** a line Grafana draws at alpha 0 is never drawn. A shade is `getShadeColor` of the line's step colour
+  (name or colour; the nearest theme hue for a colour without a name; the colour itself without a hue) at the line's
+  alpha. Fixed is `getColorByName(fixedColor)` at 0.7 unless it has an alpha of its own. Opacity, when set, replaces
+  the alpha in every case.
+- **Width:** CSS pixels × `uPlot.pxRatio`, rounded and at least 1 (as the copied `AnnotationsPlugin.tsx:234` does), read
+  when drawing. An odd canvas width is shifted half a pixel across the line, as uPlot shifts its series
+  (`uPlot.esm.js:4282-4289`, there along both axes; across only here, so that dash ends stay crisp). Unset: Grafana's
+  2 canvas pixels. Dashes stay `[10, 10]` canvas pixels: at width 5 and pixel ratio 2 (10 × 10 canvas pixels) they
+  draw as squares, a dotted line (seen in the end-to-end test's screenshot; `src/README.md` says so).
+- **Editor:** the colour with `StylingColorEditor` (placeholder "Threshold color", shade group "Shade of the threshold
+  color"); opacity and width with the shared `ClearableSliderEditor`, at the unset values they show (70; the width
+  as Grafana's 2 canvas pixels in CSS pixels at the pixel ratio when the options are registered: 2 at ratio 1, 1 at
+  ratio 2), with the shared package's new `unsetIsExact: false`: unset is not exactly that value (a colour with its
+  own alpha, another screen), so picking it saves it.
+- **Overrides:** on number and enum fields (`shouldApply`: not time), as the colour model's options.
+
 ## Copies with marked changes
 
 The copies with lines marked `pjan-timeseries-panel`. `scripts/check-upstream-copies.mjs` (repository root, run in CI;
@@ -230,6 +288,7 @@ header's `Changes:` text. Every copy with a marked line is listed, and only thos
 - `src/core/components/TimeSeries/TimeSeries.tsx`
 - `src/core/components/TimeSeries/utils.ts`
 - `src/features/actions/utils.test.ts`
+- `src/packages/grafana-ui/src/components/uPlot/config/UPlotThresholds.ts`
 - `src/packages/grafana-ui/src/components/uPlot/utils.ts`
 - `src/plugins/datasource/grafana/types.ts`
 - `src/plugins/panel/timeseries/TimeSeriesPanel.tsx`
@@ -344,7 +403,9 @@ Ported, shared with State timeline plus (identical copies, only imports changed 
 `annotations/{AnnotationAvatar,AnnotationEditor,getAnnotationTooltip}.test.tsx`, and the helpers
 `plugins/panel/test-utils.ts` and `timeseries/plugins/mocks/mockAnnotationFrames.ts`.
 
-Ported, new here: `TimeSeriesPanel.test.tsx`, `migrations.test.ts` (+ snapshot), `presets.test.ts`,
+Ported, new here: `packages/grafana-ui/src/components/uPlot/config/UPlotThresholds.test.ts` (Apache-2.0, unchanged:
+it runs the copied hook without the `lines` option), `TimeSeriesPanel.test.tsx`, `migrations.test.ts` (+ snapshot),
+`presets.test.ts`,
 `TimezonesEditor.test.tsx`, `ThresholdsStyleEditor.test.tsx` (State timeline plus left it off for want of
 `react-select-event`), `plugins/ExemplarsPlugin.test.tsx`, `plugins/ExemplarsPlugin.integration.test.tsx`. Snapshots
 (`__snapshots__/*.snap`) carry no provenance header (Jest requires its own on line 1).
@@ -400,13 +461,25 @@ isStandardFieldProp)`, `getPanelOptionsWithDefaults(..., isAfterPluginChange: tr
   series config.
 - `styling/swatches.test.ts`: the legend's and the tooltip's frames with the line colour, the frames themselves when
   no series has one or its Line color is hidden, and the tooltip's cache per frame and theme.
+- `styling/options.test.ts` (threshold lines): the three options right after Show thresholds in its category, their
+  choices, slider settings and descriptions, the unset width per pixel ratio, overrides on number and enum fields, and
+  when they show for each of the six Show thresholds modes (and `series`, and no mode).
+- `styling/thresholdLines.test.ts`: the copied hook without options against Grafana's own (from
+  `new UPlotConfigBuilder().addThresholds(...)`, both run on a recording canvas context: stroke colour and width,
+  dashes, positions, area gradient stops) for line, dashed, area, line and area, percentage with dashed and area, a
+  transparent mid step and an rgba step; Grafana's lines worked out by hand; the `lines` option (colour per step colour,
+  left-out lines, width, the half-pixel shift across horizontal and vertical lines); colour, alpha and width
+  resolution (opacity replacing alpha, Fixed at 0.7 or its own alpha, Stronger and Softer from Grafana's colour table
+  in light and dark, a colour without a name, gray without a hue, alpha-0 lines never drawn); when the options apply;
+  one set per scale (set then unset, unset then set, two scales, options under Area) and through the copied
+  `preparePlotConfigBuilder` (the first series wins, hidden or not; series 1 Off).
 - `styling/legendColor.test.ts`: which series has a Line color, by legend label, and the field config a colour picked
   in the legend writes (a new override, or the series' existing one with its other properties kept).
 
 End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.yaml`):
 
 - `tests/parity.spec.ts` (with `tests/parity.ts`) on `provisioning/dashboards/parity.json` and `parity-swapped.json`,
-  generated by `scripts/generate-parity-dashboard.mjs`: 97 cases, each a core and a plugin panel with the same TestData
+  generated by `scripts/generate-parity-dashboard.mjs`: 103 cases, each a core and a plugin panel with the same TestData
   query, options and field config, one above the other at the same width. The cases (plan, "Comparison dashboards"):
   1. defaults, one and three series;
   2. line with each interpolation; bars with each alignment at width factor 0.3 and 1; points of size 3 and 11;
@@ -420,7 +493,8 @@ End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.ya
      colour mode series, also with a scheme and thresholds; soft min 0; hard min 0 and max 1 with `percentunit`;
      centred zero; log 2 and 10; symlog with a linear threshold; the IEC unit `bytes`; an enum field;
   9. thresholds as line, dashed, area, line and area, dashed and area; percentage thresholds; a transparent base step
-     with yellow and red;
+     with yellow and red; on shared scales (thresholds per series by override on one scale, the first series Off and
+     the second Line, two scales, a hidden first series); a transparent mid step; an rgba step;
   10. colour modes classic palette, by name, fixed, shades, thresholds, a continuous scheme; hex and named fixed colours
       by override;
   11. `hideFrom` viz, legend, tooltip by override; bars and a line by override; right axis by override;
@@ -518,6 +592,19 @@ End-to-end (`npm run e2e`, Grafana 13.2.3 OSS dev server from `docker-compose.ya
   gradient on the classic palette; a colour picked in the legend for a series with a Line color, saved and drawn; the editor's order of the Graph styles options and when the three show (Scheme gradient and Show points
   Never picked in the editor); a set option saved under `custom.styling`, a cleared one leaving nothing; options and
   overrides kept on load.
+- `tests/thresholdLines.spec.ts` (the threshold line options, on a dashboard created through the HTTP API): in the light
+  and the dark theme at pixel ratio 1 and 2 (own browser context per ratio), on a fixed 0–100 scale without grid, with
+  the series far below the thresholds: each line's rows in the middle of the plot, which must be painted all across in
+  one colour, nothing drawn next to them (crisp), as many rows as the canvas width, and within 2 canvas pixels of
+  `(top + height × (1 − v/100)) × ratio`; unset as Grafana (2 canvas pixels, alpha 178–179); Fixed `#ff00ff` at
+  opacity 100 exactly and at 0.7, width 3 = 3 × ratio rows; Stronger in each hue's strongest shade (hand-derived from
+  `createTheme` and `getContrastRatio`, values in the test); opacity 40 (alpha 101–103) at width 1 (= ratio rows);
+  transparent steps (45 green below the first, 65, nothing at 85); one set of lines per scale (two series, the colour
+  on s1: cyan; on s2: Grafana's lines); dashed at width 5: 5 × ratio rows, runs of 10 canvas pixels on and off (its
+  screenshot attached). The editor: the options right after Show thresholds, and shown for each mode picked in its
+  select (Show thresholds is a `Select`, not radio buttons); a set colour saved under `custom.styling` and cleared;
+  the opacity and width saved when the slider's handle is clicked at the unset value shown (70, 2); options and
+  overrides kept on load.
 
 The TestData CSV scenario has no relative time: all timestamps and the dashboard time ranges are fixed UTC values,
 written as ISO strings (Grafana 13.2.3 does not parse epoch-millisecond strings as an absolute dashboard time range and
@@ -546,6 +633,17 @@ What has passed, on Grafana 13.2.3 OSS (the dev server of `docker-compose.yaml`)
   case renamed: "thresholds dashed, transparent base step"). Rerun on the 97 cases: the parity tests "light, pixel ratio
   1" and "light, switched live from dark, pixel ratio 2", and the 7 legend and threshold-line interaction tests: 9 of 9
   passed (plus the login setup). The full suite was not rerun.
+
+- **2026-10-05, commit `bcd1322` (the threshold line options, 103 cases; the later commits change only
+  `UPSTREAM.md`): the full suite, 58 of 58 tests passed** in 43.4 minutes, at the first run, without reruns, on a
+  loaded machine (load average about 45): 8 parity tests (103 cases each, 824 case comparisons), 8 annotation parity
+  tests, 20 interaction tests, 8 saved-JSON tests, 6 colour-model tests, 7 threshold line tests
+  (`thresholdLines.spec.ts`) and the login setup. Before it, the six new parity cases alone passed in all 8 states
+  (`PARITY_CASES`, 9 of 9 with the login setup). On the same commit: the copy check, the script tests (46 of 46),
+  typecheck, lint (27 warnings, as before, no errors), the build and Prettier on the touched files outside the
+  mirrored tree passed; the root `npm test` passed in the shared package (129), State timeline plus (578 + 3 todo) and
+  Stat plus (152), and in this plugin 469 of 470 (+ 2 todo): the copied `AnnotationsPlugin.test.tsx` "editing &
+  deleting › edit" hit Jest's 5 s timeout under that load; the file alone then passed (86 of 86 + 2 todo).
 
 Not covered: the plan's "Not verified" list (Assistant button, view-panel fan-out
 and quick toggles, public dashboards, time comparison behind its feature toggle, rendering cost) is unchanged.
@@ -600,6 +698,23 @@ The by-value control first passed end to end: with the thresholds colour mode, G
 continuous scheme pair. The review found the Scheme check vacuous end to end (both Scheme panels were by value); the
 Scheme panels now use the classic palette.
 
+The threshold line options (2026-10-05, each with `npx jest src/pjan/styling/thresholdLines` (and `options` where
+named) and `npx playwright test tests/thresholdLines.spec.ts --workers=1 -g <test>`, restored and rebuilt before the
+next):
+
+| Broken on purpose                                                                      | Failing tests                                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addThresholdLines` without the plugin-side scale record (every series adds its lines) | Jest: "set, then unset on the same scale …", "unset, then set on the same scale …", "in the panel: the first series of the scale wins …"; e2e (light, ratio 1): "two series, s1 cyan by override" drawn `#c59742` for `#00ffff` (cyan under Grafana's orange line of s2, doubled) |
+| the width not multiplied by the pixel ratio                                            | Jest: "gives the width in canvas pixels at the pixel ratio …", "toCanvasWidth rounds …"; e2e (light, ratio 2): "fixed magenta, opacity 100, width 3": 3 rows for 6                                                                                                                |
+| the alpha-0 guard removed                                                              | Jest: "never draws a line Grafana draws at alpha 0, whatever the options"; e2e (light, ratio 1): "transparent steps …: no line at 85" (4 rows painted)                                                                                                                            |
+| the opacity not applied                                                                | Jest: "keeps Grafana's colour with only the opacity set …", "draws a fixed colour at 0.7, unless …", "takes the shade of each line's colour …"; e2e (light, ratio 1): "fixed magenta, opacity 100, width 3": alpha 179 for 255                                                    |
+| `showThresholdLines` always true                                                       | Jest: "show with Show thresholds off: false", "… area: false", "are hidden with the JSON-only mode series …", "applies only with an option set and lines drawn"; e2e: "the editor shows the options right after Show thresholds …" (shown with Off)                               |
+| the half-pixel shift removed (copied `UPlotThresholds.ts`)                             | Jest: "takes the colour and the width from its `lines` option …"; e2e (light, ratio 1): "fixed magenta, opacity 100, width 3": 4 rows for 3 (blurred edges)                                                                                                                       |
+| the opacity slider without `unsetIsExact: false`                                       | Jest: "offer their choices, and say what unset draws …"; e2e: "a set option is saved under custom.styling …" (clicking the handle at 70 saved nothing)                                                                                                                            |
+
+The shared slider (`packages/grafana-styling`): with the blur guard of `unsetIsExact: false` removed, "focusing and
+leaving the unset slider's text box still saves nothing" fails.
+
 "show points auto, with gaps" drew no points before: at its density showPoints auto draws only what the point filter in
 `TimeSeries/utils.ts` keeps (a single value between two gaps, for example), and its gaps left no such value. The first
 control showed it; the case now has single values between gaps.
@@ -616,7 +731,10 @@ control showed it; the case now has single values between gaps.
    copies that differ from upstream only by the import rewrites, and merges the upstream changes into the others (a
    3-way merge), which then need a review: the marked changes in `module.tsx`, `TimeSeriesPanel.tsx`, `migrations.ts`
    (and `migrations.test.ts` with its snapshot), `grafana/types.ts`, the colour model's hooks (`config.ts`,
-   `TimeSeries/utils.ts`, `TimeSeries.tsx`; and re-check `UPlotSeriesBuilder`'s `getFill`, `getLineColor` and points
+   `TimeSeries/utils.ts`, `TimeSeries.tsx`; the threshold line options' hooks in `config.ts` and `TimeSeries/utils.ts`
+   and the marked copy `UPlotThresholds.ts` with its test (re-check `UPlotConfigBuilder.addThresholds`' one set per
+   scale, which `src/pjan/styling/thresholdLines.ts` mirrors, and that `utils.ts` still calls it for every series not
+   Off); and re-check `UPlotSeriesBuilder`'s `getFill`, `getLineColor` and points
    config against `src/pjan/styling/seriesColors.ts`, and where `PlotLegend` and the tooltip take their swatch colours),
    and the partial copies. Re-check the time region
    tests: "should migrate" keeps upstream's snapshot entry, the scenes variant's entry stays removed (Jest fails on
@@ -641,7 +759,7 @@ control showed it; the case now has single values between gaps.
 
 ### Runtime code (AGPL-3.0, from public/app)
 
-61 files, 8080 lines (with headers); 46 of them are State timeline plus's copies, 44 identical and 2 (`TimeSeries/utils.ts`, `timeseries/config.ts`) with this plugin's marked colour-model hooks (checked by `scripts/check-upstream-copies.mjs`).
+61 files, 8088 lines (with headers); 46 of them are State timeline plus's copies, 44 identical and 2 (`TimeSeries/utils.ts`, `timeseries/config.ts`) with this plugin's marked colour-model and threshold line hooks (checked by `scripts/check-upstream-copies.mjs`).
 
 | Upstream path                                                                                  | Plugin path                                                                             | Lines | Changes                                                                                                                                                                                                                                                                                                                                                        |
 | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -654,7 +772,7 @@ control showed it; the case now has single values between gaps.
 | `public/app/core/components/TagFilter/TagFilter.tsx`                                           | `src/core/components/TagFilter/TagFilter.tsx`                                           |   209 | imports only                                                                                                                                                                                                                                                                                                                                                   |
 | `public/app/core/components/TagFilter/TagOption.tsx`                                           | `src/core/components/TagFilter/TagOption.tsx`                                           |    62 | imports only                                                                                                                                                                                                                                                                                                                                                   |
 | `public/app/core/components/TimeSeries/TimeSeries.tsx`                                         | `src/core/components/TimeSeries/TimeSeries.tsx`                                         |    64 | imports; the legend gets the frames with each series' Line color as its swatch colour (marked)                                                                                                                                                                                                                                                                 |
-| `public/app/core/components/TimeSeries/utils.ts`                                               | `src/core/components/TimeSeries/utils.ts`                                               |   803 | imports; dropped one `eslint-disable-next-line import/order` comment (the plugin's ESLint has no import plugin); the colour model's line, fill and point colours (marked)                                                                                                                                                                                      |
+| `public/app/core/components/TimeSeries/utils.ts`                                               | `src/core/components/TimeSeries/utils.ts`                                               |   804 | imports; dropped one `eslint-disable-next-line import/order` comment (the plugin's ESLint has no import plugin); the colour model's line, fill and point colours; threshold lines through addThresholdLines (marked)                                                                                                                                           |
 | `public/app/core/utils/timeRegions.ts`                                                         | `src/core/utils/timeRegions.ts`                                                         |    16 | partial copy (the TimeRegionMode and TimeRegionConfig types only, which migrations.ts and the partial copy of plugins/datasource/grafana/types.ts use; the time region calculation and its croner import are left off)                                                                                                                                         |
 | `public/app/features/actions/analytics.ts`                                                     | `src/features/actions/analytics.ts`                                                     |    14 | imports only                                                                                                                                                                                                                                                                                                                                                   |
 | `public/app/features/actions/utils.ts`                                                         | `src/features/actions/utils.ts`                                                         |   321 | imports only                                                                                                                                                                                                                                                                                                                                                   |
@@ -680,7 +798,7 @@ control showed it; the case now has single values between gaps.
 | `public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx`                                      | `src/plugins/panel/timeseries/TimeSeriesPanel.tsx`                                      |   262 | imports; Grafana Assistant tooltip button pruned (the assistantContext prop, its getAssistantTooltipContext import and the `title` prop only it used); onFieldConfigChange to useApplyFieldConfigChangedInPlace from src/pjan/; the tooltip gets the aligned frame with each series' Line color as its swatch colour (marked)                                  |
 | `public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx`                                    | `src/plugins/panel/timeseries/TimeSeriesTooltip.tsx`                                    |   142 | imports; Grafana Assistant tooltip button (assistantContext prop, AssistantTooltipButton) pruned                                                                                                                                                                                                                                                               |
 | `public/app/plugins/panel/timeseries/TimezonesEditor.tsx`                                      | `src/plugins/panel/timeseries/TimezonesEditor.tsx`                                      |    77 | none                                                                                                                                                                                                                                                                                                                                                           |
-| `public/app/plugins/panel/timeseries/config.ts`                                                | `src/plugins/panel/timeseries/config.ts`                                                |   293 | imports; Line color, Fill color and Point color registered right after Line width, Gradient mode and Point size (marked)                                                                                                                                                                                                                                       |
+| `public/app/plugins/panel/timeseries/config.ts`                                                | `src/plugins/panel/timeseries/config.ts`                                                |   300 | imports; Line color, Fill color and Point color registered right after Line width, Gradient mode and Point size; the threshold line options right after Show thresholds (marked)                                                                                                                                                                               |
 | `public/app/plugins/panel/timeseries/migrations.ts`                                            | `src/plugins/panel/timeseries/migrations.ts`                                            |   765 | imports; addAnnotationsToDashboard is a stand-in that does nothing (marked; it added the Graph panel's time regions to the dashboard through DashboardScene or DashboardSrv), its imports (DashboardSrv, TimeSrv, dashboard-scene) and the dashboardRefreshDebouncer only it used removed                                                                      |
 | `public/app/plugins/panel/timeseries/module.tsx`                                               | `src/plugins/panel/timeseries/module.tsx`                                               |    57 | imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core timeseries and otherwise calls graphPanelChangedHandler); panel suggestions (setSuggestionsSupplier/timeseriesSuggestionsSupplier) left off                                                                                   |
 | `public/app/plugins/panel/timeseries/panelcfg.gen.ts`                                          | `src/plugins/panel/timeseries/panelcfg.gen.ts`                                          |    34 | none                                                                                                                                                                                                                                                                                                                                                           |
@@ -709,7 +827,7 @@ control showed it; the case now has single values between gaps.
 
 ### Helpers from the @grafana packages (Apache-2.0)
 
-8 files, 801 lines (with headers); 6 of them are State timeline plus's copies.
+10 files, 1177 lines (with headers): 9 helpers and a test (`UPlotThresholds.test.ts`); 6 of them are State timeline plus's copies.
 
 | Upstream path                                                                          | Plugin path                                                                                | Lines | Changes                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -717,6 +835,8 @@ control showed it; the case now has single values between gaps.
 | `packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts` | `src/packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts` |    31 | none                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `packages/grafana-ui/src/components/uPlot/PlotLegend.tsx`                              | `src/packages/grafana-ui/src/components/uPlot/PlotLegend.tsx`                              |    26 | partial copy (hasVisibleLegendSeries only, exported from @grafana/ui/internal; PlotLegend itself is public in @grafana/ui); imports from the public @grafana/* APIs                                                                                                                                                                                                                                                         |
 | `packages/grafana-ui/src/components/uPlot/config/gradientFills.ts`                     | `src/packages/grafana-ui/src/components/uPlot/config/gradientFills.ts`                     |   292 | getCanvasContext imported from the public @grafana/ui export                                                                                                                                                                                                                                                                                                                                                                |
+| `packages/grafana-ui/src/components/uPlot/config/UPlotThresholds.test.ts`              | `src/packages/grafana-ui/src/components/uPlot/config/UPlotThresholds.test.ts`              |   213 | none (a test: runs the copy without its `lines` option)                                                                                                                                                                                                                                                                                                                                                                     |
+| `packages/grafana-ui/src/components/uPlot/config/UPlotThresholds.ts`                   | `src/packages/grafana-ui/src/components/uPlot/config/UPlotThresholds.ts`                   |   163 | the threshold line options (marked): an optional `lines` option gives each line's colour (or leaves the line out) and the width, with uPlot's half-pixel shift across the line for an odd width; without it, upstream's lines                                                                                                                                                                                               |
 | `packages/grafana-ui/src/components/uPlot/internal.ts`                                 | `src/packages/grafana-ui/src/components/uPlot/internal.ts`                                 |    41 | FIXED_UNIT imported from the public @grafana/ui export                                                                                                                                                                                                                                                                                                                                                                      |
 | `packages/grafana-ui/src/components/uPlot/utils.ts`                                    | `src/packages/grafana-ui/src/components/uPlot/utils.ts`                                    |   295 | partial copy (StackMeta, StackingGroup, StackDirection, getStackingGroups, preparePlotData2, getStackDirection, hasNegSample, pluginLog); imports from the public @grafana/* APIs; StackDirection const enum declared as literal constants; attachDebugger('graphng', ...) call dropped (in Grafana it registers window._debug.graphng to toggle Grafana's own copy of this logger, and production builds never install it) |
 | `packages/grafana-ui/src/options/builder/tooltip.tsx`                                  | `src/packages/grafana-ui/src/options/builder/tooltip.tsx`                                  |    11 | partial copy (optsWithHideZeros only, exported from @grafana/ui/internal; addTooltipOptions is public as commonOptionsBuilder.addTooltipOptions)                                                                                                                                                                                                                                                                            |
