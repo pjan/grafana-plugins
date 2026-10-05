@@ -1,0 +1,6 @@
+# Changelog
+
+## 1.0.0 (unreleased)
+
+- Port of Grafana's core table panel (v13.2.3) and the `TableNG` component it renders: with nothing set, Table plus looks and behaves like core Table (options, defaults, the load migration, every cell type including geo cells, colours, sorting, filtering, column widths, pagination, footer, cell inspect, data links and actions, tooltips from fields, nested tables, the frame picker). Bundles the grid (`@grafana/react-data-grid` 7.0.0-beta.57) and the table's other dependencies at the versions Grafana 13.2.3 uses; OpenLayers (10.7.0) is loaded only for tables with geometry fields. Switching a core Table panel to Table plus in the panel editor keeps its options, field config, overrides and colour scheme. Suggestions are left off.
+- Set up as a workspace of this repository (scaffolded with `@grafana/create-plugin` 7.11.0), with the build, test and licence configuration of the other plus plugins. The table feature flags (`table.autoColumnWidths`, `table.paginationPageSize`) are read as core reads them, through Grafana's public OpenFeature provider proxies (bundles `@openfeature/web-sdk` 1.9.0), and only for a signed-in user, as in core. A lint and build check guards against imports of `@grafana/ui/unstable` and the `/internal` entry points.

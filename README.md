@@ -12,6 +12,7 @@ pjan's Grafana plugins. Each plugin is an npm workspace in its own directory und
 | [`pjan-statetimeline-panel`](plugins/pjan-statetimeline-panel/) | panel | **State timeline plus**: Grafana's state timeline as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions: per-row annotations and styling (both built). | AGPL-3.0: it starts from Grafana's own state-timeline code (see its `UPSTREAM.md`) |
 | [`pjan-stat-panel`](plugins/pjan-stat-panel/)                   | panel | **Stat plus**: Grafana's stat panel as a plugin: a drop-in replacement that behaves like the core panel. Opt-in addition: Color mode Custom (background, text and sparkline colours).  | AGPL-3.0: it starts from Grafana's own stat code (see its `UPSTREAM.md`)           |
 | [`pjan-timeseries-panel`](plugins/pjan-timeseries-panel/)       | panel | **Time series plus**: Grafana's time series panel as a plugin: a drop-in replacement that behaves like the core panel. Opt-in colours for lines, fills, points and threshold lines.    | AGPL-3.0: it starts from Grafana's own time series code (see its `UPSTREAM.md`)    |
+| [`pjan-table-panel`](plugins/pjan-table-panel/)                 | panel | **Table plus**: Grafana's table panel as a plugin: a drop-in replacement that behaves like the core panel. Opt-in additions planned (readable text on coloured cells, pill options).   | AGPL-3.0: it starts from Grafana's own table code (see its `UPSTREAM.md`)          |
 
 Code shared by several plugins lives in workspace packages under `packages/`, which the plugins bundle from source:
 
@@ -27,7 +28,7 @@ Colour options work the same in every plugin (`packages/grafana-styling/README.m
 - **Requirements:** Node 22 or later (`.nvmrc`) and npm.
   - On a network that inspects TLS, set `NODE_EXTRA_CA_CERTS` to a PEM file with its CA before running `npm`.
 - **Install:** `npm install` at the root installs every plugin and package.
-- **Checks:** from the root, across all plugins and packages: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. Repository-wide: `npm run check:upstream-copies` (the plugins' copies of the same grafana/grafana file are identical, see below) and `npm run test:scripts` (the tests of `scripts/`). CI (`.github/workflows/ci.yml`) runs all six.
+- **Checks:** from the root, across all plugins and packages: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. Repository-wide: `npm run check:upstream-copies` (the plugins' copies of the same grafana/grafana file are identical, see below) and `npm run test:scripts` (the tests of `scripts/`). After `npm run build`, `npm run test:dist` runs the checks that need the built plugins (each plugin's `test:dist` script, if it has one; today Table plus's check that `dist/module.js` asks Grafana for no `/unstable` or `/internal` entry point), and fails when a build is missing. CI (`.github/workflows/ci.yml`) runs all seven; the release workflow runs the released plugin's `test:dist` after its build.
 - **One plugin:** `npm run <script> -w plugins/<plugin-id>`. Each plugin also has the scaffold's own scripts (`dev`, `e2e`, `server`), run from its directory.
 
 ## Upstream copies shared by several plugins

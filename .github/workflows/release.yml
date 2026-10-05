@@ -64,6 +64,9 @@ jobs:
           done
       - name: Build
         run: npm run build -w "${{ steps.tag.outputs.dir }}"
+      - name: Check the built bundle
+        # The plugin's checks that need dist/ (its `test:dist` script, if it has one), before packaging.
+        run: npm run test:dist --if-present -w "${{ steps.tag.outputs.dir }}"
       - name: Package
         id: package
         env:

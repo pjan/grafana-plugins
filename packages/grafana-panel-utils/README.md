@@ -1,6 +1,6 @@
 # @pjan/grafana-panel-utils
 
-Panel helpers shared by pjan's Grafana panel plugins (State timeline plus, Stat plus and Time series plus) that are not styling. A private npm workspace: plugins depend on it as `"@pjan/grafana-panel-utils": "*"` and bundle its TypeScript source; it is never built or published on its own. Apache-2.0 (`LICENSE`); the plugins that bundle it list it in their `THIRD_PARTY_NOTICES.txt`.
+Panel helpers shared by pjan's Grafana panel plugins (State timeline plus, Stat plus, Time series plus and Table plus) that are not styling. A private npm workspace: plugins depend on it as `"@pjan/grafana-panel-utils": "*"` and bundle its TypeScript source; it is never built or published on its own. Apache-2.0 (`LICENSE`); the plugins that bundle it list it in their `THIRD_PARTY_NOTICES.txt`.
 
 ## What it holds
 

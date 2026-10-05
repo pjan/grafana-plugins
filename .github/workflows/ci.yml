@@ -38,3 +38,7 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      - name: Check the built bundles
+        # Checks that need dist/ (a plugin's `test:dist` script; today Table plus's: dist/module.js asks Grafana for no
+        # @grafana/ui/unstable and no /internal entry point). A missing build fails it.
+        run: npm run test:dist

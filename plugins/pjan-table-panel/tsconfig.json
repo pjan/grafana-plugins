@@ -1,0 +1,19 @@
+{
+  "extends": "./.config/tsconfig.json",
+  "compilerOptions": {
+    // The code copied from grafana/grafana uses the automatic JSX runtime (no `import React`).
+    "jsx": "react-jsx",
+    // npm workspaces hoist @types/* to the repository root; .config/tsconfig.json only looks in this package.
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
+    // As in grafana/grafana's tsconfig.json; ts-jest (jest.config.js) then transpiles each file on its own, as there.
+    "isolatedModules": true,
+    // .config/tsconfig.json's "*" (non-relative imports resolve from src/), which "paths" here replaces, plus the test
+    // stand-ins for packages the ported tests import (the same names jest.config.js maps; UPSTREAM.md, "Tests").
+    "paths": {
+      "@grafana/test-utils": ["./src/packages/grafana-test-utils/index.ts"],
+      "@grafana/test-utils/unstable": ["./src/packages/grafana-test-utils/unstable.ts"],
+      "@openfeature/react-sdk": ["./src/pjan/testdata/openFeatureReactSdk.tsx"],
+      "*": ["./src/*"]
+    }
+  }
+}
