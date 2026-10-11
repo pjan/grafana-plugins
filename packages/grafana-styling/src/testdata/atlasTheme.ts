@@ -1,7 +1,8 @@
 // Test helper: builds the Atlas theme the way the Atlas theme plugin does (module.js `build()` in
-// pjan/atlas stacks/monitoring/grafana/plugins/atlas-theme-app, 4.1.0): createTheme() from the theme definition, with
-// `getColorByName` patched to resolve the extra colour names (gray, teal, ...), and their hues appended to
-// `theme.visualization.hues`. `atlas-theme.json` is a copy of that plugin's file.
+// pjan/atlas stacks/monitoring/grafana/plugins/atlas-theme-app, unchanged since 4.1.1): createTheme() from the theme
+// definition, with `getColorByName` patched to resolve the extra colour names (gray, lemon, teal, ...), and their hues
+// appended to `theme.visualization.hues` in the order of the names. `atlas-theme.json` is a copy of that plugin's file
+// (4.2.0, which adds lemon).
 import { createTheme, type GrafanaTheme2 } from '@grafana/data';
 
 import atlas from '../../testdata/atlas-theme.json';

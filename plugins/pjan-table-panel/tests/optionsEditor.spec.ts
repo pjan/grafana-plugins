@@ -4,11 +4,14 @@ import { CORE, panelOf, PLUGIN, readDashboard, serialise } from './parity';
 
 // Core's and Table plus's option editors are the same (the plan's parity table, "Options"): the same option groups in
 // the same order, and in them the same options (panel and field options, standard ones included), with the same labels,
-// descriptions, editors and default values; and the Cell type editor offers the same choices. Compared on a parity
+// descriptions, editors and default values, apart from the plugin's own options (custom.styling.*: Background color and
+// Text color, right after Cell type, tests/stylingEditor.spec.ts); and the Cell type editor offers the same choices. Compared on a parity
 // case without options (`defaults: …`), in the panel editor, in Grafana's default language (en-US). Run with
 // --workers=1.
 const PARITY = readDashboard('parity.json');
 const CASE = 'defaults: string, status, number, time and boolean';
+// The plugin's own field options (custom.styling.*), which core doesn't have
+const OWN_OPTIONS = ['Background color', 'Text color'];
 
 /** The options pane: its groups in order, and each option's elements (ids mapped) and the state of its inputs. */
 const optionsPane = (page: Page) =>
@@ -89,9 +92,14 @@ test('the option editors list the same options, in the same order, with the same
     ])
   );
   expect(plugin.groups).toEqual(core.groups);
-  expect(plugin.options.map((o) => o.option)).toEqual(core.options.map((o) => o.option));
+  // the plugin's own options, right after Cell type; every other option as core's
+  const own = OWN_OPTIONS.map((name) => `data-testid Cell options ${name} field property editor`);
+  const at = plugin.options.findIndex((o) => o.option === 'data-testid Cell options Cell type field property editor');
+  expect(plugin.options.slice(at + 1, at + 1 + own.length).map((o) => o.option)).toEqual(own);
+  const pluginCore = plugin.options.filter((o) => !own.includes(o.option!));
+  expect(pluginCore.map((o) => o.option)).toEqual(core.options.map((o) => o.option));
   for (const [i, option] of core.options.entries()) {
-    expect(plugin.options[i], option.option!).toEqual(option);
+    expect(pluginCore[i], option.option!).toEqual(option);
   }
 });
 

@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/utils.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: none.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/utils.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): getCellColorInlineStylesFactory takes the table background and its styles function the field (and what Colored text is drawn on); getApplyToRowBgFn passes the row's field.
 import memoize from 'micro-memoize';
 import { type CSSProperties } from 'react';
 import tinycolor from 'tinycolor2';
@@ -38,6 +38,9 @@ import { type TableCellOptions } from '../types';
 import { AutoCellRenderer, getAutoRendererDisplayMode, getCellRenderer } from './Cells/renderers';
 import { CELL_HORIZONTAL_CHROME, COLUMN, HEADER_ICON_SPACE, TABLE } from './constants';
 import { type TextAlign } from './styles';
+// pjan-table-panel: Background color and Text color (src/pjan/styling/), custom.styling.*
+import { getCellColorsFactory } from '../../../../../../pjan/styling/cellColors';
+
 import {
   type TableRow,
   type ColumnTypes,
@@ -648,7 +651,8 @@ const CELL_GRADIENT_HUE_ROTATION_DEGREES = 5;
  * @internal
  * Returns the text and background colors for a table cell based on its options and display value.
  */
-export function getCellColorInlineStylesFactory(theme: GrafanaTheme2) {
+// pjan-table-panel: and the table background (`pjanGridBackground`, src/pjan/styling/cellColors.ts) for the styling
+export function getCellColorInlineStylesFactory(theme: GrafanaTheme2, pjanGridBackground?: string) {
   const bgCellTextColor = memoize((color: string) => getTextColorForAlphaBackground(color, theme.isDark), {
     maxSize: 1000,
   });
@@ -672,8 +676,16 @@ export function getCellColorInlineStylesFactory(theme: GrafanaTheme2) {
     },
     { maxSize: 1000 }
   );
+  // pjan-table-panel: Background color and Text color (custom.styling.*), with core's gradient start colour
+  const pjanCellColors = getCellColorsFactory(theme, pjanGridBackground, gradientBg);
 
-  return (cellOptions: TableCellOptions, displayValue: DisplayValue, hasApplyToRow: boolean): CSSProperties => {
+  return (
+    cellOptions: TableCellOptions,
+    displayValue: DisplayValue,
+    hasApplyToRow: boolean,
+    pjanField?: Field, // pjan-table-panel: the field, for its Background color and Text color
+    pjanDrawnOn?: string // pjan-table-panel: what Colored text is drawn on, if not the table background
+  ): CSSProperties => {
     const result: CSSProperties = {};
     const displayValueColor = displayValue.color;
 
@@ -698,7 +710,11 @@ export function getCellColorInlineStylesFactory(theme: GrafanaTheme2) {
           : displayValueColor;
     }
 
-    return result;
+    // pjan-table-panel: Background color and Text color, only when the field sets one (otherwise `result` itself); the
+    // value's position in a continuous colour scheme (`percent`) for shades of the scheme's colours
+    return pjanField
+      ? pjanCellColors(result, cellOptions, displayValueColor, pjanField, pjanDrawnOn, displayValue.percent)
+      : result;
   };
 }
 
@@ -1633,7 +1649,9 @@ export function getApplyToRowBgFn(
       cellOptions.type === TableCellDisplayMode.ColorBackground &&
       cellOptions.applyToRow === true
     ) {
-      return (rowIndex: number) => getCellColorInlineStyles(cellOptions, fieldDisplay(field.values[rowIndex]), true);
+      // pjan-table-panel: the row's field, for its Background color and Text color (the row's fill and text)
+      return (rowIndex: number) =>
+        getCellColorInlineStyles(cellOptions, fieldDisplay(field.values[rowIndex]), true, field);
     }
   }
 }

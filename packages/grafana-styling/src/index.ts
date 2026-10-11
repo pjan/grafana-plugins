@@ -12,6 +12,14 @@ export {
 } from './shades';
 export { getCandidateColorNames, getColorNameLookup } from './colorNames';
 export {
+  type ColorScheme,
+  getColorScheme,
+  getValueShadeColor,
+  interpolateColorScheme,
+  type SchemePosition,
+  shadeColorScheme,
+} from './schemes';
+export {
   type AutomaticTextOptions,
   FALLBACK_TEXT_CONTRAST,
   getAutomaticText,

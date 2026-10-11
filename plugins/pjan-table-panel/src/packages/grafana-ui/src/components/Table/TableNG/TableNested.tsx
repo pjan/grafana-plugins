@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/TableNested.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: none.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/TableNested.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background to getCellColorInlineStylesFactory (rebuilt when transparent changes) and to the column config.
 import { clsx } from 'clsx';
 import memoize from 'micro-memoize';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
@@ -18,6 +18,8 @@ import { useStyles2, useTheme2 } from '../../../themes/ThemeContext';
 import { getTextColorForBackground as _getTextColorForBackground } from '../../../utils/colors';
 import { usePanelContext } from '../../PanelChrome';
 import { type DataLinksActionsTooltipState } from '../cellUtils';
+// pjan-table-panel: Background color and Text color (src/pjan/styling/), custom.styling.*
+import { getGridBackground } from '../../../../../../pjan/styling/cellColors';
 
 import { TableDataGrid } from './TableDataGrid';
 import { EmptyTablePlaceholder } from './components/EmptyTablePlaceholder';
@@ -200,7 +202,12 @@ export function TableNested(props: TableNGProps & { nestedFramesField: Field<Dat
   // A scrollbar appearing/disappearing changes how much room the columns have, so factor it out.
   const availableWidth = useMemo(() => width - COLUMN.EXPANDER_WIDTH - scrollbarWidth, [width, scrollbarWidth]);
 
-  const getCellColorInlineStyles = useMemo(() => getCellColorInlineStylesFactory(theme), [theme]);
+  // pjan-table-panel: the table background (as getGridStyles), for the styling; was getCellColorInlineStylesFactory(theme)
+  const pjanGridBackground = useMemo(() => getGridBackground(theme, transparent), [theme, transparent]);
+  const getCellColorInlineStyles = useMemo(
+    () => getCellColorInlineStylesFactory(theme, pjanGridBackground), // pjan-table-panel
+    [theme, pjanGridBackground] // pjan-table-panel: was [theme]
+  );
   const applyToRowBgFn = useMemo(
     () => getApplyToRowBgFn(data.fields, getCellColorInlineStyles) ?? undefined,
     [data.fields, getCellColorInlineStyles]
@@ -400,6 +407,7 @@ export function TableNested(props: TableNGProps & { nestedFramesField: Field<Dat
       disableSanitizeHtml,
       showTypeIcons,
       timeRange,
+      pjanGridBackground, // pjan-table-panel
     }),
     [
       applyToRowBgFn,
@@ -417,6 +425,7 @@ export function TableNested(props: TableNGProps & { nestedFramesField: Field<Dat
       showTypeIcons,
       theme,
       timeRange,
+      pjanGridBackground, // pjan-table-panel
     ]
   );
 

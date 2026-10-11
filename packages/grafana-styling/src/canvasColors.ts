@@ -156,6 +156,11 @@ export interface AutomaticTextOptions {
   from?: string;
   /** What is behind a translucent `drawnOn`; the panel background unless given (a transparent panel shows the page) */
   background?: string;
+  /**
+   * Other colours the text is drawn on as well, such as the other stops of a gradient (Table plus's Colored
+   * background): every step is measured against `drawnOn` and each of these, and the lowest contrast counts.
+   */
+  alsoOn?: string[];
 }
 
 /**
@@ -166,8 +171,9 @@ export interface AutomaticTextOptions {
  * colour that reaches `minContrast` (see `getMinTextContrast`) with `drawnOn` wins, on whichever side gets there in
  * fewer steps (the page colour's side on a tie). When neither side reaches it, the same with FALLBACK_TEXT_CONTRAST,
  * for text that needs more than that; when even that fails, the extreme with the higher contrast. A colour that can't
- * be read (a name the active theme doesn't resolve) gives the theme's text colour instead of throwing. Results are
- * cached per theme object.
+ * be read (a name the active theme doesn't resolve) gives the theme's text colour instead of throwing. With `alsoOn`,
+ * the contrast of a step is its lowest with `drawnOn` and those colours (a gradient's stops). Results are cached per
+ * theme object.
  */
 export function getAutomaticText(
   theme: GrafanaTheme2,
@@ -175,7 +181,7 @@ export function getAutomaticText(
   minContrast: number,
   options: AutomaticTextOptions = {}
 ): string {
-  const key = `${drawnOn}|${minContrast}|${options.from ?? ''}|${options.background ?? ''}`;
+  const key = `${drawnOn}|${minContrast}|${options.from ?? ''}|${options.background ?? ''}|${options.alsoOn?.join(';') ?? ''}`;
   let cache = automaticCache.get(theme);
   if (!cache) {
     cache = new Map();
@@ -202,7 +208,8 @@ function searchAutomaticText(
   const background = toDrawnRgb(options.background ?? theme.colors.background.primary, [255, 255, 255]);
   const behind = background && toDrawnRgb(drawnOn, background);
   const start = behind && (options.from ? toDrawnRgb(options.from, background) : behind);
-  if (!background || !behind || !start) {
+  const alsoBehind = (options.alsoOn ?? []).map((color) => background && toDrawnRgb(color, background));
+  if (!background || !behind || !start || alsoBehind.some((color) => !color)) {
     return fallback;
   }
   const ends = [theme.colors.background.canvas, theme.colors.text.maxContrast]
@@ -211,8 +218,12 @@ function searchAutomaticText(
   if (ends.length === 0) {
     return fallback;
   }
-  const behindLuminance = luminance(behind);
-  const contrast = (color: Rgb) => contrastOf(luminance(color), behindLuminance);
+  // The lowest contrast with what the text is drawn on (one colour, or several with `alsoOn`)
+  const behindLuminances = [behind, ...(alsoBehind as Rgb[])].map(luminance);
+  const contrast = (color: Rgb) => {
+    const l = luminance(color);
+    return Math.min(...behindLuminances.map((b) => contrastOf(l, b)));
+  };
   const thresholds = minContrast > FALLBACK_TEXT_CONTRAST ? [minContrast, FALLBACK_TEXT_CONTRAST] : [minContrast];
 
   for (const threshold of thresholds) {

@@ -190,9 +190,11 @@ No other plugin has a stand-in or copy at these paths, so the copy check compare
 | `plugins/panel/table/module.test.ts`       | The handler test expects the plugin's handler; the test "wires up the table suggestions supplier" removed, with its imports (marked lines).                                                                                  | The two marked changes of `module.tsx`. `src/pjan/module.test.ts` checks that no suggestions are offered.                                                                                         |
 | `features/actions/utils.test.ts`           | State timeline plus's and Time series plus's adaptation (a `jest.mock` for the TimeSrv stand-in, `./analytics` mocked with `jest.mock`), re-marked with this plugin's id.                                                    | Shared copy; the check compares it outside the marked hunks.                                                                                                                                      |
 | `features/query/state/PanelQueryRunner.ts` | State timeline plus's partial copy (`getNextRequestId` only), shared byte for byte.                                                                                                                                          | See "Stand-ins and partial copies for core app modules".                                                                                                                                          |
+| `plugins/panel/table/module.tsx`           | The field options Background color and Text color (`.addCustomEditor`, marked, with their import) right after Cell type.                                                                                                     | Plugin addition: Text color and Background color (below).                                                                                                                                         |
+| Four `TableNG/` files                      | `utils.ts`, `render-hooks.tsx`, `TableFlat.tsx`, `TableNested.tsx`: the Text color and Background color hooks (marked), listed in "Plugin addition: Text color and Background color".                                        | The opt-in options; with nothing set the copied code returns core's own objects.                                                                                                                  |
 
-Nothing else in the copied files differs from upstream: every other copy (the panel, its helpers and editors, all of
-`TableNG`, the shared `Table/` files, `ActionButton`, `cellUtils.ts`, `TableRT/styles.ts`, the ported tests, the three
+Nothing else in the copied files differs from upstream: every other copy (the panel, its helpers and editors, the rest
+of `TableNG`, the shared `Table/` files, `ActionButton`, `cellUtils.ts`, `TableRT/styles.ts`, the ported tests, the three
 snapshots, `__mocks__/uwrap.ts`, `jsdom.ts`) is upstream's apart from the import lines ("imports only" or "none" in its
 header). The shared copies (`features/actions/{utils,analytics}.ts`, `alerting/unified/utils/url.ts`,
 `canvas/panelcfg.gen.ts`, `timeseries/config.ts` with its four editors and `NullsThresholdInput.tsx`, and their tests) are
@@ -261,6 +263,10 @@ header's `Changes:` text. Every copy with a marked line is listed, and only thos
 - `src/plugins/panel/table/TablePanel.tsx`
 - `src/plugins/panel/table/module.test.ts`
 - `src/features/actions/utils.test.ts`
+- `src/packages/grafana-ui/src/components/Table/TableNG/utils.ts`
+- `src/packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx`
+- `src/packages/grafana-ui/src/components/Table/TableNG/TableFlat.tsx`
+- `src/packages/grafana-ui/src/components/Table/TableNG/TableNested.tsx`
 
 ## Stand-ins of its own
 
@@ -281,6 +287,231 @@ reads them ("Feature flags"). The shared stand-ins (`core/app_events.ts`, `featu
 byte-identical to the other plugins'. `core/config.ts`, `grafana-ui/unstable.ts`, the test stand-ins and the
 relative-path stand-ins are at paths no other plugin has; `core/components/OptionsUI/registry.ts` is next to Stat plus's
 partial copy `registry.tsx`, a different file.
+
+## Plugin addition: Text color and Background color
+
+Step 7, build 1 of `plans/atlas-table-panel.md` (branch `feature/text-color`, 2026-10-10), built from the spike on
+`spike/text-color` (reference only, not merged): the spike's shared-package commits taken as they were (`alsoOn`,
+`schemes.ts`), the rest re-done for this build only (no other addition's options, no review-only switch, no copied
+`BarGauge` or `Sparkline`, no `TableNG` prop or React context: the hooks reach what they need through the arguments the
+copied code already passes around). Opt-in: with both options unset nothing changes, and a table that doesn't use them
+saves nothing new. Code in `src/pjan/styling/` (`options.ts`, `cellColors.ts`); the colour rules, the editor, Automatic
+and the scheme shading come from `@pjan/grafana-styling` (`packages/grafana-styling/README.md`).
+
+### The options (`options.ts`)
+
+Field options in "Cell options" right after Cell type (`module.tsx`, two chained `.addCustomEditor`, marked), Stat plus's
+keys and meanings:
+
+- **Background color** at `custom.styling.backgroundColor`: a shade (the five, grouped "Shade of the value color") or
+  Fixed. Value is core's own fill (so: unset); None isn't needed.
+- **Text color** at `custom.styling.textColor`: Automatic, Value, a shade or Fixed.
+- Both: the shared `StylingColorEditor` (clearable), placeholder "As Grafana", no default value (a cleared value leaves no
+  key and no `styling: {}`), `override` the same editor, `process` `identityOverrideProcessor`, `shouldApply: () => true`
+  (core's own for its cell options: a time column can be a coloured cell; a recorded deviation from principle 3's "skips
+  time fields"), **no `showIf` on the cell type** (plan, review M3); override ids `custom.styling.<key>`; i18n keys
+  `pjan.table-styling.*`; the descriptions say which cell types they apply to and end with "Not set: …".
+  `getFieldStyling` returns one frozen empty object while nothing is set (State timeline plus's pattern).
+
+### What they draw (`cellColors.ts`)
+
+- **Nothing set = core:** the hook returns core's styles object itself, and pill columns get core's own text function.
+- **Background color: Colored background cells only** (basic and gradient, and the row of Apply to entire row: the
+  row-colouring field's setting fills the row). Not pills (Pill fill color is a later build, plan decision 10), not
+  Colored text. A shade of the value's colour (of its name's hue, or its nearest hue; **without a hue, the value's colour
+  itself**, Stat plus's rule; from a continuous scheme, the scheme's stops shaded and interpolated at the value's
+  position) or a fixed colour.
+  - Basic cells: the shade or the fixed colour, solid.
+  - **Gradient cells, variant B (pjan, 2026-10-10):** a shade keeps core's gradient, built from the shaded colour by core's
+    own rule (`gradientBg` of the copied factory, passed in: darkened by 10 in dark, lightened by 7 in light, 5° hue
+    spin), `linear-gradient(120deg, <start>, <shade>)` as core writes it. **Fixed doesn't apply to gradient cells:** they
+    draw as core (fill and, with Text color unset, text); the description says so (the editor can't see a column's cell
+    type, so it can't hide Fixed).
+- **Text color** on Colored background (and the row), Pill and Colored text cells; nothing on other cell types. Value, a
+  shade and Fixed are drawn as chosen, also where that is unreadable (Value on a fill of the same colour is invisible, as
+  in Stat plus). A shade of a colour without a hue is Automatic.
+- **The unset rule (Stat plus's):** each unset part follows core, part by part, **except that where the plugin draws the
+  fill (Background color), an unset Text color is Automatic on that fill**. One path for cells, rows and pills
+  (`getTextOnFill`, with a `Fill` that says whether the plugin draws it), so Pill fill color (a later build) gets the same
+  rule by passing its fill.
+- **Automatic** (plan decision 9) is `getAutomaticText` at the text's font (`getTextFont`, the one place size and weight
+  come from: cells 14 px, pills `bodySmall` 12 px, the theme's regular weight; Text weight, a later build, sets the
+  weight there):
+  - on a fill, from the fill, against the fill as drawn: on a **gradient** (core's, or the plugin's variant B) both stops,
+    every step measured against both and the lower contrast counting (the shared option `alsoOn`); translucent fills
+    composited over the table background;
+  - on **Colored text**, from the value's colour against what the text is drawn on: **the row's fill as drawn** on a row
+    coloured by Apply to entire row (core's basic or gradient fill, or the plugin's: render-hooks passes the row's
+    `background`, which `getFillStops` reads, a gradient as both stops), **the tooltip's background** in Tooltip from field
+    (or the row's fill there, which core gives the tooltip's content too), otherwise **the table background**
+    (`getGridBackground`: `getGridStyles`' `--rdg-background-color`, by `transparent` and `visualDesignRefresh`).
+- **Pills:** Text color on the pill's fill, at the pill's font. The pill's colour has a name when it comes from the
+  field's mappings, thresholds or fixed colour (the field PillCell gets: for a pill column with mappings, render-hooks has
+  replaced its colour config with Fixed but kept the mappings, so the mapping colour's name is found); a string-hash
+  pill's colour (Grafana's classic hex colours) takes its nearest hue. A translucent pill is composited over the table
+  background, also on a coloured row (PillCell hands its text function only the pill's colour, not its row).
+- **Caching, keyed on the theme:** the factory (and its cache) is made per theme and table background, the pill functions
+  per column build (rebuilt with the theme), `getAutomaticText` and `shadeColorScheme` cache per theme object; core's
+  text memo (`getTextColorForBackground`, keyed by colour only) is still what pills use when unset.
+- **Styling from field still wins:** the hook changes the colour styles, which the cell applies before the JSON of
+  Styling from field.
+- **Links** in cells that can be coloured take the cell's text colour: core's `getLinkStyles` gives them `color:
+inherit` whenever the cell can be coloured. **The hover cell-action buttons** (inspect, filter) keep core's own backdrop
+  and theme text. Both checked against the copied `styles.ts` in `cellColors.test.ts`.
+- **Live theme switch:** core keeps the value colours of the theme the data was processed in until the next data refresh
+  (scenes 8.13.5 caches the processed data by `rawData` identity, with no theme in the key; seen in core and plugin
+  alike in `styling.spec.ts`), and a continuous scheme's colours until the page is reloaded: `@grafana/data` builds a
+  scheme's interpolator once per page load, from the stops of the first theme it is asked for, on the colour mode
+  object in Grafana's registry (`FieldColorSchemeMode.getInterpolator`, `fieldColor.ts`; the Atlas theme plugin resets
+  it on a switch). The hook's caches follow the new theme, so the options apply the new theme's shades and contrast to
+  the colours core draws, and a scheme is shaded from the new theme's stops (`getColors(theme)`).
+- **Writes to Grafana's shared scheme object:** `getColorScheme` (shared package) calls `mode.getColors(theme)` on that
+  registry object, which stores the stops it resolves (`colorCache`, `colorCacheTheme`). It doesn't change what core
+  draws: the plugin calls it only with the theme the panel was processed in, after core's display processor has drawn
+  the cell's value colour (so after core built its interpolator, which is the only reader of that cache). Checked in
+  the browser too (UPSTREAM "Test runs", 2026-10-11).
+
+### Hooks (all marked `pjan-table-panel:`)
+
+| Copied file                                        | Hook                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `plugins/panel/table/module.tsx`                   | `.addCustomEditor(backgroundColorFieldOption(cellCategory))` and `.addCustomEditor(textColorFieldOption(cellCategory))` right after Cell type, with their import                                                                                                                                                                                                                                                                            |
+| `TableNG/utils.ts`                                 | `getCellColorInlineStylesFactory(theme, pjanGridBackground?)`; its styles function takes `(cellOptions, displayValue, hasApplyToRow, pjanField?, pjanDrawnOn?)` and, only with a field, returns `getCellColorsFactory`'s result for core's `result` (core's object itself when the field sets neither option), with core's `gradientBg` and the display value's `percent`. `getApplyToRowBgFn` passes the row's field                       |
+| `TableNG/render-hooks.tsx`                         | `ColumnBuildConfig.pjanGridBackground`; the cell passes `field` and the row's fill (`getRowFill(style)`: the row's styles are already in the cell's); Tooltip from field passes `tooltipField` and the row's fill or the tooltip's background; each column (and a tooltip's field) hands its cells `getPillTextColorFn(getTextColorForBackground, field, theme, background)` instead of core's function (core's function itself when unset) |
+| `TableNG/TableFlat.tsx`, `TableNG/TableNested.tsx` | the table background (`getGridBackground(theme, transparent)`) to the factory, which is now rebuilt when `transparent` changes too, and to the column config                                                                                                                                                                                                                                                                                |
+
+`PillCell.tsx` is not changed: its only text decision is the `getTextColorForBackground(bgColor)` it is handed, and only
+PillCell calls it.
+
+### Decisions
+
+1. **A changed signature, not a parallel function:** two optional trailing parameters on the factory and on its styles
+   function, so its three call sites (cell, Tooltip from field, Apply to entire row) each pass one or two more arguments,
+   core's body stays as it is, and the copied tests (which call it with three) are unchanged. The field carries its
+   styling (`field.config.custom.styling`); the table background comes from where `transparent` is known
+   (`TableFlat`/`TableNested`). The factory reads nothing from the theme until a field sets an option (the copied
+   `utils.test.ts` builds the factory with a partial theme); the column builder reads `background.primary` when its
+   config has no table background (the copied tests).
+2. **No `TableNG` prop or context** (the spike's later `pjan` prop served panel options and other builds): build 1 needs
+   only the field, the table background and what a cell is drawn on, which the copied code already passes or knows.
+3. **Pills through the text function each column hands its cells** (no change to `PillCell.tsx`), which reaches cell and
+   tooltip pills.
+4. **Apply to entire row: the field that colours the row decides the row's fill and text.** Other fields' options apply
+   only to their own coloured cells: a Colored background cell in a coloured row draws its own fill and text, an Auto cell
+   keeps the row's text, and a Colored text cell with Text color is measured against the row's fill as drawn.
+5. **Gradients: both stops** (`alsoOn`). Where no colour reaches 4.2:1 on both stops, the extreme (page colour or
+   `maxContrast`) with the higher lower contrast is used. Accepted by pjan (2026-10-06 and 2026-10-10) on Grafana's
+   stock themes: Grafana dark blue 3.73:1, a Soft green variant-B gradient 4.04:1, Grafana light Stronger green
+   3.89:1. **In the Atlas theme it goes lower** (the build 1 review, M1; re-computed independently with job tmp
+   `table-plan/build1/oracle_atlas.py`, Grafana's 3-digit luminance): core's gradient with Text color Automatic in Atlas
+   dark, blue 3.24:1, teal 3.18:1, cyan 3.18:1, green 3.86:1; variant B in Atlas light, teal Stronger 3.89:1, yellow
+   Stronger 4.12:1; in Atlas dark, Base indigo 3.63:1, lime 3.59:1, violet 4.04:1. The same hues on basic fills reach
+   4.50–4.56:1. The descriptions and the README say so and steer readability-critical columns to Basic mode (CONVENTIONS
+   uses basic state cells). **For pjan to re-decide** (the measurement is unchanged in this build).
+6. **Variant B on gradient cells, Fixed ignored there** (pjan, 2026-10-10).
+7. **Continuous schemes: one resolver** (`getValueShadeColor`, pjan 2026-10-10): the scheme's stops shaded and
+   interpolated at the display value's `percent`, which is what Grafana's calculator interpolates at. A value coloured by
+   a mapping has no `percent` and takes the shade of its mapping colour's name. Viridis-type schemes are shaded from
+   Grafana's nine samples (accepted).
+8. **Value kept** as a Text color mode (accepted): drawn as chosen, even where invisible.
+9. **Cells core leaves uncoloured stay uncoloured** (accepted): Background color doesn't fill a cell whose value colour
+   is transparent on a coloured row (core leaves it to the row before the hook runs), nor a cell without a value colour.
+
+### Depends on (check at each re-sync)
+
+- `getCellColorInlineStylesFactory`: its signature, its body (the `result` object it returns, `gradientBg`,
+  `isTransparent`) and its three call sites; the `linear-gradient(120deg, <start>, <colour>)` string `getFillStops` reads
+  (tested against the copy) and the darkening rule variant B reuses.
+- `render-hooks.tsx` copying the row's styles (`rowCellStyle`) into each cell and into Tooltip from field's style before the
+  cell's own colours, and applying Styling from field after them; its mapped-pill replacement keeping `mappings` and
+  `custom`.
+- `getGridStyles`' background rule, `getTooltipStyles`' wrapper background, `getLinkStyles`' `color: inherit` and
+  `getCellActionStyles`' backdrop (`cellColors.test.ts` compares them with the copies).
+- That only PillCell uses `getTextColorForBackground` and calls it with each pill's fill; PillCell's `bodySmall` font and
+  the cells' body font.
+- The display value's `percent` (`@grafana/data` `displayProcessor`) and the continuous schemes' `getColors`
+  (`schemes.ts`, `@grafana/data` `fieldColor.ts`): Grafana's interpolation is re-implemented there and tested equal.
+- `FieldColorSchemeMode` in `@grafana/data` `fieldColor.ts`: `getColors(theme)` caching its stops on the registry's mode
+  object, and the interpolator built once from that cache on first use (see "Live theme switch"); the special names
+  `panel-bg`, `transparent` and `text` the "from background" schemes use (kept unshaded by `shadeColorScheme`).
+- Core's key list: `fieldOptionKeys.test.ts` fails if `TableFieldOptions` gains a `styling` key.
+
+### Tests
+
+- **Jest** (`src/pjan/styling/`, 97): `options.test.ts` (25: both options as registered: place after Cell type and
+  before Cell value inspect, override ids, modes, placeholders, no defaults, no cell-type `showIf`, `shouldApply`,
+  descriptions; and as saved: no `styling` on a new panel, a cleared value leaves no key and no `styling: {}`, unknown
+  keys dropped, an override kept as `custom.styling.<key>` and styling only its field, the override-cleared caveat;
+  `getFieldStyling`), `cellColors.test.ts` (61: the resolver with hand-computed colours for every mode on basic and
+  gradient fills, variant B, Fixed on gradients, applied rows, Colored text on the table, row and tooltip backgrounds,
+  transparent panels, colours without a name (hex, gray), Green-Yellow-Red at 0, 0.25, 0.5, 0.75 and 1 in Soft and
+  Stronger, light and dark, pills (mapped, string hash, transparent), the theme-keyed caches, and core's styles they rely
+  on), `tableColors.test.tsx` (16: the copied `TableNG` rendered in jsdom: cells, pills, Background color, Styling from
+  field, a transparent table, a theme switch, coloured rows (core's and the plugin's, basic and gradient), nested tables
+  (flat and transparent), transparent pills, Tooltip from field (Colored text on the tooltip's background and on a row's
+  fill, pills)). Hand-computed values: job tmp `table-plan/build1/oracle.py`, `oracle_b1.py`, `oracle6.py` (Grafana's
+  3-digit luminance, 1 % sRGB steps, tinycolor's darken and spin, d3's B-spline), separate from the shared package.
+- **End to end:** `tests/styling.spec.ts` and `tests/stylingEditor.spec.ts` ("End to end").
+
+### Negative controls
+
+Jest (2026-10-10, `src/pjan/styling/` and `fieldOptionKeys.test.ts`, 102 tests; with the shared package's 140 where its
+code was broken), each broken on purpose by a script (job tmp `table-plan/build1/controls/run.py`), then restored:
+
+| Broken on purpose                                                                      | Result (Jest)                      |
+| -------------------------------------------------------------------------------------- | ---------------------------------- |
+| module.tsx: Background color not registered                                            | 9 failed                           |
+| module.tsx: Text color before Background color                                         | 1 failed                           |
+| utils.ts: the styles function returns core's result (hook off)                         | 42 failed                          |
+| utils.ts: the value's scheme position not passed                                       | 6 failed                           |
+| utils.ts: core's gradient start not passed (identity)                                  | 10 failed                          |
+| utils.ts getApplyToRowBgFn: the row's field not passed                                 | 5 failed                           |
+| utils.ts: the table background not passed to the factory                               | 5 failed                           |
+| render-hooks: the cell's field not passed                                              | 11 failed                          |
+| render-hooks: the row's fill not passed at the cell                                    | 4 failed                           |
+| render-hooks: the tooltip's field not passed                                           | 2 failed                           |
+| render-hooks: what tooltip Colored text is drawn on not passed                         | 2 failed                           |
+| render-hooks: pill cells given core's text function                                    | 6 failed                           |
+| render-hooks: tooltip pills given core's text function                                 | 1 failed                           |
+| render-hooks: pills measured on the panel background, not the table's                  | 2 failed                           |
+| TableFlat: the table background ignores transparent                                    | 2 failed                           |
+| TableNested: the table background ignores transparent                                  | 1 failed                           |
+| TableFlat: the table background not in the column config                               | 1 failed                           |
+| TableNested: the table background not in the column config                             | 1 failed                           |
+| cellColors: unset text on a plugin fill is core's (no unset rule)                      | 18 failed                          |
+| cellColors: a shade on gradient cells drawn solid (variant A)                          | 9 failed                           |
+| cellColors: Fixed applied to gradient cells                                            | 1 failed                           |
+| cellColors: a gradient measured on one stop only (no alsoOn)                           | 7 failed                           |
+| cellColors: Colored text Automatic not from the value colour                           | 15 failed                          |
+| options: getFieldStyling not one frozen object                                         | 1 failed                           |
+| cellColors: the pill text cache shared across themes (keyed by colour only, as core's) | 5 failed                           |
+| render-hooks: the plugin's styles applied after Styling from field                     | 1 failed                           |
+| shared canvasColors: alsoOn ignored in the contrast                                    | 7 failed; shared package: 1 failed |
+| shared schemes: getValueShadeColor without the scheme branch                           | 6 failed; shared package: 4 failed |
+| options: shouldApply skips time fields                                                 | 3 failed                           |
+| options: a default value                                                               | 8 failed                           |
+
+After the build 1 review (2026-10-11, the same script, `run_review.py`):
+
+| Broken on purpose                                                                            | Result (Jest)                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| shared `schemes.ts` (m1): `panel-bg`, `transparent` and `text` stops shaded like other stops | shared package: 3 fail (Blues in Atlas light and dark, the `text`/`transparent` stops); the plugin's pass, as expected (Grafana's stock themes have no gray hue, so the rule changes nothing there) |
+| `cellColors.ts` (m6): the scheme left out of the cache key                                   | 1 fails (two columns, two schemes, one factory)                                                                                                                                                     |
+| `cellColors.ts`: an infinite position counts as no position                                  | 1 fails (an infinite value)                                                                                                                                                                         |
+| shared `schemes.ts`: an infinite position counts as no position                              | plugin 1 fails, shared package 1 fails                                                                                                                                                              |
+| `options.ts` (m3): Text color's placeholder "As Grafana"                                     | 1 fails                                                                                                                                                                                             |
+
+End to end (2026-10-10, each broken, the plugin rebuilt, the named tests run with `--workers=1`, then restored and
+rebuilt; job tmp `table-plan/build1/controls/run_e2e.py`):
+
+| Broken on purpose                                                                        | Run                                                | Result                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `render-hooks.tsx`: the cell's field not passed                                          | `styling.spec.ts`, light, pixel ratio 1 (26 tests) | 20 fail: every case with a coloured cell; the pill cases and the tooltip hover test pass, as expected (pills and tooltips have their own hooks)                   |
+| `TableFlat.tsx`: the table background ignores `transparent`                              | the transparent and tooltip cases (light, 1)       | both transparent cases fail ("colored text, transparent panel", "tooltip from field" on the table)                                                                |
+| `render-hooks.tsx`: Tooltip from field's Colored text not given the tooltip's background | the tooltip tests (light, 1)                       | the hover test fails; the table case passes, as expected                                                                                                          |
+| `module.tsx`: Text color registered before Background color                              | `stylingEditor.spec.ts`, `optionsEditor.spec.ts`   | 3 fail: placement, the overrides menu, and the comparison with core's editor                                                                                      |
+| `cellColors.ts`: a shade on gradient cells drawn solid (variant A)                       | the gradient and nested cases (light, 1)           | the 3 gradient cases with a shade fail ("background soft, gradient", the gradient row, the scheme on gradient); the nested case (basic cells) passes, as expected |
+| `cellColors.ts`: a colour drawn with nothing set                                         | three cases (light, 1)                             | all 3 fail on "nothing set: the same elements as core"                                                                                                            |
 
 ## Pruned and left off
 
@@ -506,14 +737,16 @@ Own tests (`src/pjan/`):
   again; `table-old` and other types through core's handler.
 - `module.test.ts` (6): the copied `TablePanel`, core's migration handler with no version check of its own, the plugin's
   panel-change handler, no suggestions, no presets, padding and data support as a fresh panel plugin.
-- `fieldOptionKeys.test.ts` (5): the custom field option ids are exactly core's 13 (frozen for v13.2.3 and checked against
-  the copied module); no plugin option reuses a key of `TableFieldOptions` (read from `@grafana/schema` 13.2.3 with the
+- `fieldOptionKeys.test.ts` (5): the custom field option ids are core's 13 (frozen for v13.2.3 and checked against the
+  copied module) and the plugin's own, all under `styling`; no plugin option reuses a key of `TableFieldOptions` (read from `@grafana/schema` 13.2.3 with the
   TypeScript compiler); a control that such an option would be caught.
 - `initFeatureFlags.test.ts` (4): the flag provider is set up only for a signed-in user, and a failure is logged, as in
   core's `app.ts`.
 - `standIns.test.ts` (4): `@grafana/ui/unstable` gives the copied `TableNG`; `core/config` gives the public `config`
   (`disableSanitizeHtml`); `defaultSparklineCellConfig` has core's values; the e2e selector values equal
   `@grafana/e2e-selectors`'.
+- `styling/options.test.ts`, `styling/cellColors.test.ts`, `styling/tableColors.test.tsx` (97): Text color and Background
+  color ("Plugin addition: Text color and Background color").
 - `featureFlags.test.tsx` (the scaffold's) and `buildConfig.test.ts` (the build, and the built `module.js` asks Grafana for
   no `/unstable` or `/internal` entry point).
 
@@ -569,9 +802,32 @@ Own tests (`src/pjan/`):
   with a server value answered 3 s late, and localStorage before the server, core and plugin alike in their drawing
   (page size 2 only with `table.paginationPageSize`; content-aware column widths only with `table.autoColumnWidths`,
   the plugin's widths equal to core's), in their editors ("Page size" shown only with the flag) and in core's own client.
+- **`styling.spec.ts`** (157 with its setup: 26 tests × light, dark and dark after a live switch from light × pixel ratio
+  1 and 2), on `provisioning/dashboards/styling.json` (generated by `scripts/generate-styling-dashboard.mjs`): 25 cases,
+  each core's table, Table plus with nothing set and Table plus with the case's styling side by side (same data and
+  field config; Atlas's pattern: cell types by override, the styling once in the field defaults; `minWidth` 70 so every
+  column fits). Cases: Text color Automatic, Value, Stronger and Fixed on Colored background basic and gradient;
+  Background color Soft and Fixed on basic, Soft (variant B) and Fixed (ignored) on gradient, Softer with Text Stronger;
+  Apply to entire row with Text color, and with Background color on a gradient row (the unset rule) and Colored text on
+  it; pills (mapped, Automatic and Stronger; string hash); Colored text Automatic and Stronger, and on a transparent
+  panel; hex colours (two near a hue, one near none); Green-Yellow-Red by value (Soft basic and gradient, Stronger
+  Colored text); a nested table with nested-scope overrides; Tooltip from field; an override on one column. Per case:
+  nothing set has core's elements (every attribute, inline styles included, React's ids mapped) and core's pixel at
+  every non-gradient cell; each set cell's (and pill's) inline colours are what the rules give for core's colour of the
+  same cell, worked out in the spec with `@pjan/grafana-styling` from the column's cell type and styling as saved, at the
+  cell's drawn font size and weight (14 px, pills 12 px); a basic fill also in the screenshot's pixel; some cells also
+  against hand-computed colours (job tmp `table-plan/build1/oracle_e2e.py`, without a live switch: core keeps the first
+  theme's value colours until a refresh); set differs from core where the option applies (Fixed on gradient cells:
+  equal); on a transparent panel the grid's background pixel is the canvas. One more test hovers Tooltip from field on
+  a transparent panel: the tooltip's Colored text is measured against the tooltip's background.
+- **`stylingEditor.spec.ts`** (6): Background color and Text color right after Cell type and before Cell value inspect,
+  in the field defaults with Cell type Auto, with "As Grafana"; in the "Add override property" menu after Cell type; a
+  value set in the field defaults saved and drawn, cleared to no key and no `styling`; an override saved as
+  `custom.styling.textColor` and cleared to a property without a value; opening the editor of a styled panel writes
+  nothing (3 s); defaults and an override survive saving the dashboard (the editor's Save) and loading it again.
 - **`optionsEditor.spec.ts`** (2): core's and the plugin's panel editors on a case without options: the same option
-  groups in the same order, and in them the same options (panel, table, cell and standard options), each with the same
-  elements (labels, descriptions, editors; React's ids mapped) and input values (the defaults); the Cell type editor's
+  groups in the same order, and in them the same options (panel, table, cell and standard options; the plugin's own two
+  right after Cell type, then core's), each with the same elements (labels, descriptions, editors; React's ids mapped) and input values (the defaults); the Cell type editor's
   choices. Waits for the preview's data first (a unit set in the data adds a "pre-configured" note to Unit). With a
   label changed in the copied `addTableCustomPanelOptions.ts` ("Frozen columns"), the first test fails.
 - **`panel.spec.ts`**: the scaffold's smoke tests, for the ported panel.
@@ -581,6 +837,26 @@ Own tests (`src/pjan/`):
 What has passed, on Grafana 13.2.3 OSS (the dev server of `docker-compose.yaml`), with one browser
 (`npx playwright test --workers=1`), on a loaded machine (load average about 100 to 130):
 
+- **2026-10-11, commit `048ead5` (the build 1 review's fixes): `styling.spec.ts`, `stylingEditor.spec.ts`,
+  `optionsEditor.spec.ts` and `parity.spec.ts`, 173 of 173 tests passed** in 28.3 minutes at the first run (157 styling
+  with the login setup, 6 editor, 2 options-editor, 9 parity: the full matrix with nothing set). Root checks on the same
+  code: typecheck, lint (no errors), build, copy check (OK), `test:scripts` 47 of 47, `test:dist` passed, `npm test`
+  passed in every workspace (this plugin 965 passed, 13 skipped, 1 todo; `@pjan/grafana-styling` 146). In the browser (a
+  one-off probe, 2026-10-11): after a live switch from light to dark and a dashboard refresh, core's Green-Yellow-Red
+  column still draws light's colours (green `rgb(86, 166, 75)` at 0), the same with the styled Table plus panels on the
+  page and with the core panel alone (`viewPanel`): the plugin's `getColors` calls don't change what core draws; the
+  styled panel shades from dark's stops.
+- **2026-10-10, commit `c8dfa2c` (Text color and Background color; the docs commit after it changes only Markdown): the
+  full suite, 210 of 210 tests passed** in 30.7 minutes, at the first run, without reruns (load average about 120 falling
+  to 30): the 48 of the port (parity with nothing set, interaction, hand-computed, saved JSON, feature flags, the
+  options editor with the two new options, smoke tests, the login setup) plus 156 `styling.spec.ts` tests and 6
+  `stylingEditor.spec.ts` tests. Before it, on the way: `styling.spec.ts` alone, 145 of 157 at the first full run, the 12
+  failures all in "dark, switched live from light" on the hand-computed colours (core keeps the first theme's value
+  colours until a refresh, so those colours don't apply there; the spec now checks them only without a live switch),
+  then 53 of 53 for that theme state. Root checks on the same code: `npm run typecheck`, `npm run lint` (no errors) and
+  `npm run build` passed; `npm run check:upstream-copies` OK (334 copies); `npm run test:scripts` 47 of 47;
+  `npm run test:dist` passed; `npm test` passed in every workspace at the first run (this plugin 53 suites, 961 passed,
+  13 skipped, 1 todo; `@pjan/grafana-styling` 140).
 - **2026-10-05, commit `8f31808` (the tests and code of the port; the docs commit after it changes only Markdown): the
   full suite, 46 of 46 tests passed** in 27.1 minutes, at the first run, without reruns: 8 parity tests (74 cases each:
   light, dark and both live switches, at pixel ratio 1 and 2; 592 case comparisons), 15 interaction tests, 3

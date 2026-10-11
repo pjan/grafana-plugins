@@ -73,8 +73,8 @@ describe('field option keys', () => {
     expect(keys).not.toContain('styling');
   });
 
-  it('the plugin has no field options of its own yet (parity port)', () => {
-    expect(ownCustomKeys(plugin.fieldConfigRegistry)).toEqual([]);
+  it('the plugin’s own field options are all under `styling` (plan decision 6)', () => {
+    expect([...new Set(ownCustomKeys(plugin.fieldConfigRegistry))]).toEqual(['styling']);
   });
 
   it('no field option of the plugin reuses a TableFieldOptions key', () => {
@@ -100,7 +100,7 @@ describe('field option keys', () => {
     }
     const ids = plugin.fieldConfigRegistry
       .list()
-      .filter((item) => item.isCustom)
+      .filter((item) => item.isCustom && !item.id.startsWith('custom.styling.'))
       .map((item) => item.id);
     expect(ids.sort()).toEqual([...CORE_CUSTOM_IDS_V13_2_3].sort());
   });

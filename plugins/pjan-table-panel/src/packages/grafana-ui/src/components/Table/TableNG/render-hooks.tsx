@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: none.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background in ColumnBuildConfig; the cell's and the tooltip's field, and the row's fill they are drawn on, passed to getCellColorInlineStyles; each column's getTextColorForBackground (Pill cells) from getPillTextColorFn.
 import { clsx } from 'clsx';
 import {
   type CSSProperties,
@@ -39,6 +39,8 @@ import {
 } from '@grafana/schema';
 
 import { type PanelContext } from '../../PanelChrome';
+// pjan-table-panel: Background color and Text color (src/pjan/styling/), custom.styling.*
+import { getPillTextColorFn, getRowFill, getTooltipBackground } from '../../../../../../pjan/styling/cellColors';
 
 import { getCellRenderer, getCellSpecificStyles } from './Cells/renderers';
 import { HeaderCell } from './components/HeaderCell';
@@ -157,6 +159,7 @@ export interface ColumnBuildConfig {
   maxRowHeight?: number;
   numFrozenColsFullyInView: number;
   onCellFilterAdded?: TableFilterActionCallback;
+  pjanGridBackground?: string; // pjan-table-panel: the table background, for the styling
   rowHeight: NonNullable<CSSProperties['height']> | ((row: TableRow) => number);
   rowHeightFn: (row: TableRow) => number;
   setFilter: Dispatch<SetStateAction<FilterType>>;
@@ -209,6 +212,7 @@ function buildColumnsFromFields(
     disableSanitizeHtml,
     showTypeIcons,
     timeRange,
+    pjanGridBackground = theme.colors.background.primary, // pjan-table-panel
   } = config;
 
   const result: FromFieldsResult = {
@@ -322,6 +326,8 @@ function buildColumnsFromFields(
     const styleField = styleFieldValue ? frame.fields.find(predicateByName(styleFieldValue)) : undefined;
     const styleFieldName = styleField ? getDisplayName(styleField) : undefined;
     const hasValidStyleField = Boolean(styleFieldName);
+    // pjan-table-panel: Text color on Pill cells; core's getTextColorForBackground itself when the field doesn't set it
+    const pjanGetTextColorForBackground = getPillTextColorFn(getTextColorForBackground, field, theme, pjanGridBackground);
 
     // TODO: in future extend this to ensure a non-classic color scheme is set with AutoCell
 
@@ -351,7 +357,15 @@ function buildColumnsFromFields(
       if (canBeColorized && !fieldAppliesToRow) {
         const value = props.row[props.column.key];
         const displayValue = field.display!(value); // this fires here to get colors, then again to get rendered value?
-        const cellColorStyles = getCellColorInlineStyles(cellOptions, displayValue, applyToRowBgFn != null);
+        // pjan-table-panel: the field, for its Background color and Text color, and the row's fill (Apply to entire
+        // row) a Colored text cell is drawn on
+        const cellColorStyles = getCellColorInlineStyles(
+          cellOptions,
+          displayValue,
+          applyToRowBgFn != null,
+          field,
+          getRowFill(style)
+        );
         Object.assign(style, cellColorStyles);
       }
       if (hasValidStyleField) {
@@ -399,7 +413,7 @@ function buildColumnsFromFields(
             showFilters={showFilters}
             getActions={getCellActions}
             disableSanitizeHtml={disableSanitizeHtml}
-            getTextColorForBackground={getTextColorForBackground}
+            getTextColorForBackground={pjanGetTextColorForBackground} // pjan-table-panel: was getTextColorForBackground
           />
           {showActions && (
             <TableCellActions
@@ -433,6 +447,13 @@ function buildColumnsFromFields(
         const tooltipDisplayName = getDisplayName(tooltipField);
         const tooltipCellOptions = getCellOptions(tooltipField);
         const tooltipFieldRenderer = getCellRenderer(tooltipField, tooltipCellOptions);
+        // pjan-table-panel: Text color on a Pill tooltip field
+        const pjanTooltipGetTextColorForBackground = getPillTextColorFn(
+          getTextColorForBackground,
+          tooltipField,
+          theme,
+          getTooltipBackground(theme)
+        );
 
         const tooltipCellStyleOptions = {
           textAlign: getAlignment(tooltipField),
@@ -472,7 +493,7 @@ function buildColumnsFromFields(
           disableSanitizeHtml,
           field: tooltipField,
           getActions: getCellActions,
-          getTextColorForBackground,
+          getTextColorForBackground: pjanTooltipGetTextColorForBackground, // pjan-table-panel: was getTextColorForBackground
           gridRef,
           placement,
           renderer: tooltipFieldRenderer,
@@ -489,7 +510,9 @@ function buildColumnsFromFields(
             const tooltipCellColorStyles = getCellColorInlineStyles(
               tooltipCellOptions,
               tooltipDisplayValue,
-              applyToRowBgFn != null
+              applyToRowBgFn != null,
+              tooltipField, // pjan-table-panel: the tooltip field, for its Background color and Text color
+              getRowFill(tooltipStyle) ?? getTooltipBackground(theme) // pjan-table-panel: what Colored text is drawn on
             );
             Object.assign(tooltipStyle, tooltipCellColorStyles);
           }

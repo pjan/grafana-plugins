@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color and Text color (custom.styling.backgroundColor, custom.styling.textColor, src/pjan/styling/) right after Cell type.
 import { identityOverrideProcessor, FieldConfigProperty, PanelPlugin, standardEditorsRegistry } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import {
@@ -17,6 +17,8 @@ import { type FieldConfig, type Options } from './panelcfg.gen';
 // pjan-table-panel: plugin-only panel-change handler (src/pjan/), wraps tablePanelChangedHandler; it replaces the
 // import of tableSuggestionsSupplier (suggestions are left off).
 import { panelChangedHandler } from '../../../pjan/panelChangedHandler';
+// pjan-table-panel: the plugin's field options (src/pjan/styling/), in "Cell options" after Cell type
+import { backgroundColorFieldOption, textColorFieldOption } from '../../../pjan/styling/options';
 
 function getTableNoValuePlaceholder(): string {
   return t('table.no-value-placeholder', 'No rows');
@@ -73,6 +75,8 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(TablePanel)
           category: cellCategory,
           shouldApply: () => true,
         })
+        .addCustomEditor(backgroundColorFieldOption(cellCategory)) // pjan-table-panel
+        .addCustomEditor(textColorFieldOption(cellCategory)) // pjan-table-panel
         .addBooleanSwitch({
           path: 'inspect',
           name: t('table.name-cell-value-inspect', 'Cell value inspect'),

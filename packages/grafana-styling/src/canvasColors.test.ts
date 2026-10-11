@@ -96,6 +96,20 @@ describe('getAutomaticText', () => {
     expect(getAutomaticText(ATLAS_LIGHT, '#ffffff', 4.5, { from: '#3c6639' })).toBe('rgb(60,102,57)');
   });
 
+  it('with `alsoOn`, measures every step against each colour it is drawn on, and the lowest contrast counts', () => {
+    const DARK = THEMES['Grafana dark'];
+    // Hand-computed: a gradient of Grafana dark's blue (#5794f2) and its start rgb(40,101,238) (core's Colored
+    // background: darken 10, spin 5). From the blue towards the canvas (#111217) no step reaches 4.2:1 on both stops;
+    // the canvas has the higher lowest contrast of the two extremes, 3.73:1 (white: 3.0:1)
+    expect(getAutomaticText(DARK, '#5794f2', 4.5, { alsoOn: ['rgb(40, 101, 238)'] })).toBe('rgb(17,18,23)');
+    // Alone, the blue reaches 4.5:1 79 % towards the canvas, but that colour gives only 2.75:1 on the darker stop
+    expect(getAutomaticText(DARK, '#5794f2', 4.5)).toBe('rgb(32,45,69)');
+    // Grafana dark's green (#73bf69) and rgb(77,172,73): 78 % towards the canvas, 4.52:1 on the darker stop
+    expect(getAutomaticText(DARK, '#73bf69', 4.5, { alsoOn: ['rgb(77, 172, 73)'] })).toBe('rgb(37,53,39)');
+    // A colour it can't read: the theme's text colour, as for drawnOn
+    expect(getAutomaticText(DARK, '#73bf69', 4.5, { alsoOn: ['not-a-colour'] })).toBe(DARK.colors.text.primary);
+  });
+
   it('takes the side that reaches the contrast in fewer steps', () => {
     // #808080 at 3:1 in Grafana light: 57 steps towards black (#000000) give rgb(55,55,55); the page colour (#fbfbfb)
     // would need 79
