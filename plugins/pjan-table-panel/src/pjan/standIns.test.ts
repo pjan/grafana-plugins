@@ -67,6 +67,9 @@ describe('stand-ins', () => {
       Tooltip: { Wrapper: tableNG.Tooltip.Wrapper, Caret: tableNG.Tooltip.Caret },
       Footer: { ReducerLabel: tableNG.Footer.ReducerLabel, Value: tableNG.Footer.Value },
     });
+    expect(selectors.components.Panels.Visualization.BarGauge).toEqual({
+      valueV2: e2eSelectors.components.Panels.Visualization.BarGauge.valueV2,
+    });
     expect(selectors.components.DataLinksActionsTooltip.tooltipWrapper).toBe(
       e2eSelectors.components.DataLinksActionsTooltip.tooltipWrapper
     );

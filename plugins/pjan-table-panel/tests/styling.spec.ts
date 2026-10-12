@@ -12,8 +12,8 @@ import { getRelativeShadeColor, getShadeColor, type RelativeShade } from '../../
 
 import { type Dashboard, panelContent, readDashboard, serialise, SQUARE_FRAMES, switchThemeLive } from './parity';
 
-// Text color and Background color (build 1), the pill options and the Pill look (build 2) and Text weight (build 3) on
-// provisioning/dashboards/styling.json (scripts/generate-styling-dashboard.mjs): one row per case, core's table, Table
+// Text color and Background color (build 1), the pill options and the Pill look (build 2), Text weight (build 3) and
+// Gauge color (build 4) on provisioning/dashboards/styling.json (scripts/generate-styling-dashboard.mjs): one row per case, core's table, Table
 // plus with nothing set and Table plus with the case's styling (and look), with the same data.
 // Per case:
 // - nothing set equals core: the same elements (all attributes, inline styles included, and text) and the same pixels
@@ -27,7 +27,11 @@ import { type Dashboard, panelContent, readDashboard, serialise, SQUARE_FRAMES, 
 // - Text weight: each cell's (and pill's) computed weight is the column's where it applies (Colored text, Colored
 //   background, Pill; on a row colored by Apply to entire row, the row field's own cells only), core's elsewhere; the
 //   header keeps core's; wrapped text fits its cell at every weight (rows grow where a heavier weight takes another
-//   line: hand-computed heights); content-aware widths (flag) measure at the weight.
+//   line: hand-computed heights); content-aware widths (flag) measure at the weight;
+// - Gauge color: each gauge (its value's colour, its basic or gradient bar, its LCD cells) is core's gauge of the same
+//   cell with each colour stop in the shade (by its name, else its nearest hue; a continuous scheme's stops shaded and
+//   interpolated at the value's or the LCD cell's position), or the Fixed colour on a basic gauge; Fixed on gradient and
+//   LCD gauges draws as core; a basic bar's line also in the screenshot's pixels.
 // In the light and the dark theme, dark after a live switch from light, at pixel ratio 1 and 2. After a live switch
 // Grafana keeps drawing the value colours of the first theme (core's, the same in all three panels) until the data is
 // refreshed: the rules then apply to those colours in the new theme, and the hand-computed colours (which assume the
@@ -48,11 +52,13 @@ interface Styling {
   lineWidth?: number;
   cornerRadius?: number;
   textWeight?: number;
+  gaugeColor?: StylingColor;
 }
 interface CellOptions {
   type: string;
   mode?: string;
   applyToRow?: boolean;
+  valueDisplayMode?: string;
 }
 interface Override {
   matcher: { id: string; options: string; scope?: string };
@@ -62,6 +68,7 @@ interface SavedPanel {
   id: number;
   title: string;
   transparent?: boolean;
+  targets: Array<{ rawFrameContent?: string }>;
   fieldConfig: { defaults: { custom?: { styling?: Styling } }; overrides: Override[] };
   options: { styling?: { look?: string } };
 }
@@ -223,6 +230,14 @@ interface DrawnPill {
   /** CSS pixels, relative to the panel content */
   box: { x: number; y: number; width: number; height: number };
 }
+interface DrawnGauge {
+  /** The value's colour (inline), undefined when hidden */
+  value?: string;
+  /** Basic and gradient gauges: the bar's background and right border, and its box (CSS pixels, as the cell's) */
+  bar?: { background: string; borderRight: string; box: { x: number; y: number; width: number; height: number } };
+  /** LCD gauges: each cell's background image (lit) or colour (unlit) */
+  lcd?: string[];
+}
 interface DrawnCell {
   /** Which grid of the panel (0: the table; nested sub-tables after it) */
   grid: number;
@@ -239,6 +254,8 @@ interface DrawnCell {
   box: { x: number; y: number; width: number; height: number };
   /** The top and bottom of what the cell draws (its text and pills, overflowing or not), CSS pixels as `box` */
   content?: { top: number; bottom: number };
+  /** A gauge cell's gauge */
+  gauge?: DrawnGauge;
 }
 
 const readCells = (page: Page, id: number): Promise<DrawnCell[]> =>
@@ -264,6 +281,12 @@ const readCells = (page: Page, id: number): Promise<DrawnCell[]> =>
           const range = document.createRange();
           range.selectNodeContents(cell);
           const content = range.getBoundingClientRect();
+          // a gauge (BarGauge): its value, its bar (the element with the width transition), its LCD cells (2 px corners)
+          const gaugeValue = cell.querySelector<HTMLElement>('[data-testid="data-testid Bar gauge value"]');
+          const divs = Array.from(cell.querySelectorAll<HTMLElement>('div'));
+          const bar = divs.find((d) => d.style.transition.includes('width'));
+          const lcd = divs.filter((d) => d.childElementCount === 0 && d.style.borderRadius === '2px');
+          const barBox = bar?.getBoundingClientRect();
           cells.push({
             grid: g,
             column: headers.get(cell.getAttribute('aria-colindex')) ?? '',
@@ -301,6 +324,27 @@ const readCells = (page: Page, id: number): Promise<DrawnCell[]> =>
             box: { x: box.x - rootBox.x, y: box.y - rootBox.y, width: box.width, height: box.height },
             content:
               content.height > 0 ? { top: content.top - rootBox.y, bottom: content.bottom - rootBox.y } : undefined,
+            gauge:
+              gaugeValue || bar || lcd.length > 0
+                ? {
+                    value: gaugeValue ? gaugeValue.style.color : undefined,
+                    bar:
+                      bar && barBox
+                        ? {
+                            background: bar.style.background,
+                            borderRight: bar.style.borderRight,
+                            box: {
+                              x: barBox.x - rootBox.x,
+                              y: barBox.y - rootBox.y,
+                              width: barBox.width,
+                              height: barBox.height,
+                            },
+                          }
+                        : undefined,
+                    lcd:
+                      lcd.length > 0 ? lcd.map((d) => d.style.backgroundImage || d.style.backgroundColor) : undefined,
+                  }
+                : undefined,
           });
         }
       }
@@ -485,6 +529,245 @@ const weightOf = (config: { cellOptions: CellOptions; styling: Styling }) =>
 // r4 has only the TAGS pills (its note and msg are "ok"), so its 60 px come from the pill measurer alone. Core measures
 // at 400: 36 px.
 const WRAPPED_ROW = { regular: 36, heavier: 60 };
+
+// --- Gauge color (build 4) -----------------------------------------------------------------------------------------
+
+// The colour names of the continuous schemes the cases use, as Grafana resolves its stops
+const SCHEME_NAMES: Record<string, string[]> = { 'continuous-GrYlRd': ['green', 'yellow', 'red'] };
+
+interface FrameFieldConfig {
+  thresholds?: { steps: Array<{ color: string }> };
+  color?: { mode?: string };
+  min?: number;
+  max?: number;
+}
+/** A column's field config as the case's raw frames carry it (thresholds, colour mode, min and max). */
+function frameConfig(panel: SavedPanel, column: string): FrameFieldConfig {
+  const frames = JSON.parse(panel.targets[0].rawFrameContent ?? '[]') as Array<{
+    fields: Array<{ name: string; config: FrameFieldConfig }>;
+  }>;
+  return frames.flatMap((f) => f.fields).find((f) => f.name === column)?.config ?? {};
+}
+
+/** Every rgb()/rgba() colour of a CSS value replaced by `f` of its opaque colour (its `k`th), keeping its alpha. */
+function mapColors(css: string, f: (color: string, k: number) => string) {
+  let k = 0;
+  return css.replace(/rgba?\([^)]*\)/g, (m) => {
+    const color = tinycolor(m);
+    const alpha = color.getAlpha();
+    const out = f(rgb(color.clone().setAlpha(1).toRgbString()), k++);
+    return alpha < 1 ? tinycolor(out).setAlpha(alpha).toRgbString() : rgb(out);
+  });
+}
+
+/**
+ * A gauge as the rules draw it, from core's gauge of the same cell (`value`: the row's value, 0 to 100): unset, or Fixed
+ * on a gradient or LCD gauge, core's. Fixed on a basic gauge: its bar and Value color in the colour. A shade, per colour
+ * stop: a colour by its name (one of the column's thresholds whose colour it is in this theme), else its nearest hue,
+ * without a hue itself; from a continuous scheme, the scheme's stops shaded and interpolated at the value's position (a
+ * LCD cell's own position, as BarGauge asks Grafana's display processor for it), and a gradient bar's stops in order.
+ */
+function gaugeOf(
+  ctx: Context,
+  config: { cellOptions: CellOptions; styling: Styling },
+  frame: FrameFieldConfig,
+  core: DrawnGauge,
+  value: number
+): DrawnGauge {
+  const setting = config.styling.gaugeColor;
+  const mode = config.cellOptions.mode ?? 'gradient';
+  const valueColored = (config.cellOptions.valueDisplayMode ?? 'text') === 'color';
+  if (!setting || (setting.mode === 'fixed' && mode !== 'basic')) {
+    return core;
+  }
+  const { theme } = ctx;
+  // The value's colour as core draws it (a basic bar's line, or the value in Value color): without one or with alpha 0
+  // (a value mapped to `transparent`, Atlas's "unlimited"), the value, the basic bar and its line stay core's, with a
+  // shade and with Fixed
+  const coreValueColor =
+    mode === 'basic' && core.bar
+      ? /rgba?\([^)]*\)/.exec(core.bar.borderRight)?.[0]
+      : valueColored
+        ? core.value
+        : undefined;
+  const valueUncoloured = coreValueColor !== undefined && tinycolor(coreValueColor).getAlpha() === 0;
+  if (valueUncoloured && mode === 'basic') {
+    return core;
+  }
+  if (setting.mode === 'fixed') {
+    const fixed = theme.visualization.getColorByName(setting.fixedColor!);
+    return {
+      value: core.value !== undefined && valueColored ? rgb(fixed) : core.value,
+      bar: core.bar && {
+        ...core.bar,
+        background: mapColors(core.bar.background, () => fixed),
+        borderRight: mapColors(core.bar.borderRight, () => fixed),
+      },
+      lcd: core.lcd,
+    };
+  }
+  const shade = setting.shade!;
+  const schemeNames = SCHEME_NAMES[frame.color?.mode ?? ''];
+  const stops = schemeNames?.map((name) => theme.visualization.getColorByName(name));
+  const names = frame.thresholds?.steps.map((step) => step.color) ?? [];
+  const byName = (color: string) => {
+    const name = names.find((n) => rgb(theme.visualization.getColorByName(n)) === rgb(color));
+    return getShadeColor(theme, color, name, shade) ?? color;
+  };
+  const at = (position: number) =>
+    getValueShadeColor(theme, '', undefined, shade, { scheme: { stops: stops! }, position })!;
+  // positions as Grafana's display processor scales a value: (value - min) / (max - min)
+  const min = frame.min ?? 0;
+  const max = frame.max ?? 100;
+  const ofValue = (color: string) => (stops ? at((value - min) / (max - min)) : byName(color));
+  const n = core.lcd?.length ?? 0;
+  return {
+    value: core.value !== undefined && valueColored && !valueUncoloured ? rgb(ofValue(core.value)) : core.value,
+    bar: core.bar && {
+      ...core.bar,
+      background:
+        mode === 'basic'
+          ? mapColors(core.bar.background, ofValue)
+          : stops
+            ? mapColors(core.bar.background, (_c, k) => getRelativeShadeColor(theme, schemeNames[k], shade)!)
+            : mapColors(core.bar.background, byName),
+      borderRight: mapColors(core.bar.borderRight, ofValue),
+    },
+    // an LCD cell's position: BarGauge's value for cell i of n, as the display processor scales it
+    lcd: core.lcd?.map((css, i) =>
+      mapColors(css, (c) => (stops ? at((min + ((max - min) / n) * i - min) / (max - min)) : byName(c)))
+    ),
+  };
+}
+
+// Worked out by hand (job tmp table-plan/build4/oracle.py, Grafana 13.2.3's stock themes): green, yellow and red in the
+// shades the cases use, purple, and Green-Yellow-Red Strong at 0.1, 0.25, 0.5, 0.75 and 0.9 (the rows v10 … v90)
+const HAND_GAUGE = {
+  light: {
+    soft: { green: 'rgb(115, 191, 105)', yellow: 'rgb(250, 222, 42)', red: 'rgb(242, 73, 92)' },
+    strong: { green: 'rgb(55, 135, 45)', yellow: 'rgb(224, 180, 0)', red: 'rgb(196, 22, 42)' },
+    stronger: { green: 'rgb(25, 115, 14)', yellow: 'rgb(204, 157, 0)', red: 'rgb(173, 3, 23)' },
+    purple: 'rgb(163, 82, 204)',
+    blue: 'rgb(50, 116, 217)',
+    schemeStrong: [
+      'rgb(89, 144, 36)',
+      'rgb(135, 153, 24)',
+      'rgb(191, 146, 15)',
+      'rgb(206, 97, 23)',
+      'rgb(201, 53, 34)',
+    ],
+  },
+  dark: {
+    soft: { green: 'rgb(86, 166, 75)', yellow: 'rgb(242, 204, 12)', red: 'rgb(224, 47, 68)' },
+    strong: { green: 'rgb(150, 217, 141)', yellow: 'rgb(255, 238, 82)', red: 'rgb(255, 115, 131)' },
+    stronger: { green: 'rgb(200, 242, 194)', yellow: 'rgb(255, 248, 153)', red: 'rgb(255, 166, 176)' },
+    purple: 'rgb(184, 119, 217)',
+    blue: 'rgb(87, 148, 242)',
+    schemeStrong: [
+      'rgb(171, 221, 129)',
+      'rgb(200, 225, 114)',
+      'rgb(238, 214, 100)',
+      'rgb(253, 174, 109)',
+      'rgb(255, 139, 121)',
+    ],
+  },
+} as const;
+const GAUGE_ROWS = [10, 25, 50, 75, 90];
+// Atlas's "of limit" case: each container's Memory and CPU of limit (the generator's ATLAS_LIMIT; -1 and null are
+// "unlimited" and no value, mapped to transparent)
+const ATLAS_LIMIT: Record<string, Record<string, number | null>> = {
+  plex: { 'Memory of limit': 0.42, 'CPU of limit': 0.18 },
+  grafana: { 'Memory of limit': 0.83, 'CPU of limit': null },
+  caddy: { 'Memory of limit': -1, 'CPU of limit': 0.91 },
+  restic: { 'Memory of limit': 0.95, 'CPU of limit': -1 },
+  authentik: { 'Memory of limit': null, 'CPU of limit': 0.86 },
+};
+const atlasStep = (value: number) => (value >= 0.9 ? 'red' : value >= 0.8 ? 'yellow' : 'green');
+const gaugeStep = (value: number) => (value >= 80 ? 'red' : value >= 50 ? 'yellow' : 'green');
+const colorsIn = (css: string) =>
+  css.match(/rgba?\([^)]*\)/g)?.map((c) => rgb(tinycolor(c).setAlpha(1).toRgbString())) ?? [];
+
+/** Checks a case's gauges against colours worked out by hand (no live switch), returning how many were checked. */
+function handGauge(
+  title: string,
+  mode: 'light' | 'dark',
+  label: string,
+  column: string,
+  value: number,
+  g: DrawnGauge,
+  row: string
+) {
+  const hand = HAND_GAUGE[mode];
+  const step = gaugeStep(value);
+  let checked = 0;
+  const check = (actual: string | undefined, want: string, what: string) => {
+    expect(actual, `${label}: ${what} (hand-computed)`).toBe(want);
+    checked++;
+  };
+  switch (title) {
+    case 'gauge basic, thresholds: gauge color stronger':
+      check(colorsIn(g.bar!.borderRight)[0], hand.stronger[step], 'the bar’s line');
+      if (column === 'color') {
+        check(g.value, hand.stronger[step], 'the value');
+      }
+      break;
+    case 'gauge gradient, thresholds: gauge color soft':
+      // the gradient's stops up to the value: Soft green, then yellow from 50, red from 80
+      check(
+        [...new Set(colorsIn(g.bar!.background))].join(' '),
+        [hand.soft.green, ...(value >= 50 ? [hand.soft.yellow] : []), ...(value >= 80 ? [hand.soft.red] : [])].join(
+          ' '
+        ),
+        'the gradient’s colours'
+      );
+      break;
+    case 'gauge lcd, thresholds: gauge color strong':
+      for (const css of g.lcd!) {
+        expect([hand.strong.green, hand.strong.yellow, hand.strong.red], `${label}: an LCD cell`).toContain(
+          colorsIn(css)[0]
+        );
+      }
+      check(colorsIn(g.lcd![0])[0], hand.strong.green, 'the first LCD cell');
+      if (column === 'color') {
+        check(g.value, hand.strong[step], 'the value');
+      }
+      break;
+    case 'gauge basic, scheme: gauge color strong':
+      check(colorsIn(g.bar!.borderRight)[0], hand.schemeStrong[GAUGE_ROWS.indexOf(value)], 'the bar’s line');
+      break;
+    case 'gauge gradient, scheme: gauge color stronger':
+      check(
+        colorsIn(g.bar!.background).join(' '),
+        [hand.stronger.green, hand.stronger.yellow, hand.stronger.red].join(' '),
+        'the gradient’s stops'
+      );
+      break;
+    case 'gauge basic, thresholds: gauge color fixed':
+      check(colorsIn(g.bar!.borderRight)[0], hand.purple, 'the bar’s line');
+      break;
+    case 'gauge, atlas of limit: gauge color stronger': {
+      const limit = ATLAS_LIMIT[row][column];
+      if (limit !== null && limit >= 0) {
+        check(colorsIn(g.bar!.borderRight)[0], hand.stronger[atlasStep(limit)], 'the bar’s line');
+      }
+      break;
+    }
+    case 'gauge, atlas of limit: gauge color fixed': {
+      const limit = ATLAS_LIMIT[row][column];
+      if (limit !== null && limit >= 0) {
+        check(colorsIn(g.bar!.borderRight)[0], hand.blue, 'the bar’s line');
+      }
+      break;
+    }
+    case 'gauge basic, negative values: gauge color stronger': {
+      // green below 0, yellow from 0, red from 30
+      const negative = value >= 30 ? 'red' : value >= 0 ? 'yellow' : 'green';
+      check(colorsIn(g.bar!.borderRight)[0], hand.stronger[negative], 'the bar’s line');
+      break;
+    }
+  }
+  return checked;
+}
 
 // --- Pills (build 2) ----------------------------------------------------------------------------------------------
 
@@ -731,7 +1014,8 @@ for (const scale of [1, 2]) {
             expect(unset[k].text).toBe(cell.text);
             // Gradients only by their CSS (in the elements): Chrome rasterises a gradient differently at different
             // places on the page (the parity suite's finding), and the panels are side by side
-            if (!cell.background.startsWith('linear-gradient')) {
+            const gradientGauge = Boolean(cell.gauge?.lcd) || Boolean(cell.gauge?.bar?.background.includes('gradient'));
+            if (!cell.background.startsWith('linear-gradient') && !gradientGauge) {
               const at = inside(cell);
               expect(unsetPixel(...at), `nothing set: ${cell.row}/${cell.column} pixel`).toBe(corePixel(...at));
             }
@@ -744,6 +1028,8 @@ for (const scale of [1, 2]) {
           let differs = 0;
           let applies = 0;
           let handChecked = 0;
+          let gauges = 0;
+          let transparentStubs = 0;
           for (const [k, cell] of set.entries()) {
             const coreCell = core[k];
             const label = `${c.title}: ${cell.grid}/${cell.row}/${cell.column} (${cell.text})`;
@@ -757,6 +1043,41 @@ for (const scale of [1, 2]) {
             if (weight !== undefined) {
               applies++;
               differs += cell.fontWeight !== coreCell.fontWeight ? 1 : 0;
+            }
+            // Gauge color (build 4): the gauge against the rules from core's gauge of the same cell
+            if (config.cellOptions.type === 'gauge') {
+              expect(cell.gauge, `${label}: a gauge`).toBeDefined();
+              expect(coreCell.gauge, `${label}: core's gauge`).toBeDefined();
+              gauges++;
+              const value = Number(cell.row.slice(1));
+              // Atlas's "unlimited" and no-value stubs: core's is transparent (its line's alpha 0), and so is the
+              // plugin's, with Fixed and with a shade
+              const coreLine = coreCell.gauge?.bar && /rgba?\([^)]*\)/.exec(coreCell.gauge.bar.borderRight)?.[0];
+              if (coreLine && tinycolor(coreLine).getAlpha() === 0) {
+                transparentStubs++;
+                expect(cell.gauge, `${label}: a transparent stub stays core's`).toEqual(coreCell.gauge);
+              }
+              const want = gaugeOf(ctx, config, frameConfig(c.set, cell.column), coreCell.gauge!, value);
+              expect(cell.gauge, label).toEqual(want);
+              const setting = config.styling.gaugeColor;
+              if (setting && !(setting.mode === 'fixed' && config.cellOptions.mode !== 'basic')) {
+                applies++;
+                differs += JSON.stringify(cell.gauge) !== JSON.stringify(coreCell.gauge) ? 1 : 0;
+              }
+              // a basic bar's line (2 px, opaque) in the screenshot's pixels, the bar in view
+              const bar = cell.gauge!.bar;
+              if (bar && config.cellOptions.mode === 'basic' && bar.box.width >= 4) {
+                const y = bar.box.y + bar.box.height / 2;
+                if (bar.box.x + bar.box.width <= setSize.width && y >= 0 && y <= setSize.height) {
+                  expect(setPixel(bar.box.x + bar.box.width - 1, y), `${label}: the bar’s line as drawn`).toBe(
+                    colorsIn(bar.borderRight)[0]
+                  );
+                }
+              }
+              if (!state.live) {
+                handChecked += handGauge(c.title, mode, label, cell.column, value, cell.gauge!, cell.row);
+              }
+              continue;
             }
             if (c.title.startsWith('wrapped') && cell.content) {
               // drawn inside the cell, not cut off by it
@@ -959,8 +1280,29 @@ for (const scale of [1, 2]) {
           if (!state.live && ['pill look', 'pill look, transparent panel'].includes(c.title)) {
             expect(handChecked, 'pills checked against hand-computed colours').toBeGreaterThan(10);
           }
+          if (c.title.startsWith('gauge') || c.title.includes('gauge color')) {
+            expect(gauges, 'gauge cells checked').toBeGreaterThan(0);
+          }
+          if (c.title.startsWith('gauge, atlas of limit')) {
+            // plex … authentik: two "unlimited" (-1) and two without a value, one of each per column
+            expect(transparentStubs, 'transparent stubs checked').toBe(4);
+          }
+          if (
+            !state.live &&
+            (/^gauge (basic|gradient|lcd), (thresholds|scheme): gauge color (stronger|soft|strong|fixed)$/.test(
+              c.title
+            ) ||
+              c.title.startsWith('gauge, atlas of limit') ||
+              c.title === 'gauge basic, negative values: gauge color stronger') &&
+            c.title !== 'gauge lcd, scheme: gauge color softer'
+          ) {
+            expect(handChecked, 'gauges checked against hand-computed colours').toBeGreaterThan(4);
+          }
           if (c.title === 'background fixed, gradient (ignored)') {
             expect(differs, 'Fixed doesn’t apply to gradient cells: as core').toBe(0);
+          } else if (c.title === 'gauge gradient and lcd: gauge color fixed (ignored)') {
+            expect(gauges, 'gauge cells checked').toBeGreaterThan(0);
+            expect(applies, 'Fixed doesn’t apply to gradient and LCD gauges').toBe(0);
           } else if (c.title === 'wrapped text, text weight 400') {
             expect(applies, 'cells the case’s options apply to').toBeGreaterThan(0);
             expect(differs, 'Text weight 400 draws as core').toBe(0);
@@ -1091,6 +1433,56 @@ for (const scale of [1, 2]) {
         if (!state.live) {
           // (in light, against the canvas it would be rgb(67, 129, 59))
           expect(rgb(set.color)).toBe(HAND[mode].textOnPrimary.green);
+        }
+      });
+
+      test('tooltip from field: the tooltip’s gauge takes Gauge color', async ({ page }) => {
+        const c = CASES.find((x) => x.title === 'tooltip from field: gauge color stronger')!;
+        await page.goto(`/d/${UID}?orgId=1&theme=${state.load}`);
+        for (const id of [c.core.id, c.set.id]) {
+          await drawnCells(page, id, false);
+        }
+        if (state.live) {
+          await switchThemeLive(page, state.live);
+        }
+        const tooltipGauge = async (id: number) => {
+          await page.mouse.move(0, 0);
+          const caret = panelContent(page, id).getByRole('button', { name: 'Toggle tooltip' }).first();
+          await caret.scrollIntoViewIfNeeded();
+          await caret.hover();
+          const wrapper = page.getByTestId(selectors.components.Panels.Visualization.TableNG.Tooltip.Wrapper);
+          await expect(wrapper).toBeVisible();
+          await expect(wrapper.getByTestId('data-testid Bar gauge value')).toBeVisible();
+          return wrapper.evaluate((el): DrawnGauge => {
+            const value = el.querySelector<HTMLElement>('[data-testid="data-testid Bar gauge value"]');
+            const bar = Array.from(el.querySelectorAll<HTMLElement>('div')).find((d) =>
+              d.style.transition.includes('width')
+            );
+            return {
+              value: value ? value.style.color : undefined,
+              bar: bar
+                ? {
+                    background: bar.style.background,
+                    borderRight: bar.style.borderRight,
+                    box: { x: 0, y: 0, width: 0, height: 0 },
+                  }
+                : undefined,
+            };
+          });
+        };
+        const core = await tooltipGauge(c.core.id);
+        const set = await tooltipGauge(c.set.id);
+        // api's tooltip: its `color` value, 10 (green), a basic gauge in Value color
+        const ctx: Context = { theme, grid: theme.colors.background.primary };
+        const config = columnConfig(c.set, 'color', false);
+        expect(config.cellOptions).toMatchObject({ type: 'gauge', mode: 'basic', valueDisplayMode: 'color' });
+        const want = gaugeOf(ctx, config, frameConfig(c.set, 'color'), core, 10);
+        expect(set).toEqual(want);
+        expect(set).not.toEqual(core);
+        if (!state.live) {
+          // Stronger green, hand-computed
+          expect(set.value).toBe(HAND_GAUGE[mode].stronger.green);
+          expect(colorsIn(set.bar!.borderRight)[0]).toBe(HAND_GAUGE[mode].stronger.green);
         }
       });
 

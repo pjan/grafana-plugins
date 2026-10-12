@@ -143,6 +143,20 @@ describe('continuous colour schemes', () => {
     );
   });
 
+  it('a scheme object shaded and interpolated again gives the same (its parse and shade cached per object)', () => {
+    const scheme = { stops: ['#56A64B', '#F2CC0C', '#E02F44'] };
+    const shaded = shadeColorScheme(LIGHT, scheme, 'soft');
+    expect(shadeColorScheme(LIGHT, scheme, 'soft')).toBe(shaded);
+    // another object with the same stops: the same shaded scheme (cached by its stops too)
+    expect(shadeColorScheme(LIGHT, { stops: [...scheme.stops] }, 'soft')).toBe(shaded);
+    expect(shadeColorScheme(LIGHT, scheme, 'stronger')).not.toBe(shaded);
+    expect(shadeColorScheme(DARK, scheme, 'soft')).not.toBe(shaded);
+    for (let pass = 0; pass < 2; pass++) {
+      expect(POSITIONS.map((p) => interpolateColorScheme(shaded, p))).toEqual(EXPECTED['Grafana light'].soft);
+      expect(POSITIONS.map((p) => interpolateColorScheme(scheme, p))).toEqual(EXPECTED['Grafana light'].core);
+    }
+  });
+
   it('without a scheme: the shade of the colour’s name or nearest hue, as getShadeColor (unchanged)', () => {
     expect(getValueShadeColor(LIGHT, '#56A64B', 'green', 'stronger')).toBe(
       getShadeColor(LIGHT, '#56A64B', 'green', 'stronger')

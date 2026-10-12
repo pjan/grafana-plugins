@@ -1,6 +1,6 @@
 # Table plus
 
-Grafana's table panel, as a separate panel plugin. With nothing configured, it looks and behaves like the core **Table** panel of Grafana 13.2.3: same options, defaults, migrations, cell types, colours, sorting, filtering, column widths, pagination, footer, cell inspect, data links and actions, tooltips and nested tables. It starts from Grafana's own code. On top, opt-in options that change nothing until you set them: the text and background colours of coloured cells, the fill, line and corners of pills, one at a time or with the Pill look, and the weight of their text (below).
+Grafana's table panel, as a separate panel plugin. With nothing configured, it looks and behaves like the core **Table** panel of Grafana 13.2.3: same options, defaults, migrations, cell types, colours, sorting, filtering, column widths, pagination, footer, cell inspect, data links and actions, tooltips and nested tables. It starts from Grafana's own code. On top, opt-in options that change nothing until you set them: the text and background colours of coloured cells, the fill, line and corners of pills, one at a time or with the Pill look, the weight of their text, and the colour of gauges (below).
 
 ## Using it
 
@@ -78,6 +78,25 @@ One field option in **Cell options**, right after **Text color**. Empty, every c
 - A saved value other than the three (700, or one edited into the JSON) draws as Grafana; the editor still shows it, as Grafana's select shows any saved value, so clear it there.
 
 **Per field and by override:** saved as `custom.styling.textWeight` (a number; override property `custom.styling.textWeight`). Nothing is saved until you set it, and clearing it (the clear button) removes it. **An override property left without a value clears the option for its columns**, including a value set in the field defaults: remove the property instead of clearing it to fall back to the defaults.
+
+## Gauge color
+
+One field option in **Cell options**, after **Pill corner radius**. Empty, every gauge draws as core. Like the other options, it shows for every column whatever its cell type, and does nothing on cell types it doesn't apply to.
+
+| Option          | Applies to                                                                     | Choices                                                                                                  | Empty                                                                                                      |
+| --------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Gauge color** | the bar of Gauge cells (basic, gradient and LCD), and its value in Value color | a shade of the value's color: Softer, Soft, Base, Strong, Stronger; or a fixed color (basic gauges only) | as Grafana: the value's color, and in gradient and LCD gauges the thresholds' or the color scheme's colors |
+
+- **Basic gauges:** the bar in the shade of the value's color, or in the fixed color.
+- **Gradient and LCD gauges take a shade per color stop,** so the bar keeps Grafana's transition at the chosen lightness: each threshold's color, each color of a continuous color scheme (such as Green-Yellow-Red by value) and each LCD cell's color becomes that shade of its own hue. A value colored from a continuous scheme takes the color at its position in the shaded scheme, as Grafana takes it from the scheme. In other color modes (a palette, a single color) Grafana draws a gradient gauge in the value's color, and so does the shade.
+- **Fixed applies to basic gauges only:** in gradient and LCD gauges it is ignored and the gauge draws as Grafana's (the editor can't hide it there: a table often sets cell types by override, which the field defaults' editor doesn't see).
+- **The value** follows the bar, as in Grafana: in **Value color** it is drawn in the bar's (shaded) color, in **Text** in the theme's text color; **Hidden** shows none. Gauge color doesn't make the value's text readable against the panel (a shade is drawn as chosen); the unfilled part of the bar keeps Grafana's color.
+- **Shades** are the five shades of each color's hue, ranked by contrast with the panel background (as for Text color): Stronger stands out most, Softer least. A named color takes its name's hue (a value mapping's or threshold's color name); a color without a name (a hex threshold or mapping color, the classic palette) its nearest theme hue; a color without a hue, and Grafana's `transparent` and `text`, stays as it is. A value colored by a value mapping takes the shade of its mapping's color.
+- **Values Grafana leaves uncolored stay uncolored:** a value without a color, or with a transparent one (mapped to `transparent`, or any color with no opacity), keeps Grafana's color, with a shade and with Fixed: a basic gauge keeps its invisible stub and the value its invisible text (in gradient and LCD gauges the bar comes from the thresholds or the scheme, which are shaded as usual). A gauge's length is its meaning, and a transparent mapping usually marks a value that has none (a table may map "unlimited" or no value so); a color would turn its 1 px stub into a visible mark. **This differs from Background color and Pill fill color**, whose Fixed fills a transparent cell or pill (a fill there makes a readable chip).
+- **Nested tables** and **Tooltip from field** follow their own column's option.
+- **After switching the theme live** (without reloading), Grafana keeps drawing the value's color (and an LCD gauge's cells) in the previous theme's colors until the data is refreshed, and a continuous scheme's until the page is reloaded; its gradient follows the new theme. Table plus shades a scheme from the new theme's colors, and applies the new theme's shades to the colors Grafana draws.
+
+**Per field and by override:** saved as `custom.styling.gaugeColor` (override property `custom.styling.gaugeColor`). Nothing is saved until you set it, and clearing it (the clear button) removes it. **An override property left without a value clears the option for its columns**, including a value set in the field defaults: remove the property instead of clearing it to fall back to the defaults.
 
 ## Differences from core Table
 

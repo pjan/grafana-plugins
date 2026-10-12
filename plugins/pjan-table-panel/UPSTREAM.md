@@ -26,12 +26,13 @@ Plugin-authored replacements for core modules start with `// Plugin stand-in for
 import rewrites is marked `pjan-table-panel:` in the code (also removals in files listed under "Copies with marked
 changes", see there).
 
-**What is copied** (counted from the headers, `Files` below): 27 AGPL-3.0 runtime files (2,730 lines: the panel, its two
-helper directories, the shared copies and a partial copy) and 42 Apache-2.0 runtime files (8,696 lines: `TableNG`, the
-shared `Table/` files, `ActionButton`, the type-only `cellUtils.ts` and `TableRT/styles.ts`); the tests: 17 AGPL-3.0
-files (2,660 lines), 28 Apache-2.0 files (11,169 lines, with `__mocks__/uwrap.ts` and the test helper `jsdom.ts`) and 3
-Jest snapshots (251 lines). 40 stand-ins: 29 relative-path re-exports, 8 for entry points and core modules, 3 for
-tests.
+**What is copied** (counted from the headers, `Files` below; lines without the header line, with the plugin's marked
+changes, 2026-10-12, build 4): 27 AGPL-3.0 runtime files (2,756 lines: the panel, its two helper directories, the shared
+copies and a partial copy) and 43 Apache-2.0 runtime files (9,568 lines: `TableNG`, the shared `Table/` files,
+`ActionButton`, `BarGauge` (build 4), the type-only `cellUtils.ts` and `TableRT/styles.ts`); the tests: 17 AGPL-3.0 files
+(2,660 lines), 29 Apache-2.0 files (11,562 lines, with `__mocks__/uwrap.ts` and the test helper `jsdom.ts`) and 3 Jest
+snapshots (251 lines). 40 stand-ins: 29 relative-path re-exports, 8 for entry points and core modules, 3 for tests.
+(At the port, before the additions' hooks: 2,730 and 8,696 runtime lines in 27 and 42 files, tests 2,660 and 11,169.)
 
 ## Layout
 
@@ -104,7 +105,7 @@ error, and `npm run test:dist` exited 1 (the AMD list had `"@grafana/ui/unstable
 | `grafana-ui/internal.ts`         | `TableSortByFieldState` (re-exported from the public `@grafana/ui`, the same type) and `defaultSparklineCellConfig` (`SparklineCellOptionsEditor.tsx`): `/internal` exports the constant of the older TableRT sparkline cell (`Table/Cells/SparklineCell.tsx`), not the copied TableNG cell's private constant; both have the same values, which the stand-in repeats (checked in `standIns.test.ts`). |
 | `grafana-data/internal.ts`       | The type `ReduceTransformerOptions` (`migrations.ts`, for the Angular table's transforms), from `transformations/transformers/reduce.ts`; its `mode` is typed by the values of `ReduceTransformerMode`, which isn't public.                                                                                                                                                                            |
 | `grafana-runtime/internal.ts`    | The two table feature flags, read as core reads them (see "Feature flags"). From the scaffold, unchanged.                                                                                                                                                                                                                                                                                              |
-| `grafana-e2e-selectors/index.ts` | The `data-testid` values the copied runtime code uses (`Panels.Visualization.TableNG.*`, `DataLinksActionsTooltip.tooltipWrapper`, `DataLinksContextMenu.singleLink`, `PanelEditor.OptionsPane.fieldLabel`), as `@grafana/e2e-selectors` 13.2.3 resolves them; `standIns.test.ts` compares them with the package. Bundling the package would add it and `semver` for a few strings.                    |
+| `grafana-e2e-selectors/index.ts` | The `data-testid` values the copied runtime code uses (`Panels.Visualization.TableNG.*`, `Panels.Visualization.BarGauge.valueV2` (the copied `BarGauge`, build 4), `DataLinksActionsTooltip.tooltipWrapper`, `DataLinksContextMenu.singleLink`, `PanelEditor.OptionsPane.fieldLabel`), as `@grafana/e2e-selectors` 13.2.3 resolves them; `standIns.test.ts` compares them with the package. Bundling the package would add it and `semver` for a few strings.                    |
 
 ## Stand-ins and partial copies for core app modules
 
@@ -149,14 +150,13 @@ against `node_modules/@grafana/ui/dist/types/index.d.ts` (13.2.3): exported ther
 | Stand-in (`src/packages/grafana-ui/src/…`)                   | Re-exports from `@grafana/ui`                                                                             | Imported by (upstream)                                                                                                     |
 | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `components/Actions/VariablesInputModal.tsx`                 | `VariablesInputModal`                                                                                     | `Actions/ActionButton.tsx` (step 6 copy)                                                                                   |
-| `components/BarGauge/BarGauge.tsx`                           | `BarGauge`                                                                                                | `Cells/BarGaugeCell.tsx`                                                                                                   |
-| `components/Button/Button.tsx`                               | `Button`, type `ButtonProps`                                                                              | `Filter/FilterPopup.tsx`, `ActionButton.tsx`                                                                               |
+| `components/Button/Button.tsx`                               | `Button`, type `ButtonProps`, `clearButtonStyles` (build 4)                                                 | `Filter/FilterPopup.tsx`, `ActionButton.tsx`, `BarGauge/BarGauge.tsx` (build 4)                                                                               |
 | `components/ClipboardButton/ClipboardButton.tsx`             | `ClipboardButton`                                                                                         | `TableCellInspector.tsx`                                                                                                   |
 | `components/ConfirmModal/ConfirmModal.tsx`                   | `ConfirmModal`                                                                                            | `ActionButton.tsx`                                                                                                         |
 | `components/Drawer/Drawer.tsx`                               | `Drawer`                                                                                                  | `TableCellInspector.tsx`                                                                                                   |
 | `components/Dropdown/ButtonSelect.tsx`                       | `ButtonSelect`                                                                                            | `Filter/FilterPopup.tsx`                                                                                                   |
 | `components/FilterInput/FilterInput.tsx`                     | `FilterInput`                                                                                             | `Filter/FilterPopup.tsx`                                                                                                   |
-| `components/FormattedValueDisplay/FormattedValueDisplay.tsx` | `FormattedValueDisplay`                                                                                   | `Cells/SparklineCell.tsx`                                                                                                  |
+| `components/FormattedValueDisplay/FormattedValueDisplay.tsx` | `FormattedValueDisplay`                                                                                   | `Cells/SparklineCell.tsx`, `BarGauge/BarGauge.tsx` (build 4)                                                                                                  |
 | `components/Forms/Checkbox.tsx`                              | `Checkbox`                                                                                                | `Filter/FilterList.tsx`                                                                                                    |
 | `components/Forms/Label.tsx`                                 | `Label`                                                                                                   | `Filter/FilterPopup.tsx`, `Filter/FilterList.tsx`                                                                          |
 | `components/Icon/Icon.tsx`                                   | `Icon`                                                                                                    | `HeaderCell.tsx`, `Filter/Filter.tsx`, `RowExpander.tsx`                                                                   |
@@ -174,9 +174,15 @@ against `node_modules/@grafana/ui/dist/types/index.d.ts` (13.2.3): exported ther
 | `components/VizTooltip/VizTooltipWrapper.tsx`                | `VizTooltipWrapper`                                                                                       | `DataLinksActionsTooltip.tsx`                                                                                              |
 | `themes/ThemeContext.tsx`                                    | `useStyles2`, `useTheme2`                                                                                 | 14 `Table/` files and `ActionButton.tsx`                                                                                   |
 | `types/icon.ts`                                              | `getFieldTypeIcon`                                                                                        | `HeaderCell.tsx`                                                                                                           |
+| `types/theme.ts` (build 4)                                   | type `Themeable2`                                                                                         | `BarGauge/BarGauge.tsx` |
 | `utils/colors.ts`                                            | `getTextColorForAlphaBackground`, `getTextColorForBackground`                                             | `TableNested.tsx`, `TableFlat.tsx`, `TableNG/utils.ts`, `cellUtils.ts`; tests `render-hooks.test.tsx`, `PillCell.test.tsx` |
 | `utils/floating.ts`                                          | `getPositioningMiddleware` = `floatingUtils.getPositioningMiddleware` (public only through the namespace) | `DataLinksActionsTooltip.tsx`                                                                                              |
-| `utils/measureText.ts`                                       | `measureText`                                                                                             | `Cells/SparklineCell.tsx`                                                                                                  |
+| `utils/measureText.ts`                                       | `measureText`, `calculateFontSize` (build 4)                                                             | `Cells/SparklineCell.tsx`, `BarGauge/BarGauge.tsx` (build 4)                                                                                                  |
+
+**Build 4 (Gauge color):** `components/BarGauge/BarGauge.tsx` is a copy now (Apache-2.0, "Plugin addition: Gauge
+color"), no longer a stand-in. Its own relative imports reach four modules outside `Table/`: three stand-ins above,
+widened (`clearButtonStyles`, `calculateFontSize`; `FormattedValueDisplay` as it was), and one new, `types/theme.ts` (the
+`Themeable2` type). So still 29 stand-ins.
 
 No other plugin has a stand-in or copy at these paths, so the copy check compares them with nothing yet.
 
@@ -192,6 +198,7 @@ No other plugin has a stand-in or copy at these paths, so the copy check compare
 | `features/query/state/PanelQueryRunner.ts` | State timeline plus's partial copy (`getNextRequestId` only), shared byte for byte.                                                                                                                                          | See "Stand-ins and partial copies for core app modules".                                                                                                                                          |
 | `plugins/panel/table/module.tsx`           | The field options Background color and Text color (`.addCustomEditor`, marked, with their import) right after Cell type.                                                                                                     | Plugin addition: Text color and Background color (below).                                                                                                                                         |
 | Four `TableNG/` files                      | `utils.ts`, `render-hooks.tsx`, `TableFlat.tsx`, `TableNested.tsx`: the Text color and Background color hooks (marked), listed in "Plugin addition: Text color and Background color".                                        | The opt-in options; with nothing set the copied code returns core's own objects.                                                                                                                  |
+| `module.tsx`, `TableNG/Cells/BarGaugeCell.tsx`, `components/BarGauge/BarGauge.tsx` | The Gauge color option (`.addCustomEditor`, marked) after Pill corner radius; `BarGaugeCell` hands `BarGauge` the config, display processor and value from `getGaugeProps` and a colour mode for a continuous scheme (marked); the copied `BarGauge` (Apache-2.0, replacing the stand-in) reads that colour mode in its gradient (one marked prop); listed in "Plugin addition: Gauge color". | The opt-in option; with it unset the cell hands the copy core's own props, and the copy draws as Grafana's `BarGauge`. |
 | `module.tsx`, three `TableNG/` files | `utils.ts`, `render-hooks.tsx`, `types.ts`; the Text weight option (`.addCustomEditor`, marked) after Text color, and its hooks (marked): the weight on the cells and on Tooltip from field's content, wrapped row heights and content-aware widths measured at it; listed in "Plugin addition: Text weight". | The opt-in option; with nothing set the copied code gives core's result. |
 
 Nothing else in the copied files differs from upstream: every other copy (the panel, its helpers and editors, the rest
@@ -270,6 +277,8 @@ header's `Changes:` text. Every copy with a marked line is listed, and only thos
 - `src/packages/grafana-ui/src/components/Table/TableNG/TableNested.tsx`
 - `src/packages/grafana-ui/src/components/Table/TableNG/Cells/PillCell.tsx`
 - `src/packages/grafana-ui/src/components/Table/TableNG/types.ts`
+- `src/packages/grafana-ui/src/components/Table/TableNG/Cells/BarGaugeCell.tsx`
+- `src/packages/grafana-ui/src/components/BarGauge/BarGauge.tsx`
 
 ## Stand-ins of its own
 
@@ -983,6 +992,267 @@ run with `--workers=1`, then restored and rebuilt; job tmp `table-plan/build3/co
 | shared `ClearableSelectEditor`: a cleared select saves an empty value | `stylingEditor.spec.ts -g "Text weight"` | the override test fails (the property keeps `""`); the field-defaults test passes, because Grafana's editor drops an empty default value itself |
 | the same, on State timeline plus (its dev server, `styling.spec.ts -g "saved JSON"`; run before the shim was deleted) | 3 tests | "opening the editor writes nothing; a set value is saved, a cleared one removes its key" fails: Value overflow keeps `""` |
 
+## Plugin addition: Gauge color
+
+Step 7, build 4 of `plans/atlas-table-panel.md` (branch `feature/gauge-color` from `main` at `6f01512`, builds 1 to 3,
+2026-10-12). The spike on `spike/text-color` (reference only, not merged) prototyped it: `4bce519` Gauge color and Gauge
+value color through the public `BarGauge`'s props, `575051f` a shade per colour stop in gradient and LCD gauges with
+Fixed ignored there, `a75b445` the Apache copy of `BarGauge` with one marked hook for continuous schemes (and a copy of
+`Sparkline`, which is build 5's, not taken). Taken from it: the per-stop rule (the thresholds for the gradient, the
+display processor for the LCD cells, the value's colour), Fixed for the basic gauge only, the copy of `BarGauge.tsx` and
+its upstream test as the spike had them (imports only), and a colour mode object of the plugin's (the spike's
+`createShadedColorMode`, written there for the `Sparkline` copy). Re-done for this build: no Gauge value color (dropped by
+pjan, 2026-10-10: no theme copy, no change of the value display, no React context); the copy's hook is a colour mode
+(`pjanColorMode`, read instead of Grafana's registered mode) rather than the spike's list of colours; one plain function
+call in `BarGaugeCell` rather than a hook with `useMemo`; names, thresholds and colour modes cached per theme and field;
+continuous schemes through the shared resolver (`getValueShadeColor`, `shadeColorScheme`, merged with build 1); Fixed
+changes only the value's colour, which is all a basic gauge reads. Opt-in: with it unset every gauge draws as core and a
+table that doesn't use it saves nothing new. Code in `src/pjan/styling/` (`options.ts`, `gauge.ts`).
+
+### The option (`options.ts`)
+
+**Gauge color** at `custom.styling.gaugeColor`, in "Cell options" after Pill corner radius (`module.tsx`, one chained
+`.addCustomEditor`, marked): the last of the plugin's options, as the only one for Gauge cells (the Pill-only options
+before it, the options for several cell types first; the rule is decision 9). The shared `StylingColorEditor` (editor and override) with a shade
+(the five, grouped "Shade of the value color") or Fixed (`GAUGE_COLOR_MODES`: Value is core's own bar, so unset;
+Automatic and None don't apply to a bar); placeholder "As Grafana" (`pjan.table-styling.as-grafana`); no default value,
+no cell-type `showIf`, `process: identityOverrideProcessor`, `shouldApply: () => true`, i18n keys
+`pjan.table-styling.gauge-color-*`; the description says it applies to Gauge cells, how a shade works in basic,
+gradient and LCD gauges, that Fixed applies to the basic gauge only and is ignored in gradient and LCD gauges, and ends
+with "Not set: as Grafana, …". A cleared value leaves no key and no `styling: {}` (Grafana's own field-config cleanup).
+An incomplete value (`getStylingColor`) counts as unset.
+
+### What it draws (`gauge.ts`)
+
+`getGaugeProps(field, theme, displayMode, core)` takes what the copied `BarGaugeCell` hands `BarGauge` (the field config
+with min, max and its default thresholds, the field's display processor, the display value) and returns them, plus a
+colour mode for the copy:
+
+- **Nothing set** (or an incomplete setting): `core` itself, the same object; `pjanColorMode` stays undefined.
+- **Fixed, basic gauge:** the value's colour is the fixed colour (`getColorByName`): the bar (35 % fill and a 2 px line)
+  and, in Value color, the value's text. Config and display stay core's (a basic gauge reads neither for colour). A value
+  without a colour or with alpha 0 (`transparent`, `#00000000`, `rgba(0, 0, 0, 0)`: `isUncoloured`) keeps core's props:
+  Fixed would draw the bar's 1 px stub (and its 2 px line) in the fixed colour (decision 8).
+- **Fixed, gradient and LCD gauges:** ignored, `core` itself (the editor can't hide Fixed there: Atlas tables set cell
+  types by override, which the field defaults' editor doesn't see; plan, review M3). The description says so.
+- **A shade, per colour stop** (pjan, 2026-10-10), each colour in that shade of its own hue: a name by its name's hue
+  (`getShadeColor`), a colour without a name by its nearest theme hue, without a hue (Grafana's special names
+  `transparent` and `text`, a colour no hue wins) the colour itself:
+  - the **value's colour** (the basic bar, and the value's text in Value color, which follows the bar as in core): by the
+    name `getColorNameLookup` finds for it (mappings, thresholds, fixed colour, classic palette), else its nearest hue;
+    a value without a colour or with alpha 0 keeps it, whatever its name (`isUncoloured`, decision 8: without the guard
+    an alpha-0 colour that isn't named `transparent`, such as `#00000000` from the colour picker, reads as black and
+    takes a theme's gray hue, as in the Atlas theme);
+    a value coloured from a **continuous scheme** takes the scheme's stops shaded and interpolated at its `percent`
+    (`getValueShadeColor`, no exception for schemes); a mapped value has no `percent` and takes its mapping colour's;
+  - **gradient gauges:** with thresholds, each step's colour (`shadeThresholds`: values and mode kept, a step without a
+    hue keeps its saved colour, cached per theme, thresholds and shade); with a continuous scheme, a colour mode of the
+    plugin's (`createShadedColorMode`: the registered mode's id, name and kind, `getColors` the scheme's shaded stops,
+    `getCalculator` interpolating them), handed to the copied `BarGauge` as `pjanColorMode`, never registered, cached
+    per theme, field and shade; other colour modes (palettes, a single colour, shades of a colour) draw a gradient
+    gauge in the value's colour, which is shaded;
+  - **LCD gauges:** the display processor wrapped (its `decimals` passed on), so each cell's colour
+    (`display(value).color`, which `BarGauge`'s `getCellColor` reads) is shaded as the value's colour is (by position on
+    a scheme; an alpha-0 cell colour kept). The scheme's shaded stops and their parsed channels are cached per scheme
+    object in `@pjan/grafana-styling` (`shadeColorScheme`, `interpolateColorScheme`), so a cell doesn't re-parse them.
+- **What it doesn't change:** the empty part of the bar, the value's text in Text mode (the theme's text colour), sizes,
+  value displays, alignment.
+- **Live theme switch:** core keeps drawing the value colours (and LCD cells) of the theme the data was processed in
+  until a data refresh, and a continuous scheme's (Grafana's interpolator, built once per page) until a reload; core's
+  gradient follows the new theme (`BarGauge` resolves threshold names and a scheme's stops with the theme it is given).
+  The option shades with the new theme: a colour of the previous theme has no name in the new theme's lookup and takes
+  its nearest hue; a scheme's value and LCD colours come from the new theme's shaded stops at their position.
+
+### The `BarGauge` copy
+
+`src/packages/grafana-ui/src/components/BarGauge/BarGauge.tsx` (731 lines: upstream's 727, the header, one import, the
+prop's two lines; one line of upstream's changed and marked; Apache-2.0, Copyright Grafana Labs, `LICENSE_APACHE2`),
+replacing the relative-path stand-in that re-exported the public `BarGauge`. Upstream's `BarGauge.test.tsx` (393 lines)
+is ported unchanged (32 tests, on the copy's own exports).
+
+- **Why a copy** (pjan, 2026-10-10: keep the copied `BarGauge`): `getBarGradient` looks the colour mode up by id in
+  Grafana's registry (`getFieldColorMode(field.color?.mode)`) and draws a continuous scheme's gradient from
+  `mode.getColors(theme)`; no field config can hand it other colours. A theme copy would leak: Grafana caches a scheme's
+  colours on the registry's mode object for the theme it was last asked with, and builds the scheme's interpolator once
+  per page from them, so core panels would draw the shaded colours.
+- **The hook:** an optional prop `pjanColorMode` (`FieldColorMode`), read in `getBarGradient` instead of the registered
+  mode when given: `let mode = props.pjanColorMode ?? getFieldColorMode(field.color?.mode)`. Only `BarGaugeCell` passes
+  it, only for a continuous scheme with a shade. Everything else in the copy is upstream's: thresholds still come from
+  the field config, solid colours from the value.
+- **Imports:** `@grafana/e2e-selectors` → the stand-in (`Panels.Visualization.BarGauge.valueV2` added, checked against
+  the package in `standIns.test.ts`), the `FieldColorMode` type for the prop; its relative imports reach stand-ins
+  (`types/theme.ts` new: the `Themeable2` type; `utils/measureText.ts` with `calculateFontSize`; `Button/Button.tsx` with
+  `clearButtonStyles`; `FormattedValueDisplay`), so `FormattedValueDisplay`, `measureText` and `clearButtonStyles` are
+  Grafana's runtime instances.
+- **Nothing set equals core:** with `pjanColorMode` undefined the copy is upstream's code. `gauge.test.tsx` renders the
+  copied `BarGaugeCell` (the copy, the hook) and core's (Grafana's own `BarGauge` from `@grafana/ui`, no hook) to static
+  markup for every display mode, value display, colour source (thresholds, Green-Yellow-Red, a mapping, the classic
+  palette) and row, in Grafana's and the Atlas theme's light and dark: identical. End to end: the parity suite's gauge
+  cases (basic, gradient, LCD × value displays, core and plugin panels) and every styling case's "nothing set" panel.
+- **Bundle:** `module.js` 359,378 bytes (351 KiB; 100,541 gzipped) on `main` before this build, 371,759 bytes (363 KiB;
+  103,837 gzipped) with it: +12.1 KiB, +3.2 KiB gzipped (the copy and `gauge.ts`); 372,205 bytes after the review's
+  fixes. Webpack's size limits were 360 KiB, so the build warned; they are 400 KiB now (pjan, 2026-10-12, as State
+  timeline plus and Time series plus; `webpack.config.ts` records the figures and build 5's coming `Sparkline` copy),
+  and the build is quiet again (webpack's `runtimeChunk` advice is printed only with a size warning). Grafana's own
+  `BarGauge` is no longer used by the table.
+- **Cost:** Grafana's fixes to `BarGauge` reach Table plus only through a re-sync (the copy is listed under "Copies with
+  marked changes", so `resync-upstream.mjs` merges it); the public `BarGauge` the stand-in re-exported came with Grafana.
+
+### Hooks (all marked `pjan-table-panel:`)
+
+| Copied file | Hook |
+| --- | --- |
+| `plugins/panel/table/module.tsx` | `.addCustomEditor(gaugeColorFieldOption(cellCategory))` after Pill corner radius, with its import |
+| `TableNG/Cells/BarGaugeCell.tsx` | `const pjan = getGaugeProps(field, theme, barGaugeMode, { config, display: field.display, value: displayValue })` after core's props are worked out; `BarGauge` gets `field={pjan.config}`, `display={pjan.display}`, `value={pjan.value}` (each marked "was …") and `pjanColorMode={pjan.colorMode}`; with the import. `alignmentFactors` keeps core's display value |
+| `components/BarGauge/BarGauge.tsx` | the optional prop `pjanColorMode?: FieldColorMode` in `Props`, and `getBarGradient` reading it before Grafana's mode |
+
+### Decisions
+
+1. **A copy of `BarGauge`, not a theme copy or a field config** (pjan, 2026-10-10, above).
+2. **The hook takes a colour mode** (the plugin's own object, never registered), not a list of colours: it is the object
+   `getBarGradient` reads, so the hook is one expression, and the same shape serves the `Sparkline` copy of build 5.
+3. **Per colour stop in gradient and LCD gauges** (pjan, 2026-10-10): the bar keeps core's transition at the chosen
+   lightness; the threshold values, the scheme's positions and the LCD cell count are core's.
+4. **Fixed for the basic gauge only**, ignored (drawn as core) in gradient and LCD gauges and described (pjan,
+   2026-10-10).
+5. **No Gauge value color** (dropped by pjan, 2026-10-10): the value's text follows the bar in Value color, as in core,
+   and keeps the theme's text colour in Text mode. A shade is drawn as chosen, also where the value's text is hard to read.
+6. **Placement after Pill corner radius**: after the options for several cell types and the Pill-only ones, as the only
+   Gauge-only option (kept by pjan, 2026-10-12; the rule is decision 9).
+7. **`shouldApply: () => true`** as core's cell options and the other styling options (a recorded deviation from
+   principle 3's "skips time fields").
+8. **Values Grafana leaves uncoloured stay uncoloured, with a shade and with Fixed** (kept by pjan, 2026-10-12): a value
+   without a colour or with alpha 0 (`transparent`, `#00000000`, `rgba(0, 0, 0, 0)`; `isUncoloured` in `gauge.ts`)
+   keeps core's colour for the value (a basic gauge's bar and the value's text) and for an LCD cell. The reason is the
+   gauge's own: its length is its meaning, and a value mapped to `transparent` is a sentinel (Atlas Containers' "of
+   limit" columns map `-1`, "unlimited", and `null+nan` to `transparent` with the text " "). Core draws it as an
+   invisible 1 px stub; Fixed or a shade would make it a visible stub with a 2 px line (and, in Value color, a visible
+   value). **This differs from Background color and Pill fill color:** their Fixed fills a transparent cell or pill
+   (`cellColors.ts`: a basic Colored background cell whose value colour is `transparent`; `pills.test.ts`, "a fill shade
+   keeps it transparent; Fixed fills it"), because a fill there makes a readable chip of the cell's text; build 1's
+   decision 9 covers only cells core leaves to the row or without a value colour. The guard is on the value's colour:
+   in gradient and LCD gauges the bar comes from the thresholds or the scheme, whatever the value's colour, and is
+   shaded per stop as usual (as core draws it in the threshold colours). The first version guarded Fixed only and
+   cited build 1 as precedent, which doesn't hold (the build 4 review, M1 and m1). Described in the option, the README
+   and the changelog.
+9. **The order of the plugin's field options** (in "Cell options", after Cell type): first the options for several
+   cell types (Background color, Text color, Text weight), then one group per cell type in the order of the builds that
+   added them (Pill: fill color, line color, line width, corner radius; Gauge: Gauge color). A later build's options for
+   another cell type follow the last group (build 5's Sparkline options after Gauge color); an option for several cell
+   types joins the first group. Kept by pjan (2026-10-12).
+
+### Depends on (check at each re-sync)
+
+- `BarGauge.tsx`: `getBarGradient` reading the colour mode with `getFieldColorMode(field.color?.mode)` and, for a
+  continuous mode, its `getColors(theme)` at evenly spaced positions; the basic bar and the value's text from
+  `value.color` (`getBasicAndGradientStyles`, `getTextValueColor`); LCD cells from `display(position).color`
+  (`getCellColor`); the thresholds gradient resolving each step's colour with `theme.visualization.getColorByName` (so a
+  shaded step can be a colour). The copy is re-synced like the other changed copies (3-way merge).
+- `BarGaugeCell.tsx`: `getFieldConfigWithMinMax` and the default thresholds, `field.display`, the display mode and value
+  display defaults, and the props it hands `BarGauge`.
+- `@grafana/data`: the continuous modes being `isContinuous` and `isByValue` with `getColors` (`schemes.ts`'s
+  `getColorScheme`, and `getBarGradient`'s test), the display value's `percent`, and the registry caches described under
+  "Live theme switch" (build 1).
+- The stand-ins the copy reaches (`types/theme.ts`, `utils/measureText.ts`, `Button/Button.tsx`, `FormattedValueDisplay`),
+  and the `BarGauge` value selector in the e2e-selectors stand-in.
+
+### Tests
+
+- **Jest:** `styling/gauge.test.tsx` (239): `getGaugeProps` unset and incomplete (core's own object) and Fixed (basic:
+  the value's colour only; gradient and LCD: core's own object); a value mapped to `transparent` (Atlas's "unlimited")
+  or without a colour unchanged, with a shade and with Fixed, in each theme (and drawn as core's); a value mapped to
+  `#00000000` or `rgba(0, 0, 0, 0)` in Atlas dark (which has a gray hue) unchanged under a shade and Fixed, value and LCD
+  cells, the basic gauge drawn as core's; the LCD wrapper passing `decimals` on; per colour stop in Grafana's and the Atlas theme's light
+  and dark, each of the five shades, against colours worked out by hand (job tmp `table-plan/build4/oracle.py`, from the
+  themes' colours alone: Grafana's 3-digit luminance, shades ranked by contrast with the panel background, the nearest
+  hue in OKLCH, d3's B-spline; separate from the shared package): thresholds green → yellow → red (gradient steps, LCD
+  cells, the value, the basic bar), Green-Yellow-Red at 0, 0.1, 0.25, 0.5, 0.75, 0.9 and 1 (the colour mode's stops and
+  calculator, the value, LCD cells, Grafana's registered mode left as it is), a step named lemon in Atlas, Viridis in
+  Atlas (each of Grafana's nine samples by its nearest hue, the top one lemon's), hex steps by their nearest hue and
+  `transparent`, `text` and a colour without a hue kept, a mapped value on a scheme by its name, other colour modes, the
+  caches; the copy's hook (`getBarGradient` with and without `pjanColorMode`); the copied `BarGaugeCell` as drawn
+  (static markup, which keeps gradients): nothing set equal to core's cell with Grafana's `BarGauge` for every mode,
+  value display, colour source (thresholds, Green-Yellow-Red, a mapping, the classic palette, a single colour, shades of
+  a colour) and row; Fixed ignored in gradient and LCD; Fixed on a basic gauge equal to core's gauge
+  in that fixed colour; a shade on thresholds equal to core's gauge with each step in the hand-computed shade (every
+  mode, value display and row); a shade on Green-Yellow-Red: core's gauge with the hand-computed stops and value
+  colour; the copied `TableNG` in jsdom (the option reaches its column's gauges only, not a Colored background column
+  with it set). `styling/options.test.ts` (the place after Pill corner radius, the modes, placeholder, description, no
+  default, saved and cleared with no `styling: {}`, by override on one field and cleared). Upstream's
+  `BarGauge.test.tsx` (32, ported unchanged). `standIns.test.ts` (the `BarGauge` value selector).
+- **End to end:** `tests/styling.spec.ts`, `tests/stylingEditor.spec.ts`, `tests/optionsEditor.spec.ts` ("End to
+  end").
+
+### Negative controls
+
+Jest (2026-10-12, re-run after the build 4 review's fixes; job tmp `table-plan/build4/controls/run.py`), each broken on
+purpose by a script (every pattern must be found once, so no control is a typo), Table plus's `src/pjan` suites and the
+copied `BarGauge` test run (540 tests; S7 also `@pjan/grafana-styling`'s 161), then restored (540 passed again); the
+failing tests read from `jest --json` (`assertionResults[].status`). `<theme>` and `<shade>` stand for the themes
+(Grafana's and the Atlas theme's light and dark) and shades a test runs in, `(×n)` for how many of them failed. G21,
+G22, G23 and S7 are the review's (m3: "Grafana's registered mode left as it is" can fail; m1; n3; n4); G10 and G20
+follow the guard's new form:
+
+| # | Broken on purpose | Failed (of 540 in `src/pjan` and the copied `BarGauge` test; S7 also `@pjan/grafana-styling`, 161): the failing tests |
+| --- | --- | --- |
+| G1 | module.tsx: Gauge color not registered | **7**: the field options as registered > sit in "Cell options" right after Cell type, in order, then core’s Cell value inspect; the field options as registered > custom.styling.gaugeColor: stored at custom.styling.gaugeColor with that override id, in the field defaults and the overrides; the field options as registered > Gauge color: the five shades and Fixed (Value is core’s bar; no Automatic, no None), “As Grafana”; the field options as registered > Gauge color says it applies to Gauge cells, shades per color stop, Fixed for the basic gauge only, and "Not set: …"; the field options as registered > custom.styling.gaugeColor: shades grouped as of the value color; the field options as registered > custom.styling.gaugeColor: no default value, no cell-type showIf (review M3), applies to every field as core’s cell options; the field options as saved > Gauge color: kept; cleared, no key and no `styling: {}` left; by override, styling its field only |
+| G2 | module.tsx: Gauge color before Pill corner radius | **1**: the field options as registered > sit in "Cell options" right after Cell type, in order, then core’s Cell value inspect |
+| G3 | options.ts: Gauge color offers Automatic and Value | **3**: the field options as registered > Gauge color: the five shades and Fixed (Value is core’s bar; no Automatic, no None), “As Grafana”; getGaugeProps: unset, and Fixed > an incomplete setting, or a mode Gauge color doesn’t have, is unset: {"mode":"automatic"}; getGaugeProps: unset, and Fixed > an incomplete setting, or a mode Gauge color doesn’t have, is unset: {"mode":"value"} |
+| G4 | options.ts: no placeholder (what unset draws) | **1**: the field options as registered > Gauge color: the five shades and Fixed (Value is core’s bar; no Automatic, no None), “As Grafana” |
+| G5 | BarGaugeCell.tsx: core's config to BarGauge (not the hook's) | **16**: the copied BarGaugeCell, as drawn > <theme> > a shade on thresholds (<shade>): core’s gauge with each step in the hand-computed shade, in every mode and value display (×16) |
+| G6 | BarGaugeCell.tsx: core's display processor to BarGauge (not the hook's) | **16**: the copied BarGaugeCell, as drawn > <theme> > a shade on thresholds (<shade>): core’s gauge with each step in the hand-computed shade, in every mode and value display (×16) |
+| G7 | BarGaugeCell.tsx: core's value to BarGauge (not the hook's) | **39**: the copied BarGaugeCell, as drawn > <theme> > Fixed on a basic gauge: core’s gauge in that colour (bar and Value color), the text colour of Text as core (×4); the copied BarGaugeCell, as drawn > <theme> > a shade on thresholds (<shade>): core’s gauge with each step in the hand-computed shade, in every mode and value display (×16); the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×18); Gauge color in the copied TableNG > reaches the gauge cells of its column only, and nothing else |
+| G8 | BarGaugeCell.tsx: no colour mode handed to BarGauge | **16**: the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×16) |
+| G9 | BarGauge.tsx: the gradient ignores pjanColorMode | **17**: the copied BarGauge: pjanColorMode > with it, the gradient reads that mode’s stops instead, at the same places; the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×16) |
+| G10 | gauge.ts: Fixed applied to gradient and LCD gauges too | **10**: getGaugeProps: unset, and Fixed > Fixed is ignored in <mode> gauges: core’s own props (×2); the copied BarGaugeCell, as drawn > <theme> > Fixed is ignored in <mode> gauges: as core (×8) |
+| G11 | gauge.ts: a gradient's thresholds all in the value's shade (not per stop) | **40**: per colour stop, <theme> > thresholds green → yellow → red, <shade> > gradient: each step in the shade of its own hue (values and mode kept), and the value (×20); the copied BarGaugeCell, as drawn > <theme> > a shade on thresholds (<shade>): core’s gauge with each step in the hand-computed shade, in every mode and value display (×20) |
+| G12 | gauge.ts: a scheme's value colour by its nearest hue, not its position | **80**: per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > gradient: the bar from the scheme’s shaded stops (a colour mode of the plugin’s), and the value (×20); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > LCD: each cell interpolated from the shaded stops at its position, and the value (×20); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > basic: the value, interpolated from the shaded stops (×20); the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×20) |
+| G13 | gauge.ts: LCD cells not shaded | **50**: per colour stop, <theme> > thresholds green → yellow → red, <shade> > LCD: each cell’s colour (the display processor’s) and the value; the config core’s (×16); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > LCD: each cell interpolated from the shaded stops at its position, and the value (×18); the copied BarGaugeCell, as drawn > <theme> > a shade on thresholds (<shade>): core’s gauge with each step in the hand-computed shade, in every mode and value display (×16) |
+| G14 | gauge.ts: no colour mode for a scheme's gradient | **58**: per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > gradient: the bar from the scheme’s shaded stops (a colour mode of the plugin’s), and the value (×20); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > the plugin’s colour mode interpolates as Grafana’s calculator, and Grafana’s own mode is left as it is (×20); per colour stop: other colour sources > Viridis in <theme>: each of Grafana’s nine samples by its nearest hue, the top one lemon’s (×2); the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×16) |
+| G15 | gauge.ts: a step without a hue takes its resolved colour, not its saved one | **4**: per colour stop, <theme> > colours without a name: a hex step by its nearest hue; without a hue (or a special name) as saved (×4) |
+| G16 | gauge.ts: unset hands back a copy of core's props | **9**: getGaugeProps: unset, and Fixed > unset (<mode>): core’s own props, the same object (×3); getGaugeProps: unset, and Fixed > an incomplete setting, or a mode Gauge color doesn’t have, is unset: {"mode":"shade"}; getGaugeProps: unset, and Fixed > an incomplete setting, or a mode Gauge color doesn’t have, is unset: {"mode":"fixed"}; getGaugeProps: unset, and Fixed > an incomplete setting, or a mode Gauge color doesn’t have, is unset: {"mode":"automatic"}; getGaugeProps: unset, and Fixed > an incomplete setting, or a mode Gauge color doesn’t have, is unset: {"mode":"value"}; getGaugeProps: unset, and Fixed > an incomplete setting, or a mode Gauge color doesn’t have, is unset: {"mode":"none"}; getGaugeProps: unset, and Fixed > an incomplete setting, or a mode Gauge color doesn’t have, is unset: {"mode":"shade","shade":"brightest"} |
+| G17 | gauge.ts: the plugin's colour mode gives the registered stops | **43**: per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > gradient: the bar from the scheme’s shaded stops (a colour mode of the plugin’s), and the value (×20); per colour stop: other colour sources > Viridis in <theme>: each of Grafana’s nine samples by its nearest hue, the top one lemon’s (×2); the copied BarGauge: pjanColorMode > with it, the gradient reads that mode’s stops instead, at the same places; the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×20) |
+| G18 | gauge.ts: the value's colour not shaded | **139**: per colour stop, <theme> > thresholds green → yellow → red, <shade> > gradient: each step in the shade of its own hue (values and mode kept), and the value (×16); per colour stop, <theme> > thresholds green → yellow → red, <shade> > LCD: each cell’s colour (the display processor’s) and the value; the config core’s (×16); per colour stop, <theme> > thresholds green → yellow → red, <shade> > basic: the value’s colour only (the bar) (×16); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > gradient: the bar from the scheme’s shaded stops (a colour mode of the plugin’s), and the value (×18); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > LCD: each cell interpolated from the shaded stops at its position, and the value (×18); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > basic: the value, interpolated from the shaded stops (×18); per colour stop: other colour sources > a mapped value on a scheme field has no position: the shade of its mapping colour’s name; per colour stop: other colour sources > other colour modes (a palette, a fixed colour) in a gradient gauge: the value’s colour, which the bar is; the copied BarGaugeCell, as drawn > <theme> > a shade on thresholds (<shade>): core’s gauge with each step in the hand-computed shade, in every mode and value display (×16); the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×18); Gauge color in the copied TableNG > reaches the gauge cells of its column only, and nothing else |
+| G20 | gauge.ts: Fixed paints a value mapped to transparent | **4**: per colour stop: other colour sources > a value mapped to transparent (Atlas’s “unlimited”) stays transparent, with a shade and with Fixed; per colour stop: other colour sources > a value mapped to <alpha-0 colour> (alpha 0, no `transparent` name) stays as core in <theme>, under a shade and Fixed (×2); per colour stop: other colour sources > a value without a colour stays without one, with a shade and with Fixed |
+| G21 | gauge.ts: the plugin's colour mode is Grafana's registered mode, changed (createShadedColorMode mutating the base) | **71**: per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > the plugin’s colour mode interpolates as Grafana’s calculator, and Grafana’s own mode is left as it is (×20); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > gradient: the bar from the scheme’s shaded stops (a colour mode of the plugin’s), and the value (×10); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > LCD: each cell interpolated from the shaded stops at its position, and the value (×10); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > basic: the value, interpolated from the shaded stops (×10); the copied BarGauge: pjanColorMode > without it, the gradient of a continuous scheme is Grafana’s (its registered mode’s stops); the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×20) |
+| G22 | gauge.ts: a shade paints an alpha-0 value colour (no guard on the shade path) | **2**: per colour stop: other colour sources > a value mapped to <alpha-0 colour> (alpha 0, no `transparent` name) stays as core in <theme>, under a shade and Fixed (×2) |
+| G23 | gauge.ts: the LCD wrapper drops the display processor's decimals | **1**: per colour stop: other colour sources > LCD: the wrapped display processor passes its decimals on, as Grafana’s |
+| S7 | shared schemes.ts: the parsed stops cached once for every scheme (not per scheme object) | **109**: per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > gradient: the bar from the scheme’s shaded stops (a colour mode of the plugin’s), and the value (×18); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > LCD: each cell interpolated from the shaded stops at its position, and the value (×18); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > basic: the value, interpolated from the shaded stops (×18); per colour stop, <theme> > a continuous Green-Yellow-Red scheme, <shade> > the plugin’s colour mode interpolates as Grafana’s calculator, and Grafana’s own mode is left as it is (×18); the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×18); continuous colour schemes (Green-Yellow-Red by value, field min 0 and max 100) > light > Text color Stronger on Colored text and on a fill: the stops in the strongest shade, interpolated; continuous colour schemes (Green-Yellow-Red by value, field min 0 and max 100) > dark > Background color Soft, basic: the stops shaded and interpolated at each value’s position; Automatic on it; continuous colour schemes (Green-Yellow-Red by value, field min 0 and max 100) > dark > Background color Soft, gradient: core’s gradient built from that colour; Automatic on both stops; continuous colour schemes (Green-Yellow-Red by value, field min 0 and max 100) > dark > Text color Stronger on Colored text and on a fill: the stops in the strongest shade, interpolated; continuous colour schemes (Green-Yellow-Red by value, field min 0 and max 100) > two columns with different schemes and the same value colour at the same position don’t share a cache entry; @pjan/grafana-styling: continuous colour schemes > interpolates as Grafana’s own calculator does (<theme>), at hand-computed colours; @pjan/grafana-styling: continuous colour schemes > a shade of a scheme colour: the stops shaded, interpolated at the value’s position (<theme>, <shade>) (×3); … and 5 more groups |
+| G19 | BarGauge.tsx: the copy drifts from Grafana's (the empty bar 0.07 → 0.08) | **59**: per colour stop: other colour sources > a value mapped to transparent (Atlas’s “unlimited”) stays transparent, with a shade and with Fixed; per colour stop: other colour sources > a value mapped to <alpha-0 colour> (alpha 0, no `transparent` name) stays as core in <theme>, under a shade and Fixed (×2); the copied BarGaugeCell, as drawn > <theme> > nothing set equals core (basic, every value display, every colour source, every row) (×4); the copied BarGaugeCell, as drawn > <theme> > nothing set equals core (gradient, every value display, every colour source, every row) (×4); the copied BarGaugeCell, as drawn > <theme> > Fixed is ignored in <mode> gauges: as core (×4); the copied BarGaugeCell, as drawn > <theme> > Fixed on a basic gauge: core’s gauge in that colour (bar and Value color), the text colour of Text as core (×4); the copied BarGaugeCell, as drawn > <theme> > a shade on thresholds (<shade>): core’s gauge with each step in the hand-computed shade, in every mode and value display (×20); the copied BarGaugeCell, as drawn > <theme> > a shade on Green-Yellow-Red (<shade>): the gradient’s stops and the value, hand-computed (×20) |
+
+None passed vacuously. Where fewer tests fail than run a path, the others draw the same either way: Grafana light's and
+dark's Base shades are core's own colours (so G5, G6, G8, G11 and G13 leave those cases passing), and the copy's empty
+bar (G19) is not drawn by LCD gauges. G22 fails only in the Atlas theme (its gray hue): in Grafana's stock themes an
+alpha-0 colour has no hue to take. The name path of the shade (`getColorNameLookup`) can't be told apart from the
+nearest-hue path on these themes' named colours (each named colour's nearest hue is its own), so it has no control of
+its own; the hex steps and Viridis exercise the nearest-hue path.
+
+End to end (2026-10-12; each broken, the plugin rebuilt, the named tests run with `--workers=1`, then restored and
+rebuilt; job tmp `table-plan/build4/controls/run_e2e.py`; "the gauge cases": the eleven Gauge color cases of
+`styling.spec.ts` in light at pixel ratio 1):
+
+| Broken on purpose | Run | Result |
+| --- | --- | --- |
+| `BarGaugeCell.tsx`: the hook bypassed (core's props to `BarGauge`) | the gauge cases (11) | 10 fail on the first gauge's colours ("0/v10/color"); Fixed on gradient and LCD (ignored) passes, as expected |
+| `BarGauge.tsx`: the gradient ignores `pjanColorMode` | the gauge cases | only "gauge gradient, scheme: gauge color stronger" fails |
+| `gauge.ts`: Fixed applied to gradient and LCD gauges too | the gauge cases | only "gauge gradient and lcd: gauge color fixed (ignored)" fails |
+| `gauge.ts`: LCD cells not shaded | the gauge cases | 3 fail: the LCD cases on thresholds and on the scheme, and the nested table (its LCD column, "1/v10/hidden") |
+| `gauge.ts`: a scheme's value colour by its nearest hue, not its position | the gauge cases | 3 fail: the basic, gradient and LCD scheme cases |
+| `gauge.ts`: a gradient's thresholds all in the value's shade (not per stop) | the gauge cases | 3 fail, each first at v50 (where yellow joins the gradient): gradient on thresholds, the transparent panel, the nested table's gradient column |
+| `BarGauge.tsx`: the copy drifts from Grafana's (the empty bar's 0.07 → 0.08) | the gauge cases | 9 fail on "nothing set: the same elements as core"; the two LCD-only cases pass (LCD gauges draw no empty bar) |
+| the same | `parity.spec.ts`, light, pixel ratio 1, `PARITY_CASES=gauge` (3 cases) | fails on the basic and gradient gauge cases; the LCD case passes |
+| `module.tsx`: Gauge color before Pill corner radius | `stylingEditor.spec.ts`, `optionsEditor.spec.ts` | 3 fail: the placement, the overrides menu, the comparison with core's editor |
+
+After the build 4 review (2026-10-12, job tmp `table-plan/build4/controls/run_e2e.py`, `run_e2e2.log`):
+
+| Broken on purpose | Run | Result |
+| --- | --- | --- |
+| `gauge.ts`: Fixed paints a value mapped to `transparent` (the guard off for Fixed) | the Atlas "of limit" cases, light and dark, pixel ratio 1 (4) | the two Fixed cases fail on "a transparent stub stays core's" (`grafana`'s CPU of limit, no value); the two Stronger cases pass, as expected |
+| `gauge.ts`: a shade paints an alpha-0 value colour (the guard off for shades) | the same (4) | all pass, as expected: Grafana's stock themes have no gray hue, so `transparent` takes no shade there; the Atlas theme's does (Jest G22) |
+| `gauge.ts`: a gradient's threshold steps not shaded | the percentage thresholds case, light, 1 | fails from the first row ("0/v20/color") |
+| `gauge.ts`: a scheme's value colour by its nearest hue, not its position | the negative values cases, light, 1 (2) | the LCD scheme case fails (at v−40); the basic thresholds case passes, as expected |
+| `BarGaugeCell.tsx`: the hook bypassed | the tooltip gauge test, light, 1 | fails: the tooltip's gauge equals core's |
+
 ## Pruned and left off
 
 | Feature                             | Upstream code                                         | Status and reason                                                                                                                                                                                                                                                                                                    |
@@ -1110,7 +1380,8 @@ As in Time series plus:
     in the chunks; the build fails on a package bundled from two directories);
   - replaces the scaffold's Terser instance with the same settings plus an explicit licence-comment condition
     (`/^\**!|@preserve|@license|@cc_on/i`), extracted to `<asset>.LICENSE.txt`;
-  - performance-warning limits of 360 KiB, about 10 % above the measured `module.js` (below).
+  - performance-warning limits of 400 KiB (360 KiB until build 4, about 10 % above the port's `module.js`; raised with
+    build 4's `BarGauge` copy, 363 KiB, ahead of build 5's `Sparkline` copy; "Plugin addition: Gauge color").
 - `jest.config.js`: `ts-jest` (Grafana's transform; see "Tests", "Test adaptations"), `@grafana/react-data-grid` among the
   ES modules to transform, the test stand-ins and Grafana's `react-inlinesvg` mock in `moduleNameMapper`;
   `TZ = 'Pacific/Easter'` as in grafana/grafana's `jest.config.js` (the copied tests assert times in that zone). The
@@ -1170,8 +1441,8 @@ with its snapshot, `hooks.test.ts`, `render-hooks.test.tsx`, the cell tests `Pil
 `DataLinksCell`, the seven `components/*` tests, `FilterList`, `FilterPopup`, `Filter/utils.test.ts` with its snapshot),
 the shared `Table/` tests (`cellUtils`, `DataLinksActionsTooltip`, `TableCellInspector`, `filterExpression`,
 `geo/context`, `geo/utils`), the panel's (`migrations.test.ts` with its snapshot, `module.test.ts`,
-`TableCellOptionEditor.test.tsx`, the five cell-editor tests), `features/table/{hooks,utils}` tests, and the tests of the
-shared copies (as in the other plugins). `TableNG/__mocks__/uwrap.ts` is copied: Jest uses a `__mocks__` file under its
+`TableCellOptionEditor.test.tsx`, the five cell-editor tests), `features/table/{hooks,utils}` tests, the tests of the
+shared copies (as in the other plugins), and (build 4) `BarGauge.test.tsx` of the copied `BarGauge`. `TableNG/__mocks__/uwrap.ts` is copied: Jest uses a `__mocks__` file under its
 roots for the node module of that name automatically, as in Grafana's run (the row-height expectations depend on it).
 
 Not portable, not copied:
@@ -1217,9 +1488,9 @@ Own tests (`src/pjan/`):
   (`disableSanitizeHtml`); `defaultSparklineCellConfig` has core's values; the e2e selector values equal
   `@grafana/e2e-selectors`'.
 - `styling/options.test.ts`, `styling/cellColors.test.ts`, `styling/tableColors.test.tsx`, `styling/pills.test.ts`,
-  `styling/look.test.tsx`, `styling/textWeight.test.tsx`: Text color and Background color ("Plugin addition: Text color
-  and Background color"), the pill options and the Look ("Plugin addition: pill options and Look"), Text weight
-  ("Plugin addition: Text weight").
+  `styling/look.test.tsx`, `styling/textWeight.test.tsx`, `styling/gauge.test.tsx`: Text color and Background color
+  ("Plugin addition: Text color and Background color"), the pill options and the Look ("Plugin addition: pill options
+  and Look"), Text weight ("Plugin addition: Text weight"), Gauge color ("Plugin addition: Gauge color").
 - `featureFlags.test.tsx` (the scaffold's) and `buildConfig.test.ts` (the build, and the built `module.js` asks Grafana for
   no `/unstable` or `/internal` entry point).
 
@@ -1275,9 +1546,9 @@ Own tests (`src/pjan/`):
   with a server value answered 3 s late, and localStorage before the server, core and plugin alike in their drawing
   (page size 2 only with `table.paginationPageSize`; content-aware column widths only with `table.autoColumnWidths`,
   the plugin's widths equal to core's), in their editors ("Page size" shown only with the flag) and in core's own client.
-- **`styling.spec.ts`** (332 with its setup: 55 tests × light, dark and dark after a live switch from light × pixel ratio
+- **`styling.spec.ts`** (440 with its setup: 73 tests × light, dark and dark after a live switch from light × pixel ratio
   1 and 2, and one test with the `table.autoColumnWidths` flag), on `provisioning/dashboards/styling.json` (generated by
-  `scripts/generate-styling-dashboard.mjs`): 52 cases,
+  `scripts/generate-styling-dashboard.mjs`): 69 cases,
   each core's table, Table plus with nothing set and Table plus with the case's styling (and look) with the same data
   and field config (Atlas's pattern: cell types by override, the styling once in the field defaults; `minWidth` 70 so
   every column fits); side by side, or one above the other at full width for the pills frame's six columns. Build 1's
@@ -1318,7 +1589,29 @@ Own tests (`src/pjan/`):
   the tooltip's content (600; core 400). One more, with the `table.autoColumnWidths` flag (a localStorage override):
   nothing set has core's column widths; the weighted columns are 3 or 4 px wider than core's (worked out from Inter's
   average character width at 400 and 600 as measured in Chrome, not by hand), the Auto column unchanged, and the weighted text isn't cut off.
-- **`stylingEditor.spec.ts`** (11): the seven field options right after Cell type and before Cell value inspect, in order,
+  Build 4's (Gauge color), on gauge frames of five rows (`v10` … `v90`, min 0 and max 100) with three gauge columns, one
+  per value display (Value color, Text, Hidden), set once in the field defaults: basic, gradient and LCD gauges on
+  thresholds (green, yellow from 50, red from 80; Stronger, Soft, Strong) and on Green-Yellow-Red (Strong, Stronger,
+  Softer; not Soft for the basic gauge: Grafana dark's Soft green, yellow and red are Grafana light's base colours, which
+  core keeps drawing after a live switch from light, so a Soft case couldn't differ there); Fixed on basic gauges; Fixed on gradient and LCD gauges (ignored: as core, nothing applies); a gradient gauge
+  on a transparent panel; basic, gradient and LCD gauges in nested sub-tables (nested-scope overrides, Stronger); an
+  override on one column (Soft in the defaults, Stronger on `text`). Added after the build 4 review: **Atlas's real
+  shape** (Containers' Memory and CPU of limit as saved: basic gauges with the value as text and hidden, `percentunit`,
+  min 0, max 1, thresholds green / yellow from 0.8 / red from 0.9, `-1` and `null+nan` mapped to `transparent` with
+  the text " "), with Fixed blue and with Stronger: each of the four transparent stubs (two "unlimited", two without a
+  value) equal to core's, the other bars by the rules and hand-computed; **percentage thresholds** (gradient, 0 to 200,
+  yellow from 50 %, red from 80 %); **negative values** with min −50 and max 50, basic on thresholds (hand-computed)
+  and LCD on Green-Yellow-Red (positions from min and max); a **gauge in Tooltip from field** (the host's tooltip shows
+  a basic gauge column; a test hovers it: the tooltip's gauge by the rules from core's, hand-computed Stronger green). Per gauge: each colour as drawn (the value's inline
+  colour, the bar's background and right border, each LCD cell's background) is core's gauge of the same cell with each
+  colour worked out by the rules in the spec (`@pjan/grafana-styling`: by the colour's threshold name in the theme, else
+  its nearest hue; on a scheme, the theme's stops shaded and interpolated at the row's value, an LCD cell's position as
+  `BarGauge` asks for it, positions from the column's min and max, a gradient's stops in order; Fixed on a basic gauge,
+  core elsewhere; a value colour with alpha 0 as core's), the Text column's value core's; a basic bar's 2 px line in the screenshot's pixels; hand-computed colours without a live switch (job tmp
+  `table-plan/build4/oracle.py`: Stronger, Soft and Strong of green, yellow and red, Green-Yellow-Red Strong at the five
+  values, the Stronger stops, purple); set differs from core (Fixed on gradient and LCD: applies nowhere). Nothing set:
+  core's elements, and core's pixels at basic gauges (gradient and LCD gauges by their CSS, as gradient cells).
+- **`stylingEditor.spec.ts`** (13): the eight field options right after Cell type and before Cell value inspect, in order,
   in the field defaults with Cell type Auto, with their placeholders and the sliders at their unset values (1 and 6), no
   clear button while unset; the Look after core's Table panel options (after Enable pagination, Page size being hidden; the Table field options follow), nothing chosen; all six in the "Add override property" menu
   after Cell type; Text color and Background color set and cleared to no key and no `styling`; the four pill options set
@@ -1328,10 +1621,14 @@ Own tests (`src/pjan/`):
   `custom.styling.textWeight` (500, drawn) and cleared to a property without a value; tabbing
   through the unset sliders saves nothing; the Look set to Pill (saved, drawn) and back to Grafana (saved `grafana`, core
   drawn again); an override saved as `custom.styling.textColor` and `custom.styling.lineWidth` and cleared to a property
-  without a value; opening the editor of a styled panel writes nothing (3 s); defaults (with pill options and Text
-  weight), an override and the Look survive saving the dashboard (the editor's Save) and loading it again.
+  without a value; opening the editor of a styled panel writes nothing (3 s); defaults (with pill options, Text weight and
+  Gauge color), an override and the Look survive saving the dashboard (the editor's Save) and loading it again. Build 4:
+  Gauge color's six choices (the five shades and Fixed), Stronger saved and drawn on the preview's gauges (the value's
+  colour and the bar's line, hand-computed for Grafana's dark theme), cleared to no `styling` with the placeholder back
+  and core's colour drawn; by override on one column saved as `custom.styling.gaugeColor` (Softer, drawn) and cleared to
+  a property without a value.
 - **`optionsEditor.spec.ts`** (2): core's and the plugin's panel editors on a case without options: the same option
-  groups in the same order, and in them the same options (panel, table, cell and standard options; the plugin's own seven
+  groups in the same order, and in them the same options (panel, table, cell and standard options; the plugin's own eight
   right after Cell type and its Look right after core's last Table option, then core's), each with the same elements (labels,
   descriptions, editors; React's ids mapped) and input values (the defaults); the Cell type editor's choices. Waits for
   the preview's data first (a unit set in the data adds a "pre-configured" note to Unit). With a label changed in the
@@ -1343,6 +1640,33 @@ Own tests (`src/pjan/`):
 What has passed, on Grafana 13.2.3 OSS (the dev server of `docker-compose.yaml`), with one browser
 (`npx playwright test --workers=1`), on a loaded machine (load average about 100 to 130):
 
+- **2026-10-12, build 4 after its review** (commits `d9f26b3`, `32a3f62`, `8242605`, `f55bc98`: the alpha-0 guard on the
+  shade path, the LCD wrapper's `decimals`, the scheme caches, 400 KiB size limits, the review's e2e cases): the new
+  cases in light at pixel ratio 1, 8 of 8 at the first run; every gauge test of `styling.spec.ts` in all six states
+  (17 gauge cases and the tooltip gauge test), **109 of 109** at the first run (7.2 minutes); `stylingEditor.spec.ts`,
+  `optionsEditor.spec.ts` and `parity.spec.ts` (nothing set, 8 × 74 cases), **24 of 24** at the first run (23.4
+  minutes). A first launch of the gauge run was killed by its shell at start (no test ran) and was relaunched. Root
+  checks, each at the first run: typecheck, lint (no errors; this plugin's warnings 22), build (no warnings in any
+  workspace; Table plus `module.js` 372,205 bytes), copy check OK, `test:scripts` 47 of 47, `test:dist` passed, `npm
+  test` in every workspace (this plugin 58 suites, 1360 passed, 13 skipped, 1 todo; `@pjan/grafana-styling` 161; State
+  timeline plus 579 passed and 3 todo, Stat plus 150, Time series plus 468 passed and 2 todo, `@pjan/grafana-panel-utils`
+  2: unchanged). The whole suite now has 500 tests (`styling.spec.ts` 440 with its setup); it wasn't re-run end to end
+  after the fixes (the gauge, editor and parity specs were, as asked).
+- **2026-10-12, build 4 (Gauge color, commits `b7fcb0b`, `ba25646`, `b2e8802`, `ab9e760`): the full suite, 458 of 458
+  passed** in 47.6 minutes at the first run, without reruns (load average about 40 to 70): 398 `styling.spec.ts` (63
+  cases and 3 tooltip tests × light, dark and dark after a live switch × pixel ratio 1 and 2, the flag test, the setup),
+  13 `stylingEditor.spec.ts`, 2 `optionsEditor.spec.ts`, and the port's parity (nothing set, 8 × 74 cases), interaction,
+  hand-computed, saved-JSON, feature-flag and smoke tests. On the way: the gauge cases in light at pixel ratio 1, 12 of 12
+  at the first run; then every gauge case in all six states with the editor specs, 79 of 82: "gauge basic, scheme: gauge
+  color soft" failed "set differs from core" after a live switch at both pixel ratios (Grafana dark's Soft green,
+  yellow and red are Grafana light's base colours, which core keeps drawing after the switch, so the plugin drew what
+  core drew; the case moved to Strong), and the editor test expected "Fixed" where the editor says "Fixed color"; both
+  fixed, the eight affected tests 8 of 8. A first full run was stopped at test 19 of 458 to make Fixed leave transparent
+  values alone (`ab9e760`), and not counted. Root checks on the same code, each at the first run: typecheck, lint (no
+  errors; this plugin's warnings 22, one more than before: the copy's deprecated `TimeSeriesValue`), build (`module.js`
+  363 KiB), copy check OK, `test:scripts` 47 of 47, `test:dist` passed, `npm test` in every workspace (this plugin 58
+  suites, 1357 passed, 13 skipped, 1 todo; `@pjan/grafana-styling` 160, State timeline plus 579 passed and 3 todo, Stat
+  plus 150, Time series plus 468 passed and 2 todo, `@pjan/grafana-panel-utils` 2: unchanged).
 - **2026-10-12, build 3 after the review and pjan's answers** (weights 400, 500 and 600; core's measurer code
   untouched; the pills-only wrapped row; the shared select's typed values for strings only; State timeline plus without
   its re-export): `styling.spec.ts`, `stylingEditor.spec.ts` and `optionsEditor.spec.ts` at one worker, **345 of 345 at
@@ -1483,7 +1807,8 @@ needed for (review 1, M2).
 re-copies those that differ from upstream only by the import rewrites, and merges the upstream changes into the others
 (a 3-way merge), which then need a review. Per plugin, by hand: re-run the dependency closure from
 `public/app/plugins/panel/table/module.tsx` at the new tag, entering `TableNG` through `@grafana/ui/unstable`; re-derive
-the relative imports out of `Table/` and update the stand-ins under "Relative-path stand-ins" (names checked against the
+the relative imports out of `Table/` (and out of the `BarGauge` copy, build 4) and update the stand-ins under
+"Relative-path stand-ins" (names checked against the
 new `@grafana/ui` `index.d.ts`); check the names imported from `packages/grafana-*/internal`, the table flags in
 `openfeature.gen.ts` and how core initialises OpenFeature (`internal/openFeature/index.ts`), and the
 `@openfeature/web-sdk` and `@openfeature/core` versions in the new `yarn.lock`; check the upstream tests that are not portable (the table under "Tests") and new ones; check that `ts-jest`, the
@@ -1504,7 +1829,7 @@ comparison, a saved `1.x` would read as an old Grafana version. `tests/savedJson
 Every copy, by its plugin path (the upstream path is the same path under `public/app/` or `packages/`), with the
 `Changes:` text of its header. Generated from the headers; `npm run check:upstream-copies` reads the same files.
 
-### Runtime code (AGPL-3.0, from public/app) — 27 files, 2730 lines
+### Runtime code (AGPL-3.0, from public/app) — 27 files, 2756 lines
 
 | File                                                                                           | Changes                  |
 | ---------------------------------------------------------------------------------------------- | ------------------------ |
@@ -1524,7 +1849,7 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 | `src/plugins/panel/table/cells/MarkdownCellOptionsEditor.tsx`        | none.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `src/plugins/panel/table/cells/SparklineCellOptionsEditor.tsx`       | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `src/plugins/panel/table/migrations.ts`                              | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `src/plugins/panel/table/module.tsx` | imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Text weight, Pill fill color, Pill line color, Pill line width and Pill corner radius (custom.styling.backgroundColor, textColor, textWeight, fillColor, lineColor, lineWidth, cornerRadius, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options. |
+| `src/plugins/panel/table/module.tsx` | imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Text weight, Pill fill color, Pill line color, Pill line width, Pill corner radius and Gauge color (custom.styling.backgroundColor, textColor, textWeight, fillColor, lineColor, lineWidth, cornerRadius, gaugeColor, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options. |
 | `src/plugins/panel/table/panelcfg.gen.ts`                            | none.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `src/plugins/panel/table/suggestions.ts`                             | none.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `src/plugins/panel/table/TableCellOptionEditor.tsx`                  | none.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -1536,11 +1861,12 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 | `src/plugins/panel/timeseries/SpanNullsEditor.tsx`                   | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `src/plugins/panel/timeseries/ThresholdsStyleEditor.tsx`             | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
-### Runtime code (Apache-2.0, from packages/grafana-ui) — 42 files, 8696 lines
+### Runtime code (Apache-2.0, from packages/grafana-ui) — 43 files, 9568 lines
 
 | File                                                                                           | Changes                  |
 | ---------------------------------------------------------------------------------------------- | ------------------------ |
 | `src/packages/grafana-ui/src/components/Actions/ActionButton.tsx`                           | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `src/packages/grafana-ui/src/components/BarGauge/BarGauge.tsx` (build 4) | imports; the optional prop pjanColorMode, a colour mode the gradient reads a continuous scheme's colours from instead of Grafana's (Table plus's Gauge color, src/pjan/styling/gauge.ts: the scheme's shaded stops). |
 | `src/packages/grafana-ui/src/components/Table/cellUtils.ts`                                 | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/DataLinksActionsTooltip.tsx`                  | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `src/packages/grafana-ui/src/components/Table/filterExpression.ts`                          | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -1551,7 +1877,7 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 | `src/packages/grafana-ui/src/components/Table/TableCellInspector.tsx`                       | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/TableNG/Cells/ActionsCell.tsx`                | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/TableNG/Cells/AutoCell.tsx`                   | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `src/packages/grafana-ui/src/components/Table/TableNG/Cells/BarGaugeCell.tsx`               | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `src/packages/grafana-ui/src/components/Table/TableNG/Cells/BarGaugeCell.tsx` | Gauge color (src/pjan/styling/gauge.ts): BarGauge's field config, display processor and value from getGaugeProps (core's own when it is unset), and its colour mode for a continuous scheme's gradient (the copied BarGauge's pjanColorMode). |
 | `src/packages/grafana-ui/src/components/Table/TableNG/Cells/DataLinksCell.tsx`              | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/TableNG/Cells/GeoCell.tsx`                    | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/TableNG/Cells/ImageCell.tsx`                  | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -1605,11 +1931,12 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 | `src/plugins/panel/timeseries/SpanNullsEditor.test.tsx`                   | imports only.                                                                                                                                                                                                                                                       |
 | `src/plugins/panel/timeseries/ThresholdsStyleEditor.test.tsx`             | none.                                                                                                                                                                                                                                                               |
 
-### Tests and test helpers (Apache-2.0) — 28 files, 11169 lines
+### Tests and test helpers (Apache-2.0) — 29 files, 11562 lines
 
 | File                                                                                           | Changes                  |
 | ---------------------------------------------------------------------------------------------- | ------------------------ |
 | `src/packages/grafana-test-utils/src/jsdom.ts`                                                   | none.   |
+| `src/packages/grafana-ui/src/components/BarGauge/BarGauge.test.tsx` (build 4) | none. |
 | `src/packages/grafana-ui/src/components/Table/cellUtils.test.ts`                                 | none.   |
 | `src/packages/grafana-ui/src/components/Table/DataLinksActionsTooltip.test.tsx`                  | none.   |
 | `src/packages/grafana-ui/src/components/Table/filterExpression.test.ts`                          | none.   |

@@ -58,12 +58,29 @@ function isSpecialColor(theme: GrafanaTheme2, color: string): boolean {
 
 // Per theme object (a theme plugin that changes its colours builds a new theme), by stops and shade
 const shadedSchemes = new WeakMap<GrafanaTheme2, Map<string, ColorScheme>>();
+// The same, by scheme object first: a caller that keeps its scheme (Table plus caches one per field) shades it per
+// value or LCD cell without building the key string each time
+const shadedByObject = new WeakMap<GrafanaTheme2, WeakMap<ColorScheme, Map<RelativeShade, ColorScheme>>>();
 
 /**
  * Each stop of a scheme in a relative shade of its own hue (without a hue, the stop itself). A stop that is the colour
  * of `panel-bg`, `transparent` or `text` keeps its colour (the "from background" schemes fade into the panel).
  */
 export function shadeColorScheme(theme: GrafanaTheme2, scheme: ColorScheme, shade: RelativeShade): ColorScheme {
+  let byObject = shadedByObject.get(theme);
+  if (!byObject) {
+    byObject = new WeakMap();
+    shadedByObject.set(theme, byObject);
+  }
+  let byShade = byObject.get(scheme);
+  if (!byShade) {
+    byShade = new Map();
+    byObject.set(scheme, byShade);
+  }
+  const known = byShade.get(shade);
+  if (known) {
+    return known;
+  }
   let byKey = shadedSchemes.get(theme);
   if (!byKey) {
     byKey = new Map();
@@ -79,6 +96,7 @@ export function shadeColorScheme(theme: GrafanaTheme2, scheme: ColorScheme, shad
     };
     byKey.set(key, shaded);
   }
+  byShade.set(shade, shaded);
   return shaded;
 }
 
@@ -115,20 +133,26 @@ function spline(values: number[], t: number): number {
 
 const channel = (value: number) => Math.max(0, Math.min(255, Math.round(value) || 0));
 
+// A scheme's stops as red, green and blue channel lists, parsed once per scheme object (its stops are read as given:
+// a scheme isn't changed after it is made, here or by its callers)
+const channelsCache = new WeakMap<ColorScheme, { r: number[]; g: number[]; b: number[] }>();
+function channelsOf(scheme: ColorScheme) {
+  let channels = channelsCache.get(scheme);
+  if (!channels) {
+    const rgb = scheme.stops.map((stop) => tinycolor(stop).toRgb());
+    channels = { r: rgb.map((c) => c.r), g: rgb.map((c) => c.g), b: rgb.map((c) => c.b) };
+    channelsCache.set(scheme, channels);
+  }
+  return channels;
+}
+
 /**
  * The colour of a scheme at a position (0–1), as Grafana's continuous calculator draws it: `rgb(r, g, b)` with whole
  * channels, as d3-color formats it.
  */
 export function interpolateColorScheme(scheme: ColorScheme, position: number): string {
-  const rgb = scheme.stops.map((stop) => tinycolor(stop).toRgb());
-  const [r, g, b] = (['r', 'g', 'b'] as const).map((key) =>
-    channel(
-      spline(
-        rgb.map((c) => c[key]),
-        position
-      )
-    )
-  );
+  const channels = channelsOf(scheme);
+  const [r, g, b] = (['r', 'g', 'b'] as const).map((key) => channel(spline(channels[key], position)));
   return `rgb(${r}, ${g}, ${b})`;
 }
 

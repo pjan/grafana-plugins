@@ -29,6 +29,7 @@ import { fillEditorRegistry } from '../testdata/editorRegistry';
 
 import {
   BACKGROUND_COLOR_MODES,
+  GAUGE_COLOR_MODES,
   getFieldStyling,
   getTableLook,
   PILL_FILL_COLOR_MODES,
@@ -48,7 +49,8 @@ const FILL = 'custom.styling.fillColor';
 const LINE = 'custom.styling.lineColor';
 const WIDTH = 'custom.styling.lineWidth';
 const RADIUS = 'custom.styling.cornerRadius';
-const ALL = [BG, TEXT, WEIGHT, FILL, LINE, WIDTH, RADIUS];
+const GAUGE = 'custom.styling.gaugeColor';
+const ALL = [BG, TEXT, WEIGHT, FILL, LINE, WIDTH, RADIUS, GAUGE];
 const SLIDERS = [WIDTH, RADIUS];
 const PILL = [FILL, LINE, WIDTH, RADIUS];
 const AUTOMATIC = { mode: 'automatic' };
@@ -61,7 +63,7 @@ describe('the field options as registered', () => {
   it('sit in "Cell options" right after Cell type, in order, then core’s Cell value inspect', () => {
     const ids = plugin.fieldConfigRegistry.list().map((i) => i.id);
     const at = ids.indexOf('custom.cellOptions');
-    expect(ids.slice(at, at + 9)).toEqual(['custom.cellOptions', ...ALL, 'custom.inspect']);
+    expect(ids.slice(at, at + 10)).toEqual(['custom.cellOptions', ...ALL, 'custom.inspect']);
     for (const id of ALL) {
       expect(item(id).category).toEqual(['Cell options']);
     }
@@ -73,6 +75,7 @@ describe('the field options as registered', () => {
       'Pill line color',
       'Pill line width',
       'Pill corner radius',
+      'Gauge color',
     ]);
   });
 
@@ -84,6 +87,7 @@ describe('the field options as registered', () => {
     [LINE, 'styling.lineColor'],
     [WIDTH, 'styling.lineWidth'],
     [RADIUS, 'styling.cornerRadius'],
+    [GAUGE, 'styling.gaugeColor'],
   ])('%s: stored at custom.%s with that override id, in the field defaults and the overrides', (id, path) => {
     expect(item(id).path).toBe(path);
     expect(item(id).id).toBe(id);
@@ -168,7 +172,28 @@ describe('the field options as registered', () => {
     ]);
   });
 
-  it.each([BG, TEXT])('%s: shades grouped as of the value color', (id) => {
+  it('Gauge color: the five shades and Fixed (Value is core’s bar; no Automatic, no None), “As Grafana”', () => {
+    expect(item(GAUGE).editor).toBe(StylingColorEditor);
+    expect(item(GAUGE).override).toBe(StylingColorEditor);
+    expect(item(GAUGE).settings.modes).toBe(GAUGE_COLOR_MODES);
+    expect(
+      getStylingColorOptions(item(GAUGE).settings.modes, item(GAUGE).settings.shadeGroup).map((o) => o.value)
+    ).toEqual(['softer', 'soft', 'base', 'strong', 'stronger', 'fixed']);
+    expect(item(GAUGE).settings.placeholder).toBe('As Grafana');
+  });
+
+  it('Gauge color says it applies to Gauge cells, shades per color stop, Fixed for the basic gauge only, and "Not set: …"', () => {
+    const description = item(GAUGE).description!;
+    expect(description).toMatch(/^The bar of Gauge cells; other cell types are not changed\./);
+    expect(description).toMatch(/gradient and LCD gauges take it per color stop: each threshold’s color/);
+    expect(description).toMatch(/keeps Grafana’s invisible bar, with a shade and with Fixed/);
+    expect(description).toMatch(/a continuous color scheme’s colors/);
+    expect(description).toMatch(/The value, in Value color, follows the bar/);
+    expect(description).toMatch(/it applies to the basic gauge only and is ignored in gradient and LCD gauges/);
+    expect(description).toMatch(/Not set: as Grafana, [^.]*$/);
+  });
+
+  it.each([BG, TEXT, GAUGE])('%s: shades grouped as of the value color', (id) => {
     expect(item(id).settings.shadeGroup).toBe('Shade of the value color');
   });
 
@@ -396,6 +421,28 @@ describe('the field options as saved', () => {
     ]);
     // cleared in the editor (no value): unset for its field, defaults included (the override-cleared caveat)
     expect(process(onB([{ id: WEIGHT }], { styling: { textWeight: 500 } }))[2]?.textWeight).toBeUndefined();
+  });
+
+  it('Gauge color: kept; cleared, no key and no `styling: {}` left; by override, styling its field only', () => {
+    expect(
+      load({ defaults: { custom: { styling: { gaugeColor: SOFT } } }, overrides: [] }).defaults.custom.styling
+    ).toEqual({ gaugeColor: SOFT });
+    const cleared = load({
+      defaults: { custom: omit({ minWidth: 70, styling: { gaugeColor: FIXED_RED } }, 'styling.gaugeColor') },
+      overrides: [],
+    }).defaults.custom;
+    expect(cleared).not.toHaveProperty('styling');
+    expect(cleared).toHaveProperty('minWidth', 70);
+    expect(load(onB([{ id: GAUGE, value: FIXED_RED }])).overrides[0].properties).toEqual([
+      { id: GAUGE, value: FIXED_RED },
+    ]);
+    expect(process(onB([{ id: GAUGE, value: FIXED_RED }], { styling: { gaugeColor: SOFT } }))).toEqual([
+      { gaugeColor: SOFT },
+      { gaugeColor: SOFT },
+      { gaugeColor: FIXED_RED },
+    ]);
+    // cleared in the editor (no value): unset for its field, defaults included (the override-cleared caveat)
+    expect(process(onB([{ id: GAUGE }], { styling: { gaugeColor: SOFT } }))[2]?.gaugeColor).toBeUndefined();
   });
 
   it('drops keys it doesn’t know under `styling`', () => {

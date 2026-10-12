@@ -2,13 +2,16 @@
 // The copied runtime code only uses the selectors below as `data-testid` values. Bundling the real package would add
 // it and its `semver` dependency for a few strings, so these are the values that `selectors.components` resolves them
 // to in v13.2.3 (packages/grafana-e2e-selectors/src/selectors/components.ts: `Panels.Visualization.TableNG`,
-// `DataLinksActionsTooltip`, `DataLinksContextMenu` and `PanelEditor.OptionsPane`). The ported tests query with the
-// real package (DataLinksActionsTooltip, TableNG, RowExpander, FilterList and TableCellTooltip tests), which
-// cross-checks these values.
+// `Panels.Visualization.BarGauge` (the copied BarGauge), `DataLinksActionsTooltip`, `DataLinksContextMenu` and
+// `PanelEditor.OptionsPane`). The ported tests query with the real package (DataLinksActionsTooltip, TableNG,
+// RowExpander, FilterList and TableCellTooltip tests), which cross-checks these values; so does src/pjan/standIns.test.ts.
 export const selectors = {
   components: {
     Panels: {
       Visualization: {
+        BarGauge: {
+          valueV2: 'data-testid Bar gauge value',
+        },
         TableNG: {
           RowExpander: 'data-testid tableng row expander',
           cellActions: {

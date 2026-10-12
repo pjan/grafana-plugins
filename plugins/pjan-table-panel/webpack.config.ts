@@ -179,11 +179,17 @@ const config = async (env: Env): Promise<Configuration> => {
   // 5. Size limits for webpack's performance warnings. webpack's default (244 KiB) is meant for web pages. Measured
   //    with the port (2026-10-05): module.js 323 KiB minified (the grid, the table code and its helpers, i18n and the
   //    OpenFeature SDK), plus a lazy 51 KiB chunk with OpenLayers' WKT writer and geometries, loaded only for tables
-  //    with geometry fields. The limits leave about 10 % above module.js, so a larger re-sync shows up as a warning.
+  //    with geometry fields; the limits were 360 KiB. With the opt-in additions, measured 2026-10-12: 351 KiB after
+  //    build 3 (359,378 bytes, 100,541 gzipped), 363 KiB with build 4's copy of Grafana's BarGauge (371,759 bytes,
+  //    103,837 gzipped). Build 5 adds a copy of Sparkline (the spike measured 384 KiB with both copies), which pjan
+  //    chose to keep so continuous schemes can be shaded. 400 KiB, as State timeline plus and Time series plus use: a
+  //    larger re-sync or another addition still shows up as a warning; re-measure at build 5. webpack's
+  //    "performance recommendations" warning (its optimization.runtimeChunk advice, meant for pages with several
+  //    chunks; a Grafana plugin is one AMD module) is only printed with a size warning, so it goes with it.
   baseConfig.performance = {
     ...baseConfig.performance,
-    maxAssetSize: 360 * 1024,
-    maxEntrypointSize: 360 * 1024,
+    maxAssetSize: 400 * 1024,
+    maxEntrypointSize: 400 * 1024,
   };
 
   return baseConfig;

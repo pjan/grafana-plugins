@@ -4,8 +4,8 @@ import { type APIRequestContext, expect, type Page, test } from '@grafana/plugin
 import { apiClient, savedPanel } from './helpers';
 import { readDashboard } from './parity';
 
-// Text color and Background color (build 1), the pill options and the Look (build 2) and Text weight (build 3) in the
-// panel editor and in the saved JSON: where they sit (right after Cell type, in the field defaults with Cell type Auto, and in the overrides
+// Text color and Background color (build 1), the pill options and the Look (build 2), Text weight (build 3) and Gauge
+// color (build 4) in the panel editor and in the saved JSON: where they sit (right after Cell type, in the field defaults with Cell type Auto, and in the overrides
 // menu; the Look after core's Table options), what setting and clearing a value saves (no `custom.styling: {}` left),
 // that tabbing through the unset sliders saves nothing, an override saved as `custom.styling.<key>` and cleared, that
 // opening the editor writes nothing, and that the options, the look and the overrides survive saving and reloading the
@@ -21,7 +21,11 @@ const OPTIONS = [
   'Pill line color',
   'Pill line width',
   'Pill corner radius',
+  'Gauge color',
 ];
+const GAUGE_NOTHING_SET = STYLING.panels.find(
+  (p) => p.title === 'gauge basic, thresholds: gauge color stronger: nothing set'
+)!;
 const PILL_NOTHING_SET = STYLING.panels.find((p) => p.title === 'pill look: nothing set')!;
 
 const editor = (page: Page, name: string) => page.getByTestId(`data-testid Cell options ${name} field property editor`);
@@ -131,7 +135,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
     await expect.poll(() => cellOptions(page)).toEqual(expect.arrayContaining(['Cell type', ...OPTIONS]));
     const shown = await cellOptions(page);
     const at = shown.indexOf('Cell type');
-    expect(shown.slice(at, at + 9)).toEqual(['Cell type', ...OPTIONS, 'Cell value inspect']);
+    expect(shown.slice(at, at + 10)).toEqual(['Cell type', ...OPTIONS, 'Cell value inspect']);
     // the field defaults' Cell type is Auto: the options show anyway (no cell-type showIf)
     await expect(editor(page, 'Cell type').getByRole('combobox')).toHaveValue('Auto');
     // unset, the placeholder says what is drawn (Text color as Stat plus's: Automatic on a fill the plugin draws)
@@ -141,6 +145,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
       'Text weight': 'As Grafana',
       'Pill fill color': 'As Grafana',
       'Pill line color': 'Pill color',
+      'Gauge color': 'As Grafana',
     };
     for (const [name, placeholder] of Object.entries(placeholders)) {
       await expect(editor(page, name)).toBeVisible();
@@ -179,7 +184,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
     const properties = (await page.getByRole('option').allInnerTexts()).map((text) => text.split('\n')[0]);
     const cell = properties.filter((p) => p.startsWith('Cell options > '));
     const at = cell.indexOf('Cell options > Cell type');
-    expect(cell.slice(at, at + 8)).toEqual(['Cell options > Cell type', ...OPTIONS.map((o) => `Cell options > ${o}`)]);
+    expect(cell.slice(at, at + 9)).toEqual(['Cell options > Cell type', ...OPTIONS.map((o) => `Cell options > ${o}`)]);
   });
 
   test('a value set in the field defaults is saved; cleared, its key goes, and no empty `styling` is left', async ({
@@ -316,6 +321,76 @@ test.describe('Text color, Background color, the pill options and the Look in th
     expect((await savedPanel(page, 1))?.fieldConfig.defaults).toEqual(before.defaults);
   });
 
+  test('Gauge color: a shade is saved and drawn on the gauges; cleared, no `styling: {}` is left', async ({ page }) => {
+    await createDashboard('pjan-table-styling-gauge', { ...GAUGE_NOTHING_SET, id: 1 });
+    await openEditor(page, 'pjan-table-styling-gauge');
+    await expect.poll(() => custom(page, 1)).toHaveProperty('minWidth', 70);
+    const preview = page.getByTestId('data-testid panel content');
+    // the first gauge: row v10 of the `color` column (basic, Value color), green
+    const value = preview.getByTestId('data-testid Bar gauge value').first();
+    await expect(value).toHaveCSS('color', 'rgb(115, 191, 105)'); // core's green in Grafana's default dark theme
+
+    // the choices: the five shades and Fixed (Value is core's bar)
+    const combobox = editor(page, 'Gauge color').getByRole('combobox');
+    await combobox.scrollIntoViewIfNeeded();
+    await combobox.click();
+    expect((await page.getByRole('option').allInnerTexts()).map((t) => t.split('\n')[0])).toEqual([
+      'Softer',
+      'Soft',
+      'Base',
+      'Strong',
+      'Stronger',
+      'Fixed color',
+    ]);
+    await page.keyboard.press('Escape');
+
+    await choose(page, editor(page, 'Gauge color'), 'Stronger');
+    await expect
+      .poll(async () => (await custom(page, 1)).styling)
+      .toEqual({
+        gaugeColor: { mode: 'shade', shade: 'stronger' },
+      });
+    // Stronger green in dark: super-light-green #C8F2C2, the bar's line too
+    await expect(value).toHaveCSS('color', 'rgb(200, 242, 194)');
+    await expect(preview.locator('div[style*="transition"]').first()).toHaveCSS(
+      'border-right-color',
+      'rgb(200, 242, 194)'
+    );
+
+    await editor(page, 'Gauge color').getByRole('button', { name: 'Clear value' }).click();
+    await expect.poll(() => custom(page, 1)).not.toHaveProperty('styling');
+    expect(await custom(page, 1)).toHaveProperty('minWidth', 70);
+    await expect(combobox).toHaveAttribute('placeholder', 'As Grafana');
+    await expect(value).toHaveCSS('color', 'rgb(115, 191, 105)');
+  });
+
+  test('Gauge color by override: saved as `custom.styling.gaugeColor`; cleared, it keeps no value', async ({
+    page,
+  }) => {
+    await createDashboard('pjan-table-styling-gauge-override', { ...GAUGE_NOTHING_SET, id: 1 });
+    await openEditor(page, 'pjan-table-styling-gauge-override');
+    const before = (await savedPanel(page, 1))!.fieldConfig;
+    await addOverrideProperty(page, 'color', 'Cell options > Gauge color');
+    await choose(page, lastPropertyRow(page), 'Softer');
+    const matcher = expect.objectContaining({ id: 'byName', options: 'color' });
+    await expect
+      .poll(async () => (await overrides(page, 1))?.at(-1))
+      .toEqual({
+        matcher,
+        properties: [{ id: 'custom.styling.gaugeColor', value: { mode: 'shade', shade: 'softer' } }],
+      });
+    // Softer green in dark: semi-dark-green #37872D
+    await expect(
+      page.getByTestId('data-testid panel content').getByTestId('data-testid Bar gauge value').first()
+    ).toHaveCSS('color', 'rgb(55, 135, 45)');
+    await lastPropertyRow(page).getByRole('button', { name: 'Clear value' }).click();
+    await expect
+      .poll(async () => (await overrides(page, 1))?.at(-1))
+      .toEqual({ matcher, properties: [{ id: 'custom.styling.gaugeColor' }] });
+    expect((await overrides(page, 1))?.slice(0, -1)).toEqual(before.overrides);
+    expect((await savedPanel(page, 1))?.fieldConfig.defaults).toEqual(before.defaults);
+  });
+
   test('tabbing through the unset sliders saves nothing', async ({ page }) => {
     await createDashboard('pjan-table-styling-sliders', { ...PILL_NOTHING_SET, id: 1 });
     await openEditor(page, 'pjan-table-styling-sliders');
@@ -416,6 +491,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
     await choose(page, editor(page, 'Text color'), 'Stronger');
     await choose(page, editor(page, 'Text weight'), 'Medium');
     await choose(page, editor(page, 'Pill line color'), 'Strong');
+    await choose(page, editor(page, 'Gauge color'), 'Soft');
     const radius = editor(page, 'Pill corner radius').getByRole('textbox');
     await radius.fill('3');
     await radius.blur();
@@ -429,6 +505,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
       textWeight: 500,
       lineColor: { mode: 'shade', shade: 'strong' },
       cornerRadius: 3,
+      gaugeColor: { mode: 'shade', shade: 'soft' },
     };
     await expect.poll(async () => (await custom(page, 1)).styling).toEqual(styling);
     await expect
@@ -455,6 +532,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
     await expect(editor(page, 'Text color').getByRole('combobox')).toHaveValue('Stronger');
     await expect(editor(page, 'Text weight').getByRole('combobox')).toHaveValue('Medium (500)');
     await expect(editor(page, 'Pill line color').getByRole('combobox')).toHaveValue('Strong');
+    await expect(editor(page, 'Gauge color').getByRole('combobox')).toHaveValue('Soft');
     await expect(editor(page, 'Pill corner radius').getByRole('slider')).toHaveAttribute('aria-valuenow', '3');
     expect((await savedPanel(page, 1))?.options.styling).toEqual({ look: 'pill' });
     await expect(lookEditor(page).getByRole('radio', { name: 'Pill' })).toBeChecked();

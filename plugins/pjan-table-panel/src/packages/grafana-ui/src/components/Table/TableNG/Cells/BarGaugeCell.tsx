@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/Cells/BarGaugeCell.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: none.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/Cells/BarGaugeCell.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Gauge color (src/pjan/styling/gauge.ts): BarGauge's field config, display processor and value from getGaugeProps (core's own when it is unset), and its colour mode for a continuous scheme's gradient (the copied BarGauge's pjanColorMode).
 import { type ThresholdsConfig, ThresholdsMode, VizOrientation, getFieldConfigWithMinMax } from '@grafana/data';
 import { BarGaugeDisplayMode, BarGaugeValueMode, TableCellDisplayMode } from '@grafana/schema';
 
@@ -7,6 +7,8 @@ import { MaybeWrapWithLink } from '../components/MaybeWrapWithLink';
 import { TABLE } from '../constants';
 import { type BarGaugeCellProps } from '../types';
 import { getCellOptions, getAlignmentFactor } from '../utils';
+// pjan-table-panel: Gauge color (src/pjan/styling/gauge.ts), custom.styling.gaugeColor
+import { getGaugeProps } from '../../../../../../../pjan/styling/gauge';
 
 const defaultScale: ThresholdsConfig = {
   mode: ThresholdsMode.Absolute,
@@ -49,16 +51,18 @@ export const BarGaugeCell = ({ value, field, theme, height, width, rowIdx }: Bar
   const alignmentFactors = getAlignmentFactor(field, displayValue, rowIdx!);
   // clamp the height of the gauge so it isn't stretched for large rows
   const renderedHeight = Math.min(height - heightOffset, TABLE.MAX_CELL_HEIGHT);
+  // pjan-table-panel: Gauge color; core's own config, display and value when it is unset
+  const pjan = getGaugeProps(field, theme, barGaugeMode, { config, display: field.display, value: displayValue });
 
   return (
     <MaybeWrapWithLink field={field} rowIdx={rowIdx}>
       <BarGauge
         width={width}
         height={renderedHeight}
-        field={config}
-        display={field.display}
+        field={pjan.config} // pjan-table-panel: was config
+        display={pjan.display} // pjan-table-panel: was field.display
         text={{ valueSize: 14 }}
-        value={displayValue}
+        value={pjan.value} // pjan-table-panel: was displayValue
         orientation={VizOrientation.Horizontal}
         theme={theme}
         alignmentFactors={alignmentFactors}
@@ -66,6 +70,7 @@ export const BarGaugeCell = ({ value, field, theme, height, width, rowIdx }: Bar
         lcdCellWidth={8}
         displayMode={barGaugeMode}
         valueDisplayMode={valueDisplayMode}
+        pjanColorMode={pjan.colorMode} // pjan-table-panel: a continuous scheme's shaded stops for the gradient
       />
     </MaybeWrapWithLink>
   );

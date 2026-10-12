@@ -35,6 +35,8 @@ export interface FieldStyling {
   lineWidth?: number;
   /** Pill cells: in CSS pixels, 0 to MAX_PILL_CORNER_RADIUS (State timeline plus's key, a panel option there) */
   cornerRadius?: number;
+  /** Gauge cells: the bar, a shade (per colour stop in gradient and LCD gauges) or Fixed (the basic gauge only) */
+  gaugeColor?: StylingColor;
 }
 
 export interface FieldConfigWithStyling {
@@ -52,6 +54,11 @@ export const TEXT_COLOR_MODES: StylingColorMode[] = ['automatic', 'value', 'shad
 export const PILL_FILL_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
 /** Pill line color's modes: a shade or a fixed colour, as State timeline plus's Line color. */
 export const PILL_LINE_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
+/**
+ * Gauge color's modes: a shade or a fixed colour. Value is core's own bar, so unset; Automatic and None don't apply to
+ * a bar.
+ */
+export const GAUGE_COLOR_MODES: StylingColorMode[] = ['shade', 'fixed'];
 /** Pill line width's range, in CSS pixels. */
 export const MIN_PILL_LINE_WIDTH = 1;
 // 3: the line is drawn inside the 22 px pill; at 4 px it touches the descenders of its 12 px text, at 5 px it crosses
@@ -102,7 +109,7 @@ type SliderFieldOption<T> = FieldConfigPropertyItem<T, number | undefined, Clear
  * leaves no key.
  */
 function colorFieldOption<T>(
-  key: 'backgroundColor' | 'textColor' | 'fillColor' | 'lineColor',
+  key: 'backgroundColor' | 'textColor' | 'fillColor' | 'lineColor' | 'gaugeColor',
   category: string[],
   name: string,
   description: string,
@@ -308,6 +315,23 @@ export const pillCornerRadiusFieldOption = <T>(category: string[]): SliderFieldO
       unsetValue: unsetPillCornerRadius(),
       unsetIsExact: false,
     }
+  );
+
+/**
+ * "Gauge color" (`custom.styling.gaugeColor`), after Pill corner radius: the last of the plugin's field options, as it
+ * is the only one for Gauge cells (the Pill-only options before it). Gauge cells only.
+ */
+export const gaugeColorFieldOption = <T>(category: string[]): ColorFieldOption<T> =>
+  colorFieldOption<T>(
+    'gaugeColor',
+    category,
+    t('pjan.table-styling.gauge-color-name', 'Gauge color'),
+    t(
+      'pjan.table-styling.gauge-color-desc',
+      'The bar of Gauge cells; other cell types are not changed. A shade of the value’s color (ranked by contrast with the panel background): the basic gauge’s bar in that shade; gradient and LCD gauges take it per color stop: each threshold’s color, a continuous color scheme’s colors and each LCD cell in that shade of its own hue (a color without a name: of its nearest hue; without a hue, the color itself), so the bar keeps its transition. The value, in Value color, follows the bar. Fixed: one color for the bar; it applies to the basic gauge only and is ignored in gradient and LCD gauges. A value without a color or with a transparent one (such as a mapping to transparent for no limit) keeps Grafana’s invisible bar, with a shade and with Fixed. Not set: as Grafana, the value’s color, and in gradient and LCD gauges the thresholds’ or the color scheme’s colors'
+    ),
+    GAUGE_COLOR_MODES,
+    t('pjan.table-styling.as-grafana', 'As Grafana')
   );
 
 /** Look (`options.styling.look`): State timeline plus's key, values and meaning. Unset is `grafana`. */

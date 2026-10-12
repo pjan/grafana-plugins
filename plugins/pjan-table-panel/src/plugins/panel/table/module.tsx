@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Text weight, Pill fill color, Pill line color, Pill line width and Pill corner radius (custom.styling.backgroundColor, textColor, textWeight, fillColor, lineColor, lineWidth, cornerRadius, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Text weight, Pill fill color, Pill line color, Pill line width, Pill corner radius and Gauge color (custom.styling.backgroundColor, textColor, textWeight, fillColor, lineColor, lineWidth, cornerRadius, gaugeColor, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options.
 import { identityOverrideProcessor, FieldConfigProperty, PanelPlugin, standardEditorsRegistry } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import {
@@ -20,6 +20,7 @@ import { panelChangedHandler } from '../../../pjan/panelChangedHandler';
 // pjan-table-panel: the plugin's field options (src/pjan/styling/), in "Cell options" after Cell type
 import {
   backgroundColorFieldOption,
+  gaugeColorFieldOption,
   lookPanelOption,
   pillCornerRadiusFieldOption,
   pillFillColorFieldOption,
@@ -91,6 +92,7 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(TablePanel)
         .addCustomEditor(pillLineColorFieldOption(cellCategory)) // pjan-table-panel
         .addCustomEditor(pillLineWidthFieldOption(cellCategory)) // pjan-table-panel
         .addCustomEditor(pillCornerRadiusFieldOption(cellCategory)) // pjan-table-panel
+        .addCustomEditor(gaugeColorFieldOption(cellCategory)) // pjan-table-panel
         .addBooleanSwitch({
           path: 'inspect',
           name: t('table.name-cell-value-inspect', 'Cell value inspect'),

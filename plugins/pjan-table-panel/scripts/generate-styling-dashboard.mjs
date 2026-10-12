@@ -1,6 +1,6 @@
 // Generates provisioning/dashboards/styling.json: the cases of tests/styling.spec.ts for Text color and Background
-// color (build 1), the pill options and the Pill look (build 2) and Text weight (build 3; custom.styling.*,
-// options.styling.look), one row per
+// color (build 1), the pill options and the Pill look (build 2), Text weight (build 3) and Gauge color (build 4;
+// custom.styling.*, options.styling.look), one row per
 // case with three panels of the same width and the same data: core's table ("<case>: core"), Table plus with nothing
 // set ("<case>: nothing set") and Table plus with the case's styling ("<case>: set"; the look, if the case has one, in
 // its panel options). Run with `node scripts/generate-styling-dashboard.mjs` after changing a case.
@@ -143,6 +143,73 @@ const WRAPPED_OVERRIDES = [
   override('msg', { ...BASIC, 'custom.width': WRAPPED_WIDTHS.msg, 'custom.wrapText': true }),
   override('tags', { ...PILL, 'custom.width': WRAPPED_WIDTHS.tags, 'custom.wrapText': true }),
 ];
+
+// Gauges (Gauge color, build 4): a host per value and three gauge columns with the same values, one per value display
+// (`color`: Value color, `text`: Text, `hidden`: Hidden; the column's name says which), min 0 and max 100. The host is
+// `v<value>`, so the spec knows a row's value where the gauge hides it. Thresholds: green, yellow from 50, red from 80;
+// or Green-Yellow-Red by value, at the positions 0.1 to 0.9.
+export const GAUGE_VALUES = [10, 25, 50, 75, 90];
+export const GAUGE_STEPS = [
+  [null, 'green'],
+  [50, 'yellow'],
+  [80, 'red'],
+];
+export const GAUGE_COLUMNS = ['color', 'text', 'hidden'];
+// Options: other values, min and max, threshold steps, and percentage thresholds (the review's cases)
+const gaugeFrame = (scheme, { values = GAUGE_VALUES, min = 0, max = 100, steps = GAUGE_STEPS, percentage } = {}) => [
+  field(
+    'host',
+    'string',
+    values.map((v) => `v${v}`)
+  ),
+  ...GAUGE_COLUMNS.map((name) =>
+    field(name, 'number', values, {
+      min,
+      max,
+      ...(scheme
+        ? { color: { mode: 'continuous-GrYlRd' } }
+        : {
+            color: { mode: 'thresholds' },
+            thresholds: {
+              mode: percentage ? 'percentage' : 'absolute',
+              steps: steps.map(([value, color]) => ({ value, color })),
+            },
+          }),
+    })
+  ),
+];
+// Atlas Containers' "of limit" columns, as atlas-containers.json saves them: basic gauges with the value as text
+// (Memory, as CONVENTIONS asks) and hidden (CPU, as saved), percentunit, min 0, max 1, thresholds green, yellow from
+// 0.8, red from 0.9, and "unlimited" (-1) and no value mapped to transparent with the text " "
+export const ATLAS_LIMIT = { memory: [0.42, 0.83, -1, 0.95, null], cpu: [0.18, null, 0.91, -1, 0.86] };
+const atlasLimit = () => {
+  const config = {
+    unit: 'percentunit',
+    min: 0,
+    max: 1,
+    color: { mode: 'thresholds' },
+    thresholds: {
+      mode: 'absolute',
+      steps: [
+        { color: 'green', value: 0 },
+        { color: 'yellow', value: 0.8 },
+        { color: 'red', value: 0.9 },
+      ],
+    },
+    mappings: [
+      { options: { '-1': { color: 'transparent', index: 0, text: ' ' } }, type: 'value' },
+      { options: { match: 'null+nan', result: { color: 'transparent', index: 1, text: ' ' } }, type: 'special' },
+    ],
+  };
+  return [
+    field('container', 'string', ['plex', 'grafana', 'caddy', 'restic', 'authentik']),
+    field('Memory of limit', 'number', ATLAS_LIMIT.memory, config),
+    field('CPU of limit', 'number', ATLAS_LIMIT.cpu, config),
+  ];
+};
+const gauge = (mode, valueDisplayMode) => cell('gauge', { mode, valueDisplayMode });
+// Each gauge column by override (as Atlas sets cell types), its value display by its name
+const gaugeOverrides = (mode, scope) => GAUGE_COLUMNS.map((name) => override(name, gauge(mode, name), scope));
 
 const AUTOMATIC = { mode: 'automatic' };
 const shade = (s) => ({ mode: 'shade', shade: s });
@@ -621,6 +688,172 @@ export const CASES = [
     styling: { textWeight: 600 },
   },
 
+  // Gauge color (build 4), set once in the field defaults: per gauge mode (basic, gradient, LCD) on thresholds and on a
+  // continuous scheme, each with the three value displays; Fixed on the basic gauge, and ignored in gradient and LCD
+  // gauges; a transparent panel; nested sub-tables; an override on one column
+  ...[
+    ['basic', false, 'stronger'],
+    ['gradient', false, 'soft'],
+    ['lcd', false, 'strong'],
+    ['basic', true, 'strong'],
+    ['gradient', true, 'stronger'],
+    ['lcd', true, 'softer'],
+  ].map(([mode, scheme, s]) => ({
+    title: `gauge ${mode}, ${scheme ? 'scheme' : 'thresholds'}: gauge color ${s}`,
+    kind: 'gauge',
+    column: 'color',
+    frames: [gaugeFrame(scheme)],
+    wide: true,
+    overrides: gaugeOverrides(mode),
+    styling: { gaugeColor: shade(s) },
+    h: 8,
+  })),
+  {
+    title: 'gauge basic, thresholds: gauge color fixed',
+    kind: 'gauge',
+    column: 'color',
+    frames: [gaugeFrame(false)],
+    wide: true,
+    overrides: gaugeOverrides('basic'),
+    styling: { gaugeColor: fixed('purple') },
+    h: 8,
+  },
+  {
+    title: 'gauge gradient and lcd: gauge color fixed (ignored)',
+    kind: 'gauge',
+    column: 'color',
+    frames: [gaugeFrame(false)],
+    wide: true,
+    overrides: [
+      override('color', gauge('gradient', 'color')),
+      override('text', gauge('lcd', 'text')),
+      override('hidden', gauge('lcd', 'hidden')),
+    ],
+    styling: { gaugeColor: fixed('purple') },
+    h: 8,
+  },
+  {
+    title: 'gauge gradient, transparent panel: gauge color soft',
+    kind: 'gauge',
+    column: 'color',
+    frames: [gaugeFrame(false)],
+    wide: true,
+    overrides: gaugeOverrides('gradient'),
+    styling: { gaugeColor: shade('soft') },
+    transparent: true,
+    h: 8,
+  },
+  {
+    title: 'nested table: gauge color stronger in the sub-tables',
+    kind: 'nested',
+    column: 'color',
+    frames: [[field('stack', 'string', ['web', 'web', 'db', 'db', 'db']), ...gaugeFrame(false)]],
+    transformations: [
+      {
+        id: 'groupToNestedTable',
+        options: {
+          expandAllRows: true,
+          fields: { stack: { aggregations: [], operation: 'groupby' } },
+        },
+      },
+    ],
+    overrides: [
+      override('color', gauge('basic', 'color'), 'nested'),
+      override('text', gauge('gradient', 'text'), 'nested'),
+      override('hidden', gauge('lcd', 'hidden'), 'nested'),
+    ],
+    styling: { gaugeColor: shade('stronger') },
+    wide: true,
+    h: 13,
+  },
+  // Atlas's real shape: the transparent "unlimited" and no-value stubs stay transparent, with Fixed and with a shade
+  ...[
+    ['fixed', fixed('blue')],
+    ['stronger', shade('stronger')],
+  ].map(([name, gaugeColor]) => ({
+    title: `gauge, atlas of limit: gauge color ${name}`,
+    kind: 'gauge',
+    column: 'Memory of limit',
+    frames: [atlasLimit()],
+    wide: true,
+    overrides: [
+      override('Memory of limit', gauge('basic', 'text')),
+      override('CPU of limit', gauge('basic', 'hidden')),
+    ],
+    styling: { gaugeColor },
+    h: 8,
+  })),
+  // Percentage thresholds (green, yellow from 50 %, red from 80 % of 0 to 200)
+  {
+    title: 'gauge gradient, percentage thresholds: gauge color soft',
+    kind: 'gauge',
+    column: 'color',
+    frames: [gaugeFrame(false, { values: [20, 60, 110, 150, 190], max: 200, percentage: true })],
+    wide: true,
+    overrides: gaugeOverrides('gradient'),
+    styling: { gaugeColor: shade('soft') },
+    h: 8,
+  },
+  // Negative values, min -50 and max 50: thresholds (green, yellow from 0, red from 30) and the scheme
+  {
+    title: 'gauge basic, negative values: gauge color stronger',
+    kind: 'gauge',
+    column: 'color',
+    frames: [
+      gaugeFrame(false, {
+        values: [-40, -15, 0, 20, 45],
+        min: -50,
+        max: 50,
+        steps: [
+          [null, 'green'],
+          [0, 'yellow'],
+          [30, 'red'],
+        ],
+      }),
+    ],
+    wide: true,
+    overrides: gaugeOverrides('basic'),
+    styling: { gaugeColor: shade('stronger') },
+    h: 8,
+  },
+  {
+    title: 'gauge lcd, scheme, negative values: gauge color strong',
+    kind: 'gauge',
+    column: 'color',
+    frames: [gaugeFrame(true, { values: [-40, -15, 0, 20, 45], min: -50, max: 50 })],
+    wide: true,
+    overrides: gaugeOverrides('lcd'),
+    styling: { gaugeColor: shade('strong') },
+    h: 8,
+  },
+  // Tooltip from field: the host's tooltip shows the `color` column, a basic gauge
+  {
+    title: 'tooltip from field: gauge color stronger',
+    kind: 'tooltip',
+    column: 'color',
+    frames: [gaugeFrame(false)],
+    overrides: [
+      override('host', { 'custom.tooltip.field': 'color', 'custom.tooltip.placement': 'right' }),
+      override('color', gauge('basic', 'color')),
+    ],
+    styling: { gaugeColor: shade('stronger') },
+    h: 8,
+  },
+  {
+    title: 'gauge color by override on one column',
+    kind: 'gauge',
+    column: 'color',
+    frames: [gaugeFrame(false)],
+    wide: true,
+    overrides: [
+      override('color', gauge('basic', 'color')),
+      override('text', { ...gauge('basic', 'text'), 'custom.styling.gaugeColor': shade('stronger') }),
+      override('hidden', gauge('basic', 'hidden')),
+    ],
+    styling: { gaugeColor: shade('soft') },
+    h: 8,
+  },
+
   // An override styles only its column: Text color Automatic in the defaults, Fixed on level
   {
     title: 'override on one column',
@@ -677,7 +910,7 @@ CASES.forEach((c, i) => {
 
 const dashboard = {
   uid: 'pjan-table-styling',
-  title: 'Table plus styling (Text color, Background color, pill options and Look, Text weight)',
+  title: 'Table plus styling (Text color, Background color, pill options and Look, Text weight, Gauge color)',
   tags: ['pjan-table-panel'],
   editable: true,
   schemaVersion: 42,

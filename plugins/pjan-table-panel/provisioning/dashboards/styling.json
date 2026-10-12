@@ -1,6 +1,6 @@
 {
   "uid": "pjan-table-styling",
-  "title": "Table plus styling (Text color, Background color, pill options and Look, Text weight)",
+  "title": "Table plus styling (Text color, Background color, pill options and Look, Text weight, Gauge color)",
   "tags": ["pjan-table-panel"],
   "editable": true,
   "schemaVersion": 42,
@@ -5077,6 +5077,2181 @@
     {
       "id": 520,
       "type": "table",
+      "title": "gauge basic, thresholds: gauge color stronger: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 669, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 521,
+      "type": "pjan-table-panel",
+      "title": "gauge basic, thresholds: gauge color stronger: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 677, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 522,
+      "type": "pjan-table-panel",
+      "title": "gauge basic, thresholds: gauge color stronger: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 685, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "stronger" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 530,
+      "type": "table",
+      "title": "gauge gradient, thresholds: gauge color soft: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 693, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 531,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient, thresholds: gauge color soft: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 701, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 532,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient, thresholds: gauge color soft: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 709, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "soft" } } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 540,
+      "type": "table",
+      "title": "gauge lcd, thresholds: gauge color strong: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 717, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 541,
+      "type": "pjan-table-panel",
+      "title": "gauge lcd, thresholds: gauge color strong: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 725, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 542,
+      "type": "pjan-table-panel",
+      "title": "gauge lcd, thresholds: gauge color strong: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 733, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "strong" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 550,
+      "type": "table",
+      "title": "gauge basic, scheme: gauge color strong: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 741, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 551,
+      "type": "pjan-table-panel",
+      "title": "gauge basic, scheme: gauge color strong: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 749, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 552,
+      "type": "pjan-table-panel",
+      "title": "gauge basic, scheme: gauge color strong: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 757, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "strong" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 560,
+      "type": "table",
+      "title": "gauge gradient, scheme: gauge color stronger: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 765, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 561,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient, scheme: gauge color stronger: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 773, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 562,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient, scheme: gauge color stronger: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 781, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "stronger" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 570,
+      "type": "table",
+      "title": "gauge lcd, scheme: gauge color softer: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 789, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 571,
+      "type": "pjan-table-panel",
+      "title": "gauge lcd, scheme: gauge color softer: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 797, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 572,
+      "type": "pjan-table-panel",
+      "title": "gauge lcd, scheme: gauge color softer: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 805, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "softer" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 580,
+      "type": "table",
+      "title": "gauge basic, thresholds: gauge color fixed: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 813, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 581,
+      "type": "pjan-table-panel",
+      "title": "gauge basic, thresholds: gauge color fixed: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 821, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 582,
+      "type": "pjan-table-panel",
+      "title": "gauge basic, thresholds: gauge color fixed: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 829, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "fixed", "fixedColor": "purple" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 590,
+      "type": "table",
+      "title": "gauge gradient and lcd: gauge color fixed (ignored): core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 837, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 591,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient and lcd: gauge color fixed (ignored): nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 845, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 592,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient and lcd: gauge color fixed (ignored): set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 853, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "fixed", "fixedColor": "purple" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 600,
+      "type": "table",
+      "title": "gauge gradient, transparent panel: gauge color soft: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "transparent": true,
+      "gridPos": { "x": 0, "y": 861, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 601,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient, transparent panel: gauge color soft: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "transparent": true,
+      "gridPos": { "x": 0, "y": 869, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 602,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient, transparent panel: gauge color soft: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "transparent": true,
+      "gridPos": { "x": 0, "y": 877, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "soft" } } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 610,
+      "type": "table",
+      "title": "nested table: gauge color stronger in the sub-tables: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 0, "y": 885, "w": 24, "h": 13 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color", "scope": "nested" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text", "scope": "nested" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden", "scope": "nested" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 611,
+      "type": "pjan-table-panel",
+      "title": "nested table: gauge color stronger in the sub-tables: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 0, "y": 898, "w": 24, "h": 13 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color", "scope": "nested" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text", "scope": "nested" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden", "scope": "nested" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 612,
+      "type": "pjan-table-panel",
+      "title": "nested table: gauge color stronger in the sub-tables: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 0, "y": 911, "w": 24, "h": 13 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "stronger" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color", "scope": "nested" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text", "scope": "nested" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden", "scope": "nested" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 620,
+      "type": "table",
+      "title": "gauge, atlas of limit: gauge color fixed: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"container\",\"type\":\"string\",\"values\":[\"plex\",\"grafana\",\"caddy\",\"restic\",\"authentik\"],\"config\":{}},{\"name\":\"Memory of limit\",\"type\":\"number\",\"values\":[0.42,0.83,-1,0.95,null],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}},{\"name\":\"CPU of limit\",\"type\":\"number\",\"values\":[0.18,null,0.91,-1,0.86],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 924, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Memory of limit" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CPU of limit" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 621,
+      "type": "pjan-table-panel",
+      "title": "gauge, atlas of limit: gauge color fixed: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"container\",\"type\":\"string\",\"values\":[\"plex\",\"grafana\",\"caddy\",\"restic\",\"authentik\"],\"config\":{}},{\"name\":\"Memory of limit\",\"type\":\"number\",\"values\":[0.42,0.83,-1,0.95,null],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}},{\"name\":\"CPU of limit\",\"type\":\"number\",\"values\":[0.18,null,0.91,-1,0.86],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 932, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Memory of limit" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CPU of limit" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 622,
+      "type": "pjan-table-panel",
+      "title": "gauge, atlas of limit: gauge color fixed: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"container\",\"type\":\"string\",\"values\":[\"plex\",\"grafana\",\"caddy\",\"restic\",\"authentik\"],\"config\":{}},{\"name\":\"Memory of limit\",\"type\":\"number\",\"values\":[0.42,0.83,-1,0.95,null],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}},{\"name\":\"CPU of limit\",\"type\":\"number\",\"values\":[0.18,null,0.91,-1,0.86],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 940, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "fixed", "fixedColor": "blue" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Memory of limit" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CPU of limit" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 630,
+      "type": "table",
+      "title": "gauge, atlas of limit: gauge color stronger: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"container\",\"type\":\"string\",\"values\":[\"plex\",\"grafana\",\"caddy\",\"restic\",\"authentik\"],\"config\":{}},{\"name\":\"Memory of limit\",\"type\":\"number\",\"values\":[0.42,0.83,-1,0.95,null],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}},{\"name\":\"CPU of limit\",\"type\":\"number\",\"values\":[0.18,null,0.91,-1,0.86],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 948, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Memory of limit" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CPU of limit" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 631,
+      "type": "pjan-table-panel",
+      "title": "gauge, atlas of limit: gauge color stronger: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"container\",\"type\":\"string\",\"values\":[\"plex\",\"grafana\",\"caddy\",\"restic\",\"authentik\"],\"config\":{}},{\"name\":\"Memory of limit\",\"type\":\"number\",\"values\":[0.42,0.83,-1,0.95,null],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}},{\"name\":\"CPU of limit\",\"type\":\"number\",\"values\":[0.18,null,0.91,-1,0.86],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 956, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Memory of limit" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CPU of limit" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 632,
+      "type": "pjan-table-panel",
+      "title": "gauge, atlas of limit: gauge color stronger: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"container\",\"type\":\"string\",\"values\":[\"plex\",\"grafana\",\"caddy\",\"restic\",\"authentik\"],\"config\":{}},{\"name\":\"Memory of limit\",\"type\":\"number\",\"values\":[0.42,0.83,-1,0.95,null],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}},{\"name\":\"CPU of limit\",\"type\":\"number\",\"values\":[0.18,null,0.91,-1,0.86],\"config\":{\"unit\":\"percentunit\",\"min\":0,\"max\":1,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"color\":\"green\",\"value\":0},{\"color\":\"yellow\",\"value\":0.8},{\"color\":\"red\",\"value\":0.9}]},\"mappings\":[{\"options\":{\"-1\":{\"color\":\"transparent\",\"index\":0,\"text\":\" \"}},\"type\":\"value\"},{\"options\":{\"match\":\"null+nan\",\"result\":{\"color\":\"transparent\",\"index\":1,\"text\":\" \"}},\"type\":\"special\"}]}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 964, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "stronger" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Memory of limit" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CPU of limit" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 640,
+      "type": "table",
+      "title": "gauge gradient, percentage thresholds: gauge color soft: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v20\",\"v60\",\"v110\",\"v150\",\"v190\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 972, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 641,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient, percentage thresholds: gauge color soft: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v20\",\"v60\",\"v110\",\"v150\",\"v190\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 980, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 642,
+      "type": "pjan-table-panel",
+      "title": "gauge gradient, percentage thresholds: gauge color soft: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v20\",\"v60\",\"v110\",\"v150\",\"v190\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[20,60,110,150,190],\"config\":{\"min\":0,\"max\":200,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"percentage\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 988, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "soft" } } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "color" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "text" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "gradient", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 650,
+      "type": "table",
+      "title": "gauge basic, negative values: gauge color stronger: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v-40\",\"v-15\",\"v0\",\"v20\",\"v45\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 996, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 651,
+      "type": "pjan-table-panel",
+      "title": "gauge basic, negative values: gauge color stronger: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v-40\",\"v-15\",\"v0\",\"v20\",\"v45\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1004, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 652,
+      "type": "pjan-table-panel",
+      "title": "gauge basic, negative values: gauge color stronger: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v-40\",\"v-15\",\"v0\",\"v20\",\"v45\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":0,\"color\":\"yellow\"},{\"value\":30,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1012, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "stronger" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 660,
+      "type": "table",
+      "title": "gauge lcd, scheme, negative values: gauge color strong: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v-40\",\"v-15\",\"v0\",\"v20\",\"v45\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1020, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 661,
+      "type": "pjan-table-panel",
+      "title": "gauge lcd, scheme, negative values: gauge color strong: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v-40\",\"v-15\",\"v0\",\"v20\",\"v45\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1028, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 662,
+      "type": "pjan-table-panel",
+      "title": "gauge lcd, scheme, negative values: gauge color strong: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v-40\",\"v-15\",\"v0\",\"v20\",\"v45\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[-40,-15,0,20,45],\"config\":{\"min\":-50,\"max\":50,\"color\":{\"mode\":\"continuous-GrYlRd\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1036, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "strong" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "lcd", "valueDisplayMode": "hidden" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 670,
+      "type": "table",
+      "title": "tooltip from field: gauge color stronger: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1044, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "color" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 671,
+      "type": "pjan-table-panel",
+      "title": "tooltip from field: gauge color stronger: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 1044, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "color" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 672,
+      "type": "pjan-table-panel",
+      "title": "tooltip from field: gauge color stronger: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 1044, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "stronger" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "color" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 680,
+      "type": "table",
+      "title": "gauge color by override on one column: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1052, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 681,
+      "type": "pjan-table-panel",
+      "title": "gauge color by override on one column: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1060, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 682,
+      "type": "pjan-table-panel",
+      "title": "gauge color by override on one column: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"v10\",\"v25\",\"v50\",\"v75\",\"v90\"],\"config\":{}},{\"name\":\"color\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"text\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}},{\"name\":\"hidden\",\"type\":\"number\",\"values\":[10,25,50,75,90],\"config\":{\"min\":0,\"max\":100,\"color\":{\"mode\":\"thresholds\"},\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":50,\"color\":\"yellow\"},{\"value\":80,\"color\":\"red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 1068, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "gaugeColor": { "mode": "shade", "shade": "soft" } } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "color" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "color" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "text" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } },
+              { "id": "custom.styling.gaugeColor", "value": { "mode": "shade", "shade": "stronger" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "hidden" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "hidden" }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 690,
+      "type": "table",
       "title": "override on one column: core",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
@@ -5087,7 +7262,7 @@
           "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
         }
       ],
-      "gridPos": { "x": 0, "y": 669, "w": 8, "h": 7 },
+      "gridPos": { "x": 0, "y": 1076, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70 } },
         "overrides": [
@@ -5104,7 +7279,7 @@
       "options": { "cellHeight": "sm", "showHeader": true }
     },
     {
-      "id": 521,
+      "id": 691,
       "type": "pjan-table-panel",
       "title": "override on one column: nothing set",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
@@ -5116,7 +7291,7 @@
           "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
         }
       ],
-      "gridPos": { "x": 8, "y": 669, "w": 8, "h": 7 },
+      "gridPos": { "x": 8, "y": 1076, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70 } },
         "overrides": [
@@ -5133,7 +7308,7 @@
       "options": { "cellHeight": "sm", "showHeader": true }
     },
     {
-      "id": 522,
+      "id": 692,
       "type": "pjan-table-panel",
       "title": "override on one column: set",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
@@ -5145,7 +7320,7 @@
           "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
         }
       ],
-      "gridPos": { "x": 16, "y": 669, "w": 8, "h": 7 },
+      "gridPos": { "x": 16, "y": 1076, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70, "styling": { "textColor": { "mode": "automatic" } } } },
         "overrides": [

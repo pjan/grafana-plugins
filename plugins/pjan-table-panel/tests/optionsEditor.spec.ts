@@ -5,7 +5,7 @@ import { CORE, panelOf, PLUGIN, readDashboard, serialise } from './parity';
 // Core's and Table plus's option editors are the same (the plan's parity table, "Options"): the same option groups in
 // the same order, and in them the same options (panel and field options, standard ones included), with the same labels,
 // descriptions, editors and default values, apart from the plugin's own options (custom.styling.*: Background color,
-// Text color, Text weight and the four pill options, right after Cell type; options.styling.look: Look, after core's Table options;
+// Text color, Text weight, the four pill options and Gauge color, right after Cell type; options.styling.look: Look, after core's Table options;
 // tests/stylingEditor.spec.ts); and the Cell type editor offers the same choices. Compared on a parity
 // case without options (`defaults: …`), in the panel editor, in Grafana's default language (en-US). Run with
 // --workers=1.
@@ -20,6 +20,7 @@ const OWN_OPTIONS = [
   'Pill line color',
   'Pill line width',
   'Pill corner radius',
+  'Gauge color',
 ];
 const OWN_PANEL_OPTION = 'data-testid Table Look field property editor';
 
