@@ -1,6 +1,6 @@
 {
   "uid": "pjan-table-styling",
-  "title": "Table plus styling (Text color and Background color)",
+  "title": "Table plus styling (Text color, Background color, pill options and Look)",
   "tags": ["pjan-table-panel"],
   "editable": true,
   "schemaVersion": 42,
@@ -1872,6 +1872,1564 @@
     {
       "id": 240,
       "type": "table",
+      "title": "pill options: fill softer: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 170, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 241,
+      "type": "pjan-table-panel",
+      "title": "pill options: fill softer: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 177, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 242,
+      "type": "pjan-table-panel",
+      "title": "pill options: fill softer: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 184, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "fillColor": { "mode": "shade", "shade": "softer" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 250,
+      "type": "table",
+      "title": "pill options: fill fixed: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 191, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 251,
+      "type": "pjan-table-panel",
+      "title": "pill options: fill fixed: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 198, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 252,
+      "type": "pjan-table-panel",
+      "title": "pill options: fill fixed: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 205, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "fillColor": { "mode": "fixed", "fixedColor": "purple" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 260,
+      "type": "table",
+      "title": "pill options: line color base: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 212, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 261,
+      "type": "pjan-table-panel",
+      "title": "pill options: line color base: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 219, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 262,
+      "type": "pjan-table-panel",
+      "title": "pill options: line color base: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 226, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "lineColor": { "mode": "shade", "shade": "base" } } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 270,
+      "type": "table",
+      "title": "pill options: line color fixed, width 3: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 233, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 271,
+      "type": "pjan-table-panel",
+      "title": "pill options: line color fixed, width 3: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 240, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 272,
+      "type": "pjan-table-panel",
+      "title": "pill options: line color fixed, width 3: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 247, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 70,
+            "styling": { "lineColor": { "mode": "fixed", "fixedColor": "blue" }, "lineWidth": 3 }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 280,
+      "type": "table",
+      "title": "pill options: line width 2 alone: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 254, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 281,
+      "type": "pjan-table-panel",
+      "title": "pill options: line width 2 alone: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 261, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 282,
+      "type": "pjan-table-panel",
+      "title": "pill options: line width 2 alone: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 268, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "lineWidth": 2 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 290,
+      "type": "table",
+      "title": "pill options: corner radius 2: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 275, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 291,
+      "type": "pjan-table-panel",
+      "title": "pill options: corner radius 2: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 282, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 292,
+      "type": "pjan-table-panel",
+      "title": "pill options: corner radius 2: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 289, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "cornerRadius": 2 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 300,
+      "type": "table",
+      "title": "pill options: the CONVENTIONS pill (softer, base line, radius 4, text automatic): core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 296, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 301,
+      "type": "pjan-table-panel",
+      "title": "pill options: the CONVENTIONS pill (softer, base line, radius 4, text automatic): nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 303, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 302,
+      "type": "pjan-table-panel",
+      "title": "pill options: the CONVENTIONS pill (softer, base line, radius 4, text automatic): set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 310, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 70,
+            "styling": {
+              "fillColor": { "mode": "shade", "shade": "softer" },
+              "lineColor": { "mode": "shade", "shade": "base" },
+              "cornerRadius": 4,
+              "textColor": { "mode": "automatic" }
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 310,
+      "type": "table",
+      "title": "pill look: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 317, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 311,
+      "type": "pjan-table-panel",
+      "title": "pill look: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 324, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 312,
+      "type": "pjan-table-panel",
+      "title": "pill look: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 331, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true, "styling": { "look": "pill" } }
+    },
+    {
+      "id": 320,
+      "type": "table",
+      "title": "pill look, with radius 4 and a column’s own fill and line width: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 338, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 321,
+      "type": "pjan-table-panel",
+      "title": "pill look, with radius 4 and a column’s own fill and line width: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 345, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 322,
+      "type": "pjan-table-panel",
+      "title": "pill look, with radius 4 and a column’s own fill and line width: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 352, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "cornerRadius": 4 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.styling.fillColor", "value": { "mode": "fixed", "fixedColor": "purple" } },
+              { "id": "custom.styling.lineWidth", "value": 2 }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true, "styling": { "look": "pill" } }
+    },
+    {
+      "id": 330,
+      "type": "table",
+      "title": "pill look, transparent panel: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "transparent": true,
+      "gridPos": { "x": 0, "y": 359, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 331,
+      "type": "pjan-table-panel",
+      "title": "pill look, transparent panel: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "transparent": true,
+      "gridPos": { "x": 0, "y": 366, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 332,
+      "type": "pjan-table-panel",
+      "title": "pill look, transparent panel: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "transparent": true,
+      "gridPos": { "x": 0, "y": 373, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true, "styling": { "look": "pill" } }
+    },
+    {
+      "id": 340,
+      "type": "table",
+      "title": "pill look, pills on a row colored by apply to entire row: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 380, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "basic", "applyToRow": true }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 341,
+      "type": "pjan-table-panel",
+      "title": "pill look, pills on a row colored by apply to entire row: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 387, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "basic", "applyToRow": true }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 342,
+      "type": "pjan-table-panel",
+      "title": "pill look, pills on a row colored by apply to entire row: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 394, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "basic", "applyToRow": true }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true, "styling": { "look": "pill" } }
+    },
+    {
+      "id": 350,
+      "type": "table",
+      "title": "pill look, text stronger, on a gradient row: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 401, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "gradient", "applyToRow": true }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 351,
+      "type": "pjan-table-panel",
+      "title": "pill look, text stronger, on a gradient row: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 408, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "gradient", "applyToRow": true }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 352,
+      "type": "pjan-table-panel",
+      "title": "pill look, text stronger, on a gradient row: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 415, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "textColor": { "mode": "shade", "shade": "stronger" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "gradient", "applyToRow": true }
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true, "styling": { "look": "pill" } }
+    },
+    {
+      "id": 360,
+      "type": "table",
       "title": "tooltip from field: colored text automatic: core",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
@@ -1883,7 +3441,7 @@
         }
       ],
       "transparent": true,
-      "gridPos": { "x": 0, "y": 170, "w": 8, "h": 7 },
+      "gridPos": { "x": 0, "y": 422, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70 } },
         "overrides": [
@@ -1903,7 +3461,7 @@
       "options": { "cellHeight": "sm", "showHeader": true }
     },
     {
-      "id": 241,
+      "id": 361,
       "type": "pjan-table-panel",
       "title": "tooltip from field: colored text automatic: nothing set",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
@@ -1916,7 +3474,7 @@
         }
       ],
       "transparent": true,
-      "gridPos": { "x": 8, "y": 170, "w": 8, "h": 7 },
+      "gridPos": { "x": 8, "y": 422, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70 } },
         "overrides": [
@@ -1936,7 +3494,7 @@
       "options": { "cellHeight": "sm", "showHeader": true }
     },
     {
-      "id": 242,
+      "id": 362,
       "type": "pjan-table-panel",
       "title": "tooltip from field: colored text automatic: set",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
@@ -1949,7 +3507,7 @@
         }
       ],
       "transparent": true,
-      "gridPos": { "x": 16, "y": 170, "w": 8, "h": 7 },
+      "gridPos": { "x": 16, "y": 422, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70, "styling": { "textColor": { "mode": "automatic" } } } },
         "overrides": [
@@ -1969,7 +3527,208 @@
       "options": { "cellHeight": "sm", "showHeader": true }
     },
     {
-      "id": 250,
+      "id": 370,
+      "type": "table",
+      "title": "pill look, nested table: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 0, "y": 429, "w": 24, "h": 13 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 371,
+      "type": "pjan-table-panel",
+      "title": "pill look, nested table: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 0, "y": 442, "w": 24, "h": 13 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 372,
+      "type": "pjan-table-panel",
+      "title": "pill look, nested table: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 0, "y": 455, "w": 24, "h": 13 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true, "styling": { "look": "pill" } }
+    },
+    {
+      "id": 380,
+      "type": "table",
+      "title": "pill look, tooltip from field: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 468, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "state" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 381,
+      "type": "pjan-table-panel",
+      "title": "pill look, tooltip from field: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 468, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "state" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 382,
+      "type": "pjan-table-panel",
+      "title": "pill look, tooltip from field: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 468, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "state" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true, "styling": { "look": "pill" } }
+    },
+    {
+      "id": 390,
       "type": "table",
       "title": "override on one column: core",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
@@ -1981,7 +3740,7 @@
           "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
         }
       ],
-      "gridPos": { "x": 0, "y": 177, "w": 8, "h": 7 },
+      "gridPos": { "x": 0, "y": 475, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70 } },
         "overrides": [
@@ -1998,7 +3757,7 @@
       "options": { "cellHeight": "sm", "showHeader": true }
     },
     {
-      "id": 251,
+      "id": 391,
       "type": "pjan-table-panel",
       "title": "override on one column: nothing set",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
@@ -2010,7 +3769,7 @@
           "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
         }
       ],
-      "gridPos": { "x": 8, "y": 177, "w": 8, "h": 7 },
+      "gridPos": { "x": 8, "y": 475, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70 } },
         "overrides": [
@@ -2027,7 +3786,7 @@
       "options": { "cellHeight": "sm", "showHeader": true }
     },
     {
-      "id": 252,
+      "id": 392,
       "type": "pjan-table-panel",
       "title": "override on one column: set",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
@@ -2039,7 +3798,7 @@
           "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
         }
       ],
-      "gridPos": { "x": 16, "y": 177, "w": 8, "h": 7 },
+      "gridPos": { "x": 16, "y": 475, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70, "styling": { "textColor": { "mode": "automatic" } } } },
         "overrides": [

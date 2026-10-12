@@ -4,14 +4,23 @@ import { CORE, panelOf, PLUGIN, readDashboard, serialise } from './parity';
 
 // Core's and Table plus's option editors are the same (the plan's parity table, "Options"): the same option groups in
 // the same order, and in them the same options (panel and field options, standard ones included), with the same labels,
-// descriptions, editors and default values, apart from the plugin's own options (custom.styling.*: Background color and
-// Text color, right after Cell type, tests/stylingEditor.spec.ts); and the Cell type editor offers the same choices. Compared on a parity
+// descriptions, editors and default values, apart from the plugin's own options (custom.styling.*: Background color,
+// Text color and the four pill options, right after Cell type; options.styling.look: Look, after core's Table options;
+// tests/stylingEditor.spec.ts); and the Cell type editor offers the same choices. Compared on a parity
 // case without options (`defaults: …`), in the panel editor, in Grafana's default language (en-US). Run with
 // --workers=1.
 const PARITY = readDashboard('parity.json');
 const CASE = 'defaults: string, status, number, time and boolean';
-// The plugin's own field options (custom.styling.*), which core doesn't have
-const OWN_OPTIONS = ['Background color', 'Text color'];
+// The plugin's own field options (custom.styling.*) and panel option (options.styling.look), which core doesn't have
+const OWN_OPTIONS = [
+  'Background color',
+  'Text color',
+  'Pill fill color',
+  'Pill line color',
+  'Pill line width',
+  'Pill corner radius',
+];
+const OWN_PANEL_OPTION = 'data-testid Table Look field property editor';
 
 /** The options pane: its groups in order, and each option's elements (ids mapped) and the state of its inputs. */
 const optionsPane = (page: Page) =>
@@ -92,11 +101,17 @@ test('the option editors list the same options, in the same order, with the same
     ])
   );
   expect(plugin.groups).toEqual(core.groups);
-  // the plugin's own options, right after Cell type; every other option as core's
+  // the plugin's own options, right after Cell type, and its Look right after core's last Table panel option (Page size,
+  // or Enable pagination while Page size is hidden; the Table field options follow); every other option as core's
   const own = OWN_OPTIONS.map((name) => `data-testid Cell options ${name} field property editor`);
   const at = plugin.options.findIndex((o) => o.option === 'data-testid Cell options Cell type field property editor');
   expect(plugin.options.slice(at + 1, at + 1 + own.length).map((o) => o.option)).toEqual(own);
-  const pluginCore = plugin.options.filter((o) => !own.includes(o.option!));
+  const lastPanelOption = ['Page size', 'Enable pagination']
+    .map((name) => `data-testid Table ${name} field property editor`)
+    .find((id) => core.options.some((o) => o.option === id))!;
+  const last = plugin.options.findIndex((o) => o.option === lastPanelOption);
+  expect(plugin.options[last + 1].option).toBe(OWN_PANEL_OPTION);
+  const pluginCore = plugin.options.filter((o) => !own.includes(o.option!) && o.option !== OWN_PANEL_OPTION);
   expect(pluginCore.map((o) => o.option)).toEqual(core.options.map((o) => o.option));
   for (const [i, option] of core.options.entries()) {
     expect(pluginCore[i], option.option!).toEqual(option);

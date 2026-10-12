@@ -12,12 +12,14 @@ import { getRelativeShadeColor, getShadeColor, type RelativeShade } from '../../
 
 import { type Dashboard, panelContent, readDashboard, serialise, SQUARE_FRAMES, switchThemeLive } from './parity';
 
-// Text color and Background color on provisioning/dashboards/styling.json (scripts/generate-styling-dashboard.mjs): one
-// row per case, core's table, Table plus with nothing set and Table plus with the case's styling, with the same data.
+// Text color and Background color (build 1), the pill options and the Pill look (build 2) on
+// provisioning/dashboards/styling.json (scripts/generate-styling-dashboard.mjs): one row per case, core's table, Table
+// plus with nothing set and Table plus with the case's styling (and look), with the same data.
 // Per case:
 // - nothing set equals core: the same elements (all attributes, inline styles included, and text) and the same pixels
 //   at every cell;
-// - set: each cell's inline colours (and each pill's) are what the rules give for core's colour of the same cell,
+// - set: each cell's inline colours (and each pill's fill, text, line, border and corner radius) are what the rules give
+//   for core's colour of the same cell,
 //   worked out here with @pjan/grafana-styling from the column's cell type and styling as saved in the panel, at the
 //   font size and weight the cell is drawn in; a basic fill also in the screenshot's pixels; a few cases also against
 //   colours worked out by hand (HAND); and set differs from core where the option applies (Fixed on gradient cells:
@@ -37,6 +39,10 @@ interface StylingColor {
 interface Styling {
   textColor?: StylingColor;
   backgroundColor?: StylingColor;
+  fillColor?: StylingColor;
+  lineColor?: StylingColor;
+  lineWidth?: number;
+  cornerRadius?: number;
 }
 interface CellOptions {
   type: string;
@@ -52,6 +58,7 @@ interface SavedPanel {
   title: string;
   transparent?: boolean;
   fieldConfig: { defaults: { custom?: { styling?: Styling } }; overrides: Override[] };
+  options: { styling?: { look?: string } };
 }
 
 // The colour names behind the data (scripts/generate-styling-dashboard.mjs): the states' mappings, the level's
@@ -60,6 +67,17 @@ interface SavedPanel {
 const STATE_COLORS: Record<string, string> = { Up: 'green', Degraded: 'yellow', Down: 'red', Info: 'blue' };
 const levelColor = (level: number) => (level >= 75 ? 'dark-red' : level >= 40 ? 'orange' : 'green');
 const SCHEME_STOPS = ['green', 'yellow', 'red'];
+// The pills frame (build 2): `state` and `flags` mapped as the states, `power` to blue and `transparent`, `tier` a fixed
+// purple; `host` (string hash) has no name
+const POWER: Record<string, string> = { On: 'blue', Off: 'transparent' };
+const pillNameOf = (column: string, text: string): string | undefined =>
+  column === 'state' || column === 'flags'
+    ? STATE_COLORS[text]
+    : column === 'power'
+      ? POWER[text]
+      : column === 'tier'
+        ? 'purple'
+        : undefined;
 
 // Worked out by hand, independently of the code under test and of the shared package (job tmp
 // table-plan/build1/oracle_e2e.py: Grafana 13.2.3's stock theme colours, Grafana's 3-digit luminance, 1 % sRGB steps,
@@ -144,13 +162,61 @@ const HAND = {
   },
 } as const;
 
+// The Pill look on the pills frame, worked out by hand (job tmp table-plan/build2/oracle_e2e_b2.py, from oracle_b2.py:
+// the shades ranked by contrast with the panel background, the nearest hue in OKLCH for the string-hash colours,
+// Automatic at 12 px): [fill, line, text] by colour name and by host (string hash), and the transparent pill's text on
+// the table, the canvas (transparent panel) and an orange row
+const HAND_PILLS = {
+  light: {
+    green: ['rgb(150, 217, 141)', 'rgb(86, 166, 75)', 'rgb(63, 91, 59)'],
+    yellow: ['rgb(255, 238, 82)', 'rgb(242, 204, 12)', 'rgb(115, 107, 37)'],
+    red: ['rgb(255, 115, 131)', 'rgb(224, 47, 68)', 'rgb(89, 40, 46)'],
+    blue: ['rgb(138, 184, 255)', 'rgb(50, 116, 217)', 'rgb(54, 72, 99)'],
+    purple: ['rgb(202, 149, 229)', 'rgb(163, 82, 204)', 'rgb(75, 55, 85)'],
+    hosts: {
+      api: ['rgb(138, 184, 255)', 'rgb(50, 116, 217)', 'rgb(54, 72, 99)'],
+      web: ['rgb(138, 184, 255)', 'rgb(50, 116, 217)', 'rgb(54, 72, 99)'],
+      db: ['rgb(255, 179, 87)', 'rgb(255, 120, 10)', 'rgb(105, 73, 36)'],
+      queue: ['rgb(255, 115, 131)', 'rgb(224, 47, 68)', 'rgb(89, 40, 46)'],
+    },
+    offOnTable: 'rgb(117, 117, 117)',
+    offOnCanvas: 'rgb(115, 115, 115)',
+    offOnOrangeRow: 'rgb(89, 42, 4)',
+  },
+  dark: {
+    green: ['rgb(55, 135, 45)', 'rgb(115, 191, 105)', 'rgb(255, 255, 255)'],
+    yellow: ['rgb(224, 180, 0)', 'rgb(250, 222, 42)', 'rgb(87, 73, 15)'],
+    red: ['rgb(196, 22, 42)', 'rgb(242, 73, 92)', 'rgb(246, 218, 221)'],
+    blue: ['rgb(31, 96, 196)', 'rgb(87, 148, 242)', 'rgb(212, 225, 244)'],
+    purple: ['rgb(143, 59, 184)', 'rgb(184, 119, 217)', 'rgb(234, 218, 242)'],
+    hosts: {
+      api: ['rgb(31, 96, 196)', 'rgb(87, 148, 242)', 'rgb(212, 225, 244)'],
+      web: ['rgb(31, 96, 196)', 'rgb(87, 148, 242)', 'rgb(212, 225, 244)'],
+      db: ['rgb(250, 100, 0)', 'rgb(255, 152, 48)', 'rgb(68, 36, 18)'],
+      queue: ['rgb(196, 22, 42)', 'rgb(242, 73, 92)', 'rgb(246, 218, 221)'],
+    },
+    offOnTable: 'rgb(130, 132, 134)',
+    offOnCanvas: 'rgb(124, 125, 127)',
+    offOnOrangeRow: 'rgb(93, 61, 31)',
+  },
+} as const;
+
 // --- Reading the table ------------------------------------------------------------------------------------------
 
 interface DrawnPill {
+  text: string;
   background: string;
   color: string;
   fontSize: number;
   fontWeight: number;
+  /** The computed box shadow (the plugin's line: `<colour> 0px 0px 0px <width>px inset`), or `none` */
+  boxShadow: string;
+  /** The top border's width (0 without one) and colour, as computed */
+  border: { width: number; color: string };
+  /** The top left corner's radius, CSS pixels */
+  radius: number;
+  /** CSS pixels, relative to the panel content */
+  box: { x: number; y: number; width: number; height: number };
 }
 interface DrawnCell {
   /** Which grid of the panel (0: the table; nested sub-tables after it) */
@@ -199,12 +265,29 @@ const readCells = (page: Page, id: number): Promise<DrawnCell[]> =>
             fontWeight: Number(style.fontWeight),
             pills: Array.from(cell.querySelectorAll<HTMLElement>('span[style]'))
               .filter((s) => s.style.backgroundColor !== '')
-              .map((s) => ({
-                background: s.style.backgroundColor,
-                color: s.style.color,
-                fontSize: parseFloat(getComputedStyle(s).fontSize),
-                fontWeight: Number(getComputedStyle(s).fontWeight),
-              })),
+              .map((s) => {
+                const computed = getComputedStyle(s);
+                const pillBox = s.getBoundingClientRect();
+                return {
+                  text: s.innerText.trim(),
+                  background: s.style.backgroundColor,
+                  color: s.style.color,
+                  fontSize: parseFloat(computed.fontSize),
+                  fontWeight: Number(computed.fontWeight),
+                  boxShadow: computed.boxShadow,
+                  border: {
+                    width: computed.borderTopStyle === 'none' ? 0 : parseFloat(computed.borderTopWidth),
+                    color: computed.borderTopColor,
+                  },
+                  radius: parseFloat(computed.borderTopLeftRadius),
+                  box: {
+                    x: pillBox.x - rootBox.x,
+                    y: pillBox.y - rootBox.y,
+                    width: pillBox.width,
+                    height: pillBox.height,
+                  },
+                };
+              }),
             box: { x: box.x - rootBox.x, y: box.y - rootBox.y, width: box.width, height: box.height },
           });
         }
@@ -264,10 +347,8 @@ function columnConfig(panel: SavedPanel, column: string, nested: boolean) {
     for (const p of o.properties) {
       if (p.id === 'custom.cellOptions') {
         cellOptions = p.value as CellOptions;
-      } else if (p.id === 'custom.styling.textColor') {
-        styling = { ...styling, textColor: p.value as StylingColor | undefined };
-      } else if (p.id === 'custom.styling.backgroundColor') {
-        styling = { ...styling, backgroundColor: p.value as StylingColor | undefined };
+      } else if (p.id.startsWith('custom.styling.')) {
+        styling = { ...styling, [p.id.slice('custom.styling.'.length)]: p.value };
       } else if (p.id === 'custom.tooltip.field') {
         tooltipField = p.value as string;
       }
@@ -377,6 +458,104 @@ function sourceOf(column: string, text: string): { name?: string; position?: num
   }
 }
 
+// --- Pills (build 2) ----------------------------------------------------------------------------------------------
+
+// State timeline plus's Pill look: for the pill options left unset
+const PILL_LOOK: Styling = {
+  fillColor: { mode: 'shade', shade: 'softer' },
+  lineColor: { mode: 'shade', shade: 'base' },
+  textColor: { mode: 'automatic' },
+};
+const pillSettings = (styling: Styling, look: string | undefined): Styling => {
+  const pill = look === 'pill' ? PILL_LOOK : {};
+  return {
+    fillColor: styling.fillColor ?? pill.fillColor,
+    lineColor: styling.lineColor ?? pill.lineColor,
+    lineWidth: styling.lineWidth,
+    cornerRadius: styling.cornerRadius,
+    textColor: styling.textColor ?? pill.textColor,
+  };
+};
+const pillOptionSet = (s: Styling) =>
+  Boolean(s.fillColor || s.lineColor || s.textColor) || s.lineWidth !== undefined || s.cornerRadius !== undefined;
+
+/** `top` drawn over the opaque `bottom`, as an `rgb()` colour (each channel rounded). */
+function composite(top: string, bottom: string) {
+  const t = tinycolor(top).toRgb();
+  const b = tinycolor(bottom).toRgb();
+  const mix = (c: number, d: number) => Math.round(c * t.a + d * (1 - t.a));
+  return `rgb(${mix(t.r, b.r)}, ${mix(t.g, b.g)}, ${mix(t.b, b.b)})`;
+}
+
+/** A box shadow as Chrome computes it: the line's colour and width, or none. */
+const ringOf = (boxShadow: string) => {
+  const m = /^(rgba?\([^)]*\)) 0px 0px 0px (\d+(?:\.\d+)?)px inset$/.exec(boxShadow);
+  return m ? { color: m[1], width: Number(m[2]) } : undefined;
+};
+
+interface WantPill {
+  background: string;
+  color: string;
+  ring?: { color: string; width: number };
+  border: { width: number; color?: string };
+  radius: number;
+}
+
+/**
+ * A pill as the rules draw it, from core's pill of the same cell: its colour (`name`: its Grafana colour name, if any)
+ * and text, and `behind`, what the pill is drawn on (the row's fill, the table's or the tooltip's background).
+ */
+function pillOf(ctx: Context, s: Styling, core: DrawnPill, name: string | undefined, behind: string[]): WantPill {
+  const value = core.background;
+  const part = (setting: StylingColor, noHue: string) =>
+    setting.mode === 'fixed'
+      ? ctx.theme.visualization.getColorByName(setting.fixedColor!)
+      : (shadeOf(ctx, value, name, setting.shade!) ?? noHue);
+  const fill = s.fillColor ? part(s.fillColor, value) : value;
+  const stops = tinycolor(fill).getAlpha() < 1 ? behind.map((b) => composite(fill, b)) : [fill];
+  const text =
+    textOf(ctx, s.textColor, value, name, stops, { size: 12, weight: 400 }) ??
+    (s.fillColor ? automatic(ctx, stops, 12, 400) : core.color);
+  const width = s.lineWidth ?? (s.lineColor ? 1 : undefined);
+  // core's border (on its transparent pill in dark) is the pill's edge: it stays unless a line replaces it
+  const coreBorder = core.border.width > 0;
+  let ring: WantPill['ring'];
+  let border: WantPill['border'] = coreBorder ? { width: core.border.width, color: core.border.color } : { width: 0 };
+  if (width !== undefined) {
+    const base = tinycolor(value).getAlpha() === 0 ? ctx.theme.colors.border.strong : value;
+    const line = rgb(s.lineColor ? part(s.lineColor, base) : base);
+    if (coreBorder) {
+      border = { width: 1, color: line };
+      ring = width > 1 ? { color: line, width: width - 1 } : undefined;
+    } else {
+      ring = { color: line, width };
+    }
+  }
+  return { background: rgb(fill), color: rgb(text), ring, border, radius: s.cornerRadius ?? core.radius };
+}
+
+const drawnPill = (pill: DrawnPill): WantPill => ({
+  background: rgb(pill.background),
+  color: rgb(pill.color),
+  ring: ringOf(pill.boxShadow),
+  border: pill.border.width > 0 ? { width: pill.border.width, color: rgb(pill.border.color) } : { width: 0 },
+  radius: pill.radius,
+});
+
+/** The Pill look's colours worked out by hand, for a pill of the pills frame (undefined: no hand value). */
+function handPill(mode: 'light' | 'dark', column: string, pill: DrawnPill, behind: string) {
+  const hand = HAND_PILLS[mode];
+  if (column === 'host') {
+    return hand.hosts[pill.text as keyof typeof hand.hosts];
+  }
+  const name = pillNameOf(column, pill.text);
+  if (name === 'transparent') {
+    const on = behind === 'canvas' ? hand.offOnCanvas : behind === 'orange' ? hand.offOnOrangeRow : hand.offOnTable;
+    return [undefined, undefined, on] as const;
+  }
+  return name && name in hand ? hand[name as 'green' | 'yellow' | 'red' | 'blue' | 'purple'] : undefined;
+}
+
 // --- The cases ---------------------------------------------------------------------------------------------------
 
 interface Case {
@@ -455,6 +634,9 @@ const pixelsOf = async (page: Page, id: number, scale: number) => {
     return `rgb(${png.data[i]}, ${png.data[i + 1]}, ${png.data[i + 2]})`;
   };
 };
+/** The size of a panel's content (what its screenshot shows), CSS pixels. */
+const contentSize = (page: Page, id: number) =>
+  panelContent(page, id).evaluate((root) => ({ width: root.clientWidth, height: root.clientHeight }));
 
 const THEME_STATES = [
   { name: 'light', load: 'light', live: undefined },
@@ -465,7 +647,7 @@ const THEME_STATES = [
 for (const scale of [1, 2]) {
   for (const state of THEME_STATES) {
     const mode = state.live ?? state.load;
-    test.describe(`Text color and Background color (${state.name}, pixel ratio ${scale})`, () => {
+    test.describe(`Text color, Background color, pill options and Look (${state.name}, pixel ratio ${scale})`, () => {
       test.use({ deviceScaleFactor: scale });
       const theme = createTheme({ colors: { mode } });
 
@@ -490,7 +672,12 @@ for (const scale of [1, 2]) {
           }
           await page.addStyleTag({ content: SQUARE_FRAMES });
           await page.mouse.move(0, 0);
-          const [core, unset, set] = await Promise.all(ids.map((id) => drawnCells(page, id, c.nested)));
+          // one panel after the other: each is scrolled into view to be read (a panel out of view has no innerText)
+          const [core, unset, set] = [
+            await drawnCells(page, c.core.id, c.nested),
+            await drawnCells(page, c.unset.id, c.nested),
+            await drawnCells(page, c.set.id, c.nested),
+          ];
 
           // Nothing set: core's elements and pixels
           const elements = (id: number) =>
@@ -502,6 +689,7 @@ for (const scale of [1, 2]) {
             await elements(c.core.id)
           );
           const [corePixel, unsetPixel, setPixel] = await Promise.all(ids.map((id) => pixelsOf(page, id, scale)));
+          const setSize = await contentSize(page, c.set.id);
           for (const [k, cell] of core.entries()) {
             expect(unset[k].text).toBe(cell.text);
             // Gradients only by their CSS (in the elements): Chrome rasterises a gradient differently at different
@@ -518,6 +706,7 @@ for (const scale of [1, 2]) {
           );
           let differs = 0;
           let applies = 0;
+          let handChecked = 0;
           for (const [k, cell] of set.entries()) {
             const coreCell = core[k];
             const label = `${c.title}: ${cell.grid}/${cell.row}/${cell.column} (${cell.text})`;
@@ -561,29 +750,106 @@ for (const scale of [1, 2]) {
               want = { color: text ? rgb(text) : rgb(coreCell.color), background: '' };
             } else if (config.cellOptions.type === 'pill') {
               expect(cell.pills.length, label).toBe(coreCell.pills.length);
+              const settings = pillSettings(config.styling, c.set.options.styling?.look);
+              // what the pills are drawn on: the row's fill (a translucent one as drawn on the table), or the table
+              const behind = cell.background
+                ? stopsOf(cell.background).map((x) => (tinycolor(x).getAlpha() < 1 ? composite(x, ctx.grid) : x))
+                : [ctx.grid];
               for (const [p, pill] of cell.pills.entries()) {
                 const corePill = coreCell.pills[p];
-                const pillName = cell.column === 'state' ? STATE_COLORS[cell.text] : undefined;
-                const text = textOf(
-                  ctx,
-                  config.styling.textColor,
-                  rgb(corePill.background),
-                  pillName,
-                  [corePill.background],
-                  { size: pill.fontSize, weight: pill.fontWeight }
-                );
-                expect(pill.fontSize, `${label}: pills are drawn at 12 px`).toBe(12);
-                expect(rgb(pill.background), `${label}: core's pill fill`).toBe(rgb(corePill.background));
-                expect(rgb(pill.color), `${label}: pill text`).toBe(rgb(text ?? corePill.color));
-                if (config.styling.textColor) {
-                  applies++;
-                  differs += rgb(pill.color) !== rgb(corePill.color) ? 1 : 0;
+                const pillLabel = `${label}: pill ${pill.text}`;
+                expect(pill.text, pillLabel).toBe(corePill.text);
+                expect(pill.fontSize, `${pillLabel}: pills are drawn at 12 px`).toBe(12);
+                expect(pill.box.width, `${pillLabel}: the pill keeps core's size`).toBeCloseTo(corePill.box.width, 1);
+                expect(pill.box.height, `${pillLabel}: the pill keeps core's size`).toBeCloseTo(corePill.box.height, 1);
+                const name = pillNameOf(cell.column, pill.text);
+                const drawn = drawnPill(pill);
+                if (!pillOptionSet(settings)) {
+                  expect(drawn, `${pillLabel}: as core`).toEqual(drawnPill(corePill));
+                  continue;
+                }
+                const want = pillOf(ctx, settings, corePill, name, behind);
+                expect(drawn, pillLabel).toEqual(want);
+                applies++;
+                differs += JSON.stringify(drawn) !== JSON.stringify(drawnPill(corePill)) ? 1 : 0;
+                if (c.title === 'pill options: line color fixed, width 3' && pill.text === 'Off' && !state.live) {
+                  // worked out by hand: Grafana's transparent with a Fixed blue line 3 px wide. Dark: core's 1 px
+                  // border (rgba(0,0,0,0) only) becomes the line's, the other 2 px inside it; light: no border, 3 px
+                  // inside. Blue is #5794F2 in dark, #3274D9 in light; fill and text stay core's.
+                  expect(drawn, `${pillLabel} (hand-computed)`).toEqual(
+                    mode === 'dark'
+                      ? {
+                          background: 'rgba(0, 0, 0, 0)',
+                          color: drawnPill(corePill).color,
+                          ring: { color: 'rgb(87, 148, 242)', width: 2 },
+                          border: { width: 1, color: 'rgb(87, 148, 242)' },
+                          radius: 6,
+                        }
+                      : {
+                          background: 'rgba(255, 255, 255, 0)',
+                          color: drawnPill(corePill).color,
+                          ring: { color: 'rgb(50, 116, 217)', width: 3 },
+                          border: { width: 0 },
+                          radius: 6,
+                        }
+                  );
                 }
                 if (c.title === 'pill: text automatic' && !state.live) {
                   // hand-computed: Automatic at 12 px needs 4.5:1, as at 14 px
-                  expect(rgb(pill.color), `${label} (hand-computed)`).toBe(
+                  expect(drawn.color, `${pillLabel} (hand-computed)`).toBe(
                     HAND[mode].basic[STATE_COLORS[cell.text] as keyof (typeof HAND)['light']['basic']]
                   );
+                }
+
+                // the fill and a line of 2 px or more in the screenshot's pixels (opaque colours only; a pill in view)
+                const mid = pill.box.y + pill.box.height / 2;
+                const inView =
+                  pill.box.x >= 0 &&
+                  pill.box.y >= 0 &&
+                  pill.box.x + pill.box.width <= setSize.width &&
+                  pill.box.y + pill.box.height <= setSize.height;
+                if (inView && tinycolor(want.background).getAlpha() === 1 && (want.ring?.width ?? 0) <= 3) {
+                  expect(setPixel(pill.box.x + 5, mid), `${pillLabel}: the fill as drawn`).toBe(want.background);
+                }
+                if (
+                  inView &&
+                  want.ring &&
+                  want.ring.width >= 2 &&
+                  want.border.width === 0 &&
+                  !want.ring.color.startsWith('rgba')
+                ) {
+                  expect(setPixel(pill.box.x + want.ring.width / 2, mid), `${pillLabel}: the line as drawn`).toBe(
+                    want.ring.color
+                  );
+                }
+
+                // the look's colours worked out by hand, where only the look sets them (not after a live switch)
+                const own = config.styling;
+                if (
+                  !state.live &&
+                  c.set.options.styling?.look === 'pill' &&
+                  !own.fillColor &&
+                  !own.lineColor &&
+                  own.lineWidth === undefined &&
+                  !own.textColor
+                ) {
+                  const on = !cell.background
+                    ? c.set.transparent
+                      ? 'canvas'
+                      : 'table'
+                    : rgb(cell.background) === rgb(theme.visualization.getColorByName('orange'))
+                      ? 'orange'
+                      : 'row';
+                  const hand = handPill(mode, cell.column, pill, on);
+                  if (hand && (name !== 'transparent' || on !== 'row')) {
+                    const [fill, line, text] = hand;
+                    if (fill) {
+                      expect(drawn.background, `${pillLabel} fill (hand-computed)`).toBe(fill);
+                      expect(drawn.ring?.color, `${pillLabel} line (hand-computed)`).toBe(line);
+                    }
+                    expect(drawn.color, `${pillLabel} text (hand-computed)`).toBe(text);
+                    handChecked++;
+                  }
                 }
               }
               continue;
@@ -619,6 +885,9 @@ for (const scale of [1, 2]) {
               differs += JSON.stringify(drawn) !== JSON.stringify(coreDrawn) ? 1 : 0;
             }
           }
+          if (!state.live && ['pill look', 'pill look, transparent panel'].includes(c.title)) {
+            expect(handChecked, 'pills checked against hand-computed colours').toBeGreaterThan(10);
+          }
           if (c.title === 'background fixed, gradient (ignored)') {
             expect(differs, 'Fixed doesn’t apply to gradient cells: as core').toBe(0);
           } else {
@@ -633,6 +902,56 @@ for (const scale of [1, 2]) {
           }
         });
       }
+
+      test('pill look, tooltip from field: the tooltip’s pills take the look', async ({ page }) => {
+        const c = CASES.find((x) => x.title === 'pill look, tooltip from field')!;
+        await page.goto(`/d/${UID}?orgId=1&theme=${state.load}`);
+        for (const id of [c.core.id, c.set.id]) {
+          await drawnCells(page, id, false);
+        }
+        if (state.live) {
+          await switchThemeLive(page, state.live);
+        }
+        const tooltipPill = async (id: number) => {
+          await page.mouse.move(0, 0);
+          const caret = panelContent(page, id).getByRole('button', { name: 'Toggle tooltip' }).first();
+          await caret.scrollIntoViewIfNeeded();
+          await caret.hover();
+          const wrapper = page.getByTestId(selectors.components.Panels.Visualization.TableNG.Tooltip.Wrapper);
+          await expect(wrapper).toBeVisible();
+          return wrapper.evaluate((el): DrawnPill => {
+            const s = el.querySelector<HTMLElement>('span[style]')!;
+            const computed = getComputedStyle(s);
+            return {
+              text: s.innerText.trim(),
+              background: s.style.backgroundColor,
+              color: s.style.color,
+              fontSize: parseFloat(computed.fontSize),
+              fontWeight: Number(computed.fontWeight),
+              boxShadow: computed.boxShadow,
+              border: {
+                width: computed.borderTopStyle === 'none' ? 0 : parseFloat(computed.borderTopWidth),
+                color: computed.borderTopColor,
+              },
+              radius: parseFloat(computed.borderTopLeftRadius),
+              box: { x: 0, y: 0, width: s.offsetWidth, height: s.offsetHeight },
+            };
+          });
+        };
+        const core = await tooltipPill(c.core.id);
+        const set = await tooltipPill(c.set.id);
+        expect(set.text).toBe('Up'); // api's state: green
+        expect(drawnPill(core).ring).toBeUndefined();
+        // on the tooltip's background (no row fill here)
+        const ctx: Context = { theme, grid: theme.colors.background.primary };
+        const want = pillOf(ctx, PILL_LOOK, core, 'green', [theme.colors.background.primary]);
+        expect(drawnPill(set)).toEqual(want);
+        expect(drawnPill(set)).not.toEqual(drawnPill(core));
+        if (!state.live) {
+          const [fill, line, text] = HAND_PILLS[mode].green;
+          expect(want).toMatchObject({ background: fill, color: text, ring: { color: line, width: 1 } });
+        }
+      });
 
       test('tooltip from field: Colored text in the tooltip is measured against the tooltip’s background', async ({
         page,

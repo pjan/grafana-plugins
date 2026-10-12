@@ -19,6 +19,8 @@ import { THEMES } from '@pjan/grafana-styling/src/testdata/themes';
 
 import { TableNG } from '../../packages/grafana-ui/src/components/Table/TableNG/TableNG';
 
+import { type TableLook } from './options';
+
 // The hooks in the copied TableNG, end to end in jsdom: the field reaches getCellColorInlineStyles at the cell, at the
 // row (Apply to entire row) and in Tooltip from field; each pill column gets its own text function; the table
 // background follows `transparent`, in flat and nested tables; Styling from field still wins; a theme switch
@@ -32,6 +34,7 @@ const DARK = THEMES['Grafana dark'];
 const AUTOMATIC = { mode: 'automatic' };
 const SOFT = { mode: 'shade', shade: 'soft' };
 const STRONGER = { mode: 'shade', shade: 'stronger' };
+const SOFTER = { mode: 'shade', shade: 'softer' };
 const TRAFFIC = {
   mode: ThresholdsMode.Absolute,
   steps: [
@@ -158,9 +161,20 @@ function frame(theme: GrafanaTheme2): DataFrame {
 }
 const COL = { state: 0, core: 1, level: 2, pill: 3, hash: 4, auto: 5, css: 6, status: 7, fixed: 8, text: 9 };
 
-const table = (theme: GrafanaTheme2, data: DataFrame, transparent = false) => (
+// One function for every render, as TablePanel's (TableNG's default makes a new one per render, which would rebuild
+// the columns on every render and hide a missing memo dependency)
+const NO_ACTIONS = () => [];
+const table = (theme: GrafanaTheme2, data: DataFrame, transparent = false, pjanLook?: TableLook) => (
   <ThemeContext.Provider value={theme}>
-    <TableNG enableVirtualization={false} data={data} width={1600} height={400} transparent={transparent} />
+    <TableNG
+      getActions={NO_ACTIONS}
+      enableVirtualization={false}
+      data={data}
+      width={1600}
+      height={400}
+      transparent={transparent}
+      pjanLook={pjanLook}
+    />
   </ThemeContext.Provider>
 );
 
@@ -475,5 +489,206 @@ describe('Tooltip from field in the copied TableNG', () => {
     expect(content.style.background).toBe('rgb(242, 73, 92)'); // the row's Soft red (#F2495C)
     // green (#56A64B) on #F2495C: hand-computed
     expect(content.style.color).toBe('rgb(19, 37, 17)'); // 78 % towards black, 4.52:1
+  });
+});
+
+// Build 2: the pill options and the Pill look, through the copied TableNG (the look as the `pjanLook` prop TablePanel
+// passes). Hand-computed values: job tmp table-plan/build2/oracle_b2.py (Grafana light: green #56A64B, Softer #96D98D;
+// red #E02F44, Softer #FF7383; Grafana dark: green #73BF69, Softer #37872D). jsdom keeps a box shadow as written.
+const pillColumn = (name: string, values: string[], styling?: object, extra: object = {}) => ({
+  name,
+  type: FieldType.string,
+  values,
+  config: {
+    mappings: UP_DOWN,
+    ...colored,
+    custom: { cellOptions: { type: TableCellDisplayMode.Pill }, ...(styling ? { styling } : {}) },
+    ...extra,
+  },
+});
+const pillFrame = (theme: GrafanaTheme2, fields: object[]) => process(theme, toDataFrame({ fields }));
+/** The pills of every cell of a column, by column index, row by row. */
+const pillsOf = (container: HTMLElement, column: number) => cells(container).map((row) => pills(row[column]));
+
+describe('the pill options and the Pill look in the copied TableNG', () => {
+  it('nothing set: the pills are core’s (fill, text, no line, the class’s radius)', () => {
+    const { container } = render(table(LIGHT, pillFrame(LIGHT, [pillColumn('state', ['up', 'down'])])));
+    const [up] = pillsOf(container, 0)[0];
+    expect(up.getAttribute('style')).toBe('background-color: rgb(86, 166, 75); color: rgb(247, 248, 250);');
+  });
+
+  it('each option on its own column changes only its part', () => {
+    const { container } = render(
+      table(
+        LIGHT,
+        pillFrame(LIGHT, [
+          pillColumn('fill', ['up'], { fillColor: SOFTER }),
+          pillColumn('line', ['up'], { lineColor: STRONGER }),
+          pillColumn('width', ['up'], { lineWidth: 3 }),
+          pillColumn('radius', ['up'], { cornerRadius: 4 }),
+        ])
+      )
+    );
+    const [fill, line, width, radius] = cells(container)[0].map((cell) => pills(cell)[0]);
+    expect(fill.getAttribute('style')).toBe('background-color: rgb(150, 217, 141); color: rgb(63, 91, 59);');
+    expect(line.getAttribute('style')).toBe(
+      'background-color: rgb(86, 166, 75); color: rgb(247, 248, 250); box-shadow: inset 0 0 0 1px #19730E;'
+    );
+    expect(width.style.boxShadow).toBe('inset 0 0 0 3px #56A64B');
+    expect(width.style.backgroundColor).toBe('rgb(86, 166, 75)');
+    expect(radius.getAttribute('style')).toBe(
+      'background-color: rgb(86, 166, 75); color: rgb(247, 248, 250); border-radius: 4px;'
+    );
+  });
+
+  it('the Pill look (pjanLook) fills the unset options of every pill column, and its own options win', () => {
+    const data = pillFrame(LIGHT, [
+      pillColumn('state', ['up', 'down']),
+      pillColumn('own', ['up'], { fillColor: { mode: 'fixed', fixedColor: 'purple' }, cornerRadius: 4 }),
+    ]);
+    const { container, rerender } = render(table(LIGHT, data, false, 'pill'));
+    const [[up, own], [down]] = cells(container).map((row) => row.flatMap(pills));
+    expect(up.getAttribute('style')).toBe(
+      'background-color: rgb(150, 217, 141); color: rgb(63, 91, 59); box-shadow: inset 0 0 0 1px #56A64B;'
+    );
+    expect(down.style.backgroundColor).toBe('rgb(255, 115, 131)');
+    expect(down.style.color).toBe('rgb(89, 40, 46)');
+    expect(down.style.boxShadow).toBe('inset 0 0 0 1px #E02F44');
+    expect(own.style.backgroundColor).toBe('rgb(163, 82, 204)');
+    expect(own.style.color).toBe('rgb(7, 3, 8)');
+    expect(own.style.boxShadow).toBe('inset 0 0 0 1px #56A64B');
+    expect(own.style.borderRadius).toBe('4px');
+    // the look back to Grafana: core again
+    rerender(table(LIGHT, data, false, 'grafana'));
+    expect(pills(cells(container)[0][0])[0].getAttribute('style')).toBe(
+      'background-color: rgb(86, 166, 75); color: rgb(247, 248, 250);'
+    );
+  });
+
+  it('several pills per cell and string-hash pills: each pill its own shade', () => {
+    const data = pillFrame(LIGHT, [
+      pillColumn('many', ['up,down'], { fillColor: SOFTER }),
+      {
+        name: 'hash',
+        type: FieldType.string,
+        values: ['alpha'],
+        config: { custom: { cellOptions: { type: TableCellDisplayMode.Pill } } },
+      },
+    ]);
+    const { container } = render(table(LIGHT, data, false, 'pill'));
+    const [many, hash] = cells(container)[0];
+    expect(pills(many).map((pill) => pill.style.backgroundColor)).toEqual(['rgb(150, 217, 141)', 'rgb(255, 115, 131)']);
+    // 'alpha' hashes to classic #EAB839: Grafana light's yellow hue
+    expect(pills(hash)[0].style.backgroundColor).toBe('rgb(255, 238, 82)');
+    expect(pills(hash)[0].style.color).toBe('rgb(115, 107, 37)');
+    expect(pills(hash)[0].style.boxShadow).toBe('inset 0 0 0 1px #F2CC0C');
+  });
+
+  it('dark, and after a live theme switch', () => {
+    const data = pillFrame(DARK, [pillColumn('state', ['up'])]);
+    const { container, rerender } = render(table(DARK, data, false, 'pill'));
+    const pill = () => pills(cells(container)[0][0])[0];
+    expect(pill().style.backgroundColor).toBe('rgb(55, 135, 45)');
+    expect(pill().style.color).toBe('rgb(255, 255, 255)');
+    expect(pill().style.boxShadow).toBe('inset 0 0 0 1px #73BF69');
+    const light = pillFrame(LIGHT, [pillColumn('state', ['up'])]);
+    rerender(table(LIGHT, light, false, 'pill'));
+    expect(pill().style.backgroundColor).toBe('rgb(150, 217, 141)');
+    expect(pill().style.color).toBe('rgb(63, 91, 59)');
+  });
+
+  it('a transparent pill: the line replaces core’s border (dark); Automatic against the table', () => {
+    const data = pillFrame(DARK, [
+      {
+        ...TRANSPARENT_PILL,
+        config: {
+          ...TRANSPARENT_PILL.config,
+          custom: { ...TRANSPARENT_PILL.config.custom, styling: { lineWidth: 3, textColor: AUTOMATIC } },
+        },
+      },
+    ]);
+    const { container } = render(table(DARK, data));
+    const pill = pills(cells(container)[0][0])[0];
+    expect(pill.style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(pill.style.border).toBe('1px solid rgba(204, 204, 220, 0.30)'); // jsdom keeps it as written
+    expect(pill.style.boxShadow).toBe('inset 0 0 0 2px rgba(204, 204, 220, 0.30)');
+    expect(pill.style.color).toBe('rgb(130, 132, 134)');
+  });
+
+  it('a transparent pill on a row coloured by Apply to entire row: measured on the row’s fill', () => {
+    const data = process(
+      LIGHT,
+      toDataFrame({
+        fields: [
+          {
+            name: 'row',
+            type: FieldType.number,
+            values: [10, 90],
+            config: { ...colored, custom: { cellOptions: { ...basic, applyToRow: true } } },
+          },
+          { ...TRANSPARENT_PILL, values: ['none', 'none'] },
+        ],
+      })
+    );
+    const { container } = render(table(LIGHT, data));
+    const [green, red] = cells(container).map((row) => pills(row[1])[0]);
+    // on core's green row (#56A64B) and red row (#E02F44), not on the table
+    expect(green.style.color).toBe('rgb(27, 51, 23)');
+    expect(red.style.color).toBe('rgb(11, 2, 3)');
+  });
+
+  it('a transparent pill in Tooltip from field: measured on the tooltip’s background, not the table’s', async () => {
+    const user = userEvent.setup();
+    const data = process(
+      LIGHT,
+      toDataFrame({
+        fields: [
+          { name: 'name', type: FieldType.string, values: ['a'], config: { custom: { tooltip: { field: 'pill' } } } },
+          TRANSPARENT_PILL,
+        ],
+      })
+    );
+    // a transparent panel: the table shows the canvas (#fbfbfb), the tooltip its own background (#ffffff)
+    render(table(LIGHT, data, true, 'pill'));
+    await user.hover(screen.getAllByRole('button', { name: 'Toggle tooltip' })[0]);
+    const wrapper = await screen.findByTestId(selectors.components.Panels.Visualization.TableNG.Tooltip.Wrapper);
+    const pill = wrapper.querySelector<HTMLElement>('span[style]')!;
+    expect(pill.style.color).toBe('rgb(117, 117, 117)'); // on the canvas it would be rgb(115, 115, 115)
+  });
+
+  it('the look reaches the pills of nested sub-tables (and goes again) and of Tooltip from field', async () => {
+    const sub = process(LIGHT, toDataFrame({ name: 'sub', fields: [pillColumn('state', ['down'])] }));
+    const nested = process(
+      LIGHT,
+      toDataFrame({
+        name: 'top',
+        meta: { custom: { expandAllRows: true } },
+        fields: [
+          { name: 'name', type: FieldType.string, values: ['a'], config: { custom: { tooltip: { field: 'tip' } } } },
+          pillColumn('tip', ['up'], undefined, {
+            custom: { cellOptions: { type: TableCellDisplayMode.Pill }, hideFrom: { viz: true } },
+          }),
+          { name: '__depth', type: FieldType.number, values: [0], config: { custom: { hideFrom: { viz: true } } } },
+          { name: '__index', type: FieldType.number, values: [0], config: { custom: { hideFrom: { viz: true } } } },
+          { name: '__nestedFrames', type: FieldType.nestedFrames, values: [[sub]], config: { custom: {} } },
+        ],
+      })
+    );
+    const user = userEvent.setup();
+    const { container, rerender } = render(table(LIGHT, nested, false, 'pill'));
+    const subPill = () =>
+      [...new Set(cells(container).flat())].flatMap(pills).find((span) => span.textContent === 'down')!;
+    expect(subPill().style.backgroundColor).toBe('rgb(255, 115, 131)');
+    expect(subPill().style.boxShadow).toBe('inset 0 0 0 1px #E02F44');
+    // the look back to Grafana with the same data: TableNested's columns are built again (core's red, no line)
+    rerender(table(LIGHT, nested, false, 'grafana'));
+    expect(subPill().style.backgroundColor).toBe('rgb(224, 47, 68)');
+    expect(subPill().style.boxShadow).toBe('');
+    rerender(table(LIGHT, nested, false, 'pill'));
+    await user.hover(screen.getAllByRole('button', { name: 'Toggle tooltip' })[0]);
+    const wrapper = await screen.findByTestId(selectors.components.Panels.Visualization.TableNG.Tooltip.Wrapper);
+    const tipPill = wrapper.querySelector<HTMLElement>('span[style]')!;
+    expect(tipPill.style.backgroundColor).toBe('rgb(150, 217, 141)');
+    expect(tipPill.style.boxShadow).toBe('inset 0 0 0 1px #56A64B');
   });
 });

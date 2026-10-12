@@ -1,7 +1,8 @@
 // Generates provisioning/dashboards/styling.json: the cases of tests/styling.spec.ts for Text color and Background
-// color (custom.styling.*), one row per case with three panels of the same width and the same data: core's table
-// ("<case>: core"), Table plus with nothing set ("<case>: nothing set") and Table plus with the case's styling
-// ("<case>: set"). Run with `node scripts/generate-styling-dashboard.mjs` after changing a case.
+// color (build 1) and the pill options and the Pill look (build 2; custom.styling.*, options.styling.look), one row per
+// case with three panels of the same width and the same data: core's table ("<case>: core"), Table plus with nothing
+// set ("<case>: nothing set") and Table plus with the case's styling ("<case>: set"; the look, if the case has one, in
+// its panel options). Run with `node scripts/generate-styling-dashboard.mjs` after changing a case.
 //
 // As in Atlas, the field defaults keep cell type Auto and the cell types are set by override; the styling is set in
 // the field defaults (once for every column), except where a case says otherwise. The data comes from TestData "Raw
@@ -96,7 +97,30 @@ const GRADIENT = cell('color-background', { mode: 'gradient' });
 const ROW_BASIC = cell('color-background', { mode: 'basic', applyToRow: true });
 const ROW_GRADIENT = cell('color-background', { mode: 'gradient', applyToRow: true });
 const PILL = cell('pill');
+// Every pill column of the pills frame: Pill by override, as Atlas sets cell types
+const ALL_PILLS = ['host', 'state', 'flags', 'power', 'tier'].map((name) => override(name, PILL));
 const TEXT = cell('color-text');
+
+// Pills (build 2): a frame with a pill per kind of colour core gives a pill. `state` is mapped (four colour names, as
+// above); `flags` has several pills per cell (comma-separated, each mapped); `power` is mapped to blue and to
+// `transparent` (core draws a 1 px border on a transparent pill in dark, none in light: Grafana's light `transparent` is
+// rgba(255, 255, 255, 0)); `tier` has a fixed colour (purple) and no mappings; `host` (Pill by override) takes core's
+// string hash over the classic palette (hex colours without a name).
+export const POWER = { On: 'blue', Off: 'transparent' };
+const POWER_MAPPINGS = [
+  {
+    type: 'value',
+    options: Object.fromEntries(Object.entries(POWER).map(([v, color], index) => [v, { color, index }])),
+  },
+];
+const FLAGS = ['Up,Info', 'Degraded', 'Down,Up', 'Info,Degraded,Down'];
+const POWER_VALUES = ['On', 'Off', 'On', 'Off'];
+const pills = () => [
+  ...services(),
+  field('flags', 'string', FLAGS, { mappings: STATE_MAPPINGS }),
+  field('power', 'string', POWER_VALUES, { mappings: POWER_MAPPINGS }),
+  field('tier', 'string', ['gold', 'silver', 'gold', 'bronze'], { color: { mode: 'fixed', fixedColor: 'purple' } }),
+];
 
 const AUTOMATIC = { mode: 'automatic' };
 const shade = (s) => ({ mode: 'shade', shade: s });
@@ -326,6 +350,85 @@ export const CASES = [
     h: 13,
   },
 
+  // Pill options (build 2), each on its own, then combined; set once in the field defaults, so every pill column of the
+  // frame (mapped, several per cell, transparent, fixed, string hash) changes and nothing else does
+  ...[
+    ['pill options: fill softer', { fillColor: shade('softer') }],
+    ['pill options: fill fixed', { fillColor: fixed('purple') }],
+    ['pill options: line color base', { lineColor: shade('base') }],
+    ['pill options: line color fixed, width 3', { lineColor: fixed('blue'), lineWidth: 3 }],
+    ['pill options: line width 2 alone', { lineWidth: 2 }],
+    ['pill options: corner radius 2', { cornerRadius: 2 }],
+    [
+      'pill options: the CONVENTIONS pill (softer, base line, radius 4, text automatic)',
+      { fillColor: shade('softer'), lineColor: shade('base'), cornerRadius: 4, textColor: AUTOMATIC },
+    ],
+  ].map(([title, styling]) => ({
+    title,
+    kind: 'pill',
+    column: 'state',
+    frames: [pills()],
+    wide: true,
+    overrides: ALL_PILLS,
+    styling,
+  })),
+
+  // The Pill look (panel option): alone, with options of the column's own, on a transparent panel, on a coloured row
+  {
+    title: 'pill look',
+    kind: 'pill',
+    column: 'state',
+    frames: [pills()],
+    wide: true,
+    overrides: ALL_PILLS,
+    styling: {},
+    look: 'pill',
+  },
+  {
+    title: 'pill look, with radius 4 and a column’s own fill and line width',
+    kind: 'pill',
+    column: 'state',
+    frames: [pills()],
+    wide: true,
+    overrides: [
+      ...ALL_PILLS.filter((o) => o.matcher.options !== 'state'),
+      override('state', { ...PILL, 'custom.styling.fillColor': fixed('purple'), 'custom.styling.lineWidth': 2 }),
+    ],
+    styling: { cornerRadius: 4 },
+    look: 'pill',
+  },
+  {
+    title: 'pill look, transparent panel',
+    kind: 'pill',
+    column: 'state',
+    frames: [pills()],
+    wide: true,
+    overrides: ALL_PILLS,
+    styling: {},
+    look: 'pill',
+    transparent: true,
+  },
+  {
+    title: 'pill look, pills on a row colored by apply to entire row',
+    kind: 'pill',
+    column: 'state',
+    frames: [pills()],
+    wide: true,
+    overrides: [...ALL_PILLS, override('level', ROW_BASIC)],
+    styling: {},
+    look: 'pill',
+  },
+  {
+    title: 'pill look, text stronger, on a gradient row',
+    kind: 'pill',
+    column: 'state',
+    frames: [pills()],
+    wide: true,
+    overrides: [...ALL_PILLS, override('level', ROW_GRADIENT)],
+    styling: { textColor: shade('stronger') },
+    look: 'pill',
+  },
+
   // Tooltip from field: the host's tooltip shows its level as Colored text
   {
     title: 'tooltip from field: colored text automatic',
@@ -337,6 +440,45 @@ export const CASES = [
     ],
     styling: { textColor: AUTOMATIC },
     transparent: true,
+  },
+
+  // Pills in nested sub-tables (nested-scope overrides) and in Tooltip from field, with the look
+  {
+    title: 'pill look, nested table',
+    kind: 'nested',
+    column: 'state',
+    frames: [
+      [
+        field('stack', 'string', ['web', 'web', 'db', 'db']),
+        ...services(),
+        field('power', 'string', POWER_VALUES, { mappings: POWER_MAPPINGS }),
+      ],
+    ],
+    transformations: [
+      {
+        id: 'groupToNestedTable',
+        options: {
+          expandAllRows: true,
+          fields: { stack: { aggregations: [], operation: 'groupby' } },
+        },
+      },
+    ],
+    overrides: [override('state', PILL, 'nested'), override('power', PILL, 'nested')],
+    styling: {},
+    look: 'pill',
+    wide: true,
+    h: 13,
+  },
+  {
+    title: 'pill look, tooltip from field',
+    kind: 'tooltip',
+    column: 'state',
+    overrides: [
+      override('host', { 'custom.tooltip.field': 'state', 'custom.tooltip.placement': 'right' }),
+      override('state', PILL),
+    ],
+    styling: {},
+    look: 'pill',
   },
 
   // An override styles only its column: Text color Automatic in the defaults, Fixed on level
@@ -354,7 +496,8 @@ if (new Set(titles).size !== titles.length) {
   throw new Error('styling cases: titles must be unique');
 }
 
-// One row per case: core, nothing set, set; each 8 columns wide
+// One row per case: core, nothing set, set; each 8 columns wide. A wide case (the pills frame's six columns) has the three
+// panels one above the other, each the dashboard's full width.
 const panels = [];
 let y = 0;
 CASES.forEach((c, i) => {
@@ -373,10 +516,12 @@ CASES.forEach((c, i) => {
       targets: [raw(frames)],
       ...(c.transformations ? { transformations: c.transformations } : {}),
       ...(c.transparent ? { transparent: true } : {}),
-      gridPos: { x: k * 8, y, w: 8, h },
+      gridPos: c.wide ? { x: 0, y: y + k * h, w: 24, h } : { x: k * 8, y, w: 8, h },
       fieldConfig: {
         // A minimum column width of 70 (as Atlas sets), so every column fits a third of the dashboard's width
-        defaults: { custom: { minWidth: 70, ...(styled ? { styling: c.styling } : {}) } },
+        defaults: {
+          custom: { minWidth: 70, ...(styled && Object.keys(c.styling).length > 0 ? { styling: c.styling } : {}) },
+        },
         overrides: styled
           ? c.overrides
           : c.overrides.map((o) => ({
@@ -384,15 +529,15 @@ CASES.forEach((c, i) => {
               properties: o.properties.filter((p) => !p.id.startsWith('custom.styling.')),
             })),
       },
-      options: { cellHeight: 'sm', showHeader: true },
+      options: { cellHeight: 'sm', showHeader: true, ...(styled && c.look ? { styling: { look: c.look } } : {}) },
     });
   });
-  y += h;
+  y += c.wide ? 3 * h : h;
 });
 
 const dashboard = {
   uid: 'pjan-table-styling',
-  title: 'Table plus styling (Text color and Background color)',
+  title: 'Table plus styling (Text color, Background color, pill options and Look)',
   tags: ['pjan-table-panel'],
   editable: true,
   schemaVersion: 42,

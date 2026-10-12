@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/types.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: none.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/types.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: BaseTableProps.pjanLook, the panel's look (options.styling.look, src/pjan/styling/), for Pill cells.
 import { type FC, type SyntheticEvent } from 'react';
 
 import {
@@ -22,6 +22,8 @@ import { type TableCellOptions } from '../types';
 
 import { type TextAlign } from './styles';
 import { type ApplyFilterResult } from './utils';
+// pjan-table-panel: the panel's look (src/pjan/styling/options.ts)
+import { type TableLook } from '../../../../../../pjan/styling/options';
 
 export const FILTER_FOR_OPERATOR = '=';
 export const FILTER_OUT_OPERATOR = '!=';
@@ -150,6 +152,8 @@ interface BaseTableProps {
   disableKeyboardEvents?: boolean;
   // temporary feature toggle to manage rollout of content-aware auto column widths (table.autoColumnWidths)
   contentAwareWidthsEnabled?: boolean;
+  // pjan-table-panel: the panel's look (options.styling.look, src/pjan/styling/pills.ts), for Pill cells
+  pjanLook?: TableLook;
 }
 
 /* ---------------------------- Table cell props ---------------------------- */

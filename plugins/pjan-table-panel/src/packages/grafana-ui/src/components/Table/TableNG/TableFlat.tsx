@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/TableFlat.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background to getCellColorInlineStylesFactory (rebuilt when transparent changes) and to the column config.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/TableFlat.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background to getCellColorInlineStylesFactory (rebuilt when transparent changes) and to the column config; the panel's look (pjanLook prop) to the column config.
 import memoize from 'micro-memoize';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
@@ -81,6 +81,7 @@ export function TableFlat(props: TableNGProps) {
     sortBy,
     sortByBehavior = 'initial',
     contentAwareWidthsEnabled = false,
+    pjanLook, // pjan-table-panel: the panel's look (options.styling.look)
   } = props;
 
   const theme = useTheme2();
@@ -276,6 +277,7 @@ export function TableFlat(props: TableNGProps) {
       showTypeIcons,
       timeRange,
       pjanGridBackground, // pjan-table-panel
+      pjanLook, // pjan-table-panel
     }),
     [
       theme,
@@ -296,6 +298,7 @@ export function TableFlat(props: TableNGProps) {
       showTypeIcons,
       timeRange,
       pjanGridBackground, // pjan-table-panel
+      pjanLook, // pjan-table-panel
     ]
   );
 

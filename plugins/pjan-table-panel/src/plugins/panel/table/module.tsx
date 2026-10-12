@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color and Text color (custom.styling.backgroundColor, custom.styling.textColor, src/pjan/styling/) right after Cell type.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Pill fill color, Pill line color, Pill line width and Pill corner radius (custom.styling.backgroundColor, textColor, fillColor, lineColor, lineWidth, cornerRadius, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options.
 import { identityOverrideProcessor, FieldConfigProperty, PanelPlugin, standardEditorsRegistry } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import {
@@ -18,7 +18,15 @@ import { type FieldConfig, type Options } from './panelcfg.gen';
 // import of tableSuggestionsSupplier (suggestions are left off).
 import { panelChangedHandler } from '../../../pjan/panelChangedHandler';
 // pjan-table-panel: the plugin's field options (src/pjan/styling/), in "Cell options" after Cell type
-import { backgroundColorFieldOption, textColorFieldOption } from '../../../pjan/styling/options';
+import {
+  backgroundColorFieldOption,
+  lookPanelOption,
+  pillCornerRadiusFieldOption,
+  pillFillColorFieldOption,
+  pillLineColorFieldOption,
+  pillLineWidthFieldOption,
+  textColorFieldOption,
+} from '../../../pjan/styling/options';
 
 function getTableNoValuePlaceholder(): string {
   return t('table.no-value-placeholder', 'No rows');
@@ -77,6 +85,10 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(TablePanel)
         })
         .addCustomEditor(backgroundColorFieldOption(cellCategory)) // pjan-table-panel
         .addCustomEditor(textColorFieldOption(cellCategory)) // pjan-table-panel
+        .addCustomEditor(pillFillColorFieldOption(cellCategory)) // pjan-table-panel
+        .addCustomEditor(pillLineColorFieldOption(cellCategory)) // pjan-table-panel
+        .addCustomEditor(pillLineWidthFieldOption(cellCategory)) // pjan-table-panel
+        .addCustomEditor(pillCornerRadiusFieldOption(cellCategory)) // pjan-table-panel
         .addBooleanSwitch({
           path: 'inspect',
           name: t('table.name-cell-value-inspect', 'Cell value inspect'),
@@ -144,5 +156,8 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(TablePanel)
   })
   .setPanelOptions((builder) => {
     addTableCustomPanelOptions(builder);
+    // pjan-table-panel: the plugin's panel option Look, after core's last option of the "Table" category (as State
+    // timeline plus registers its Look after core's options)
+    builder.addRadio(lookPanelOption([t('table.category-table', 'Table')]));
   });
 // pjan-table-panel: .setSuggestionsSupplier(tableSuggestionsSupplier) left off (no second Table card)

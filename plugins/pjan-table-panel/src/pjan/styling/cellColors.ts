@@ -20,16 +20,13 @@ import { type TableCellOptions } from '../../packages/grafana-ui/src/components/
 import { BACKGROUND_COLOR_MODES, getFieldStyling, TEXT_COLOR_MODES } from './options';
 
 // Background color and Text color (`custom.styling.backgroundColor`, `custom.styling.textColor`, plan step 7, build 1).
-// Hooked into the copied TableNG at two places, marked `pjan-table-panel:` (UPSTREAM.md, "Plugin addition: Text color
-// and Background color"):
-// - getCellColorInlineStylesFactory (utils.ts): Colored background (basic, gradient, Apply to entire row) and Colored
-//   text, for the cell, Tooltip from field and the row (getCellColorsFactory);
-// - the `getTextColorForBackground` function each column hands to its cells (render-hooks.tsx), which only PillCell
-//   calls (getPillTextColorFn).
-// With nothing set both return core's own result: the same object, or core's own function.
+// Hooked into the copied TableNG's getCellColorInlineStylesFactory (utils.ts), marked `pjan-table-panel:` (UPSTREAM.md,
+// "Plugin addition: Text color and Background color"): Colored background (basic, gradient, Apply to entire row) and
+// Colored text, for the cell, Tooltip from field and the row (getCellColorsFactory). Pill cells, Text color included,
+// are in pills.ts (build 2). With nothing set it returns core's own result, the same object.
 //
 // The rule for every part (Stat plus's, pjan 2026-10-02/03): an unset part follows core, part by part; but where the
-// plugin draws the fill (Background color), unset text is Automatic on that fill (`getTextOnFill`).
+// plugin draws the fill (Background color, Pill fill color), unset text is Automatic on that fill (`getTextOnFill`).
 
 /**
  * The table's own background: what `getGridStyles` (copied `styles.ts`) sets as `--rdg-background-color`, by
@@ -178,7 +175,7 @@ function getFillShade(
 export interface Fill {
   /** One colour, or a gradient's stops */
   stops: string[];
-  /** The plugin draws it (Background color): unset text is then Automatic on it */
+  /** The plugin draws it (Background color, Pill fill color or the Pill look): unset text is then Automatic on it */
   drawnByPlugin: boolean;
 }
 
@@ -216,7 +213,7 @@ export function getCellSettings(field: Field) {
  * The Grafana colour name behind a colour of the field (`getColorNameLookup`: mappings, thresholds, the fixed colour,
  * the classic palette), cached per field for one theme.
  */
-function colorNamesFor(theme: GrafanaTheme2) {
+export function colorNamesFor(theme: GrafanaTheme2) {
   const lookups = new WeakMap<Field, Map<string, string>>();
   return (field: Field, color: string): string | undefined => {
     let lookup = lookups.get(field);
@@ -250,7 +247,7 @@ function schemesFor(theme: GrafanaTheme2) {
 // can give many colours.
 const CACHE_SIZE = 1000;
 
-function cached<T>(cache: Map<string, T>, key: string, compute: () => T): T {
+export function cached<T>(cache: Map<string, T>, key: string, compute: () => T): T {
   let value = cache.get(key);
   if (value === undefined) {
     value = compute();
@@ -370,47 +367,3 @@ export function getCellColorsFactory(
 }
 
 export type CellColorsHook = ReturnType<typeof getCellColorsFactory>;
-
-/**
- * Text color on Pill cells: the `getTextColorForBackground` a column hands to its cells (only PillCell calls it, with
- * each pill's fill). Unset: core's own function, unchanged (the same function, so PillCell's memo keeps its value).
- * Set: `getTextOnFill` on the pill's fill (at the pill's font; a translucent or transparent pill composited over the
- * table background): Automatic, the pill's colour (Value), a shade of it, or a fixed colour. Pills keep core's fill
- * (Pill fill color is a later addition; it will make the fill the plugin's and unset text Automatic, through the same
- * path). The pill's colour has a name when it comes from the field's mappings, thresholds or fixed colour (the field
- * PillCell gets: for a pill column with mappings, render-hooks.tsx has replaced its colour config with Fixed, but kept
- * the mappings, so their names are found); a string-hash pill's colour (Grafana's classic hex colours) has none and
- * takes its nearest hue's shades.
- *
- * Built per column each time the columns are built (they are rebuilt when the theme changes), so its cache is keyed on
- * the theme, unlike core's, which is keyed by colour only (its rule doesn't depend on the theme).
- */
-export function getPillTextColorFn(
-  getTextColorForBackground: (color: string) => string,
-  field: Field,
-  theme: GrafanaTheme2,
-  gridBackground: string
-): (color: string) => string {
-  const { textColor } = getCellSettings(field);
-  if (!textColor) {
-    return getTextColorForBackground;
-  }
-  const font = getTextFont(theme, 'pill', field);
-  const colorNameOf = colorNamesFor(theme);
-  const cache = new Map<string, string>();
-  return (pillColor: string) =>
-    cached(
-      cache,
-      pillColor,
-      () =>
-        getTextOnFill(
-          theme,
-          textColor,
-          pillColor,
-          colorNameOf(field, pillColor),
-          { stops: [pillColor], drawnByPlugin: false },
-          font,
-          gridBackground
-        ) ?? getTextColorForBackground(pillColor)
-    );
-}

@@ -1,18 +1,15 @@
 import { cache } from '@emotion/css';
 
 import {
-  FALLBACK_COLOR,
   type Field,
   fieldColorModeRegistry,
   FieldColorModeId,
   FieldType,
-  getDisplayProcessor,
   type GrafanaTheme2,
   MappingType,
   ThresholdsMode,
 } from '@grafana/data';
 import { TableCellBackgroundDisplayMode, TableCellDisplayMode } from '@grafana/schema';
-import { getTextColorForBackground } from '@grafana/ui';
 import { makeField, THEMES } from '@pjan/grafana-styling/src/testdata/themes';
 
 import {
@@ -31,7 +28,6 @@ import {
   getCellColorsFactory,
   getFillStops,
   getGridBackground,
-  getPillTextColorFn,
   getRowFill,
   getTextFont,
   getTextOnFill,
@@ -692,106 +688,5 @@ describe('text on a fill (getTextOnFill), the path cells, rows and pills share',
     expect(
       getTextOnFill(LIGHT, undefined, '#56A64B', 'green', { stops: ['#73BF69'], drawnByPlugin: true }, font, '#ffffff')
     ).toBe('rgb(43,71,39)');
-  });
-});
-
-describe('Text color on pills (getPillTextColorFn)', () => {
-  const MAPPED = {
-    type: MappingType.ValueToText,
-    options: { up: { color: 'green', index: 0 }, down: { color: 'red', index: 1 } },
-  } as const;
-
-  /** A pill column, after render-hooks.tsx has replaced the colour config of a mapped pill field (as it does). */
-  const pillField = (theme: GrafanaTheme2, styling?: FieldStyling, mapped = true) => {
-    const field = makeField(theme, {
-      name: 'status',
-      type: FieldType.string,
-      values: ['up', 'down'],
-      config: {
-        thresholds: TRAFFIC,
-        color: { mode: FieldColorModeId.Thresholds },
-        mappings: mapped ? [MAPPED] : [],
-        custom: { cellOptions: { type: TableCellDisplayMode.Pill }, ...(styling ? { styling } : {}) },
-      },
-    });
-    if (!mapped) {
-      return field;
-    }
-    // render-hooks.tsx (copied): "make sure we use mappings exclusively if they exist"
-    const replaced: Field = {
-      ...field,
-      config: {
-        ...field.config,
-        color: {
-          ...field.config.color,
-          mode: FieldColorModeId.Fixed,
-          fixedColor: field.config.color?.fixedColor ?? FALLBACK_COLOR,
-        },
-      },
-    };
-    replaced.display = getDisplayProcessor({ field: replaced, theme });
-    return replaced;
-  };
-
-  it('unset (or incomplete, or only Background color): core’s own function, the same one', () => {
-    for (const styling of [undefined, {}, { textColor: { mode: 'shade' } }, { backgroundColor: SOFT }] as Array<
-      FieldStyling | undefined
-    >) {
-      expect(getPillTextColorFn(getTextColorForBackground, pillField(LIGHT, styling), LIGHT, '#ffffff')).toBe(
-        getTextColorForBackground
-      );
-    }
-  });
-
-  it('a mapped pill’s shade is of its mapping colour’s hue (the field’s colour config was replaced with Fixed)', () => {
-    const field = pillField(LIGHT, { textColor: STRONGER });
-    expect(field.display!('up').color).toBe('#56A64B'); // the mapping's green, not FALLBACK_COLOR
-    const text = getPillTextColorFn(getTextColorForBackground, field, LIGHT, '#ffffff');
-    expect(text('#56A64B')).toBe('#19730E'); // dark-green
-    expect(text('#E02F44')).toBe('#AD0317'); // dark-red
-  });
-
-  it('Automatic on the pill’s fill at 12 px (hand-computed), Value, Fixed', () => {
-    const text = (styling: FieldStyling, theme = LIGHT) =>
-      getPillTextColorFn(getTextColorForBackground, pillField(theme, styling), theme, getGridBackground(theme));
-    expect(text({ textColor: AUTOMATIC })('#56A64B')).toBe('rgb(27,51,23)');
-    expect(text({ textColor: AUTOMATIC }, DARK)('#73BF69')).toBe('rgb(46,70,48)');
-    expect(text({ textColor: { mode: 'value' } })('#56A64B')).toBe('#56A64B');
-    expect(text({ textColor: { mode: 'fixed', fixedColor: 'blue' } })('#56A64B')).toBe('#3274D9');
-  });
-
-  it('string-hash pills (hex colours without a name) take their nearest hue’s shades', () => {
-    const text = getPillTextColorFn(
-      getTextColorForBackground,
-      pillField(LIGHT, { textColor: STRONGER }, false),
-      LIGHT,
-      '#ffffff'
-    );
-    expect(text('#7EB26D')).toBe('#19730E'); // classic green: Grafana light's green hue
-    expect(text('#808080')).toBe('rgb(24,24,24)'); // no hue: Automatic
-  });
-
-  it('a transparent pill: Automatic against the table background it shows', () => {
-    const text = (background: string) =>
-      getPillTextColorFn(getTextColorForBackground, pillField(LIGHT, { textColor: AUTOMATIC }), LIGHT, background);
-    expect(text('#ffffff')('rgba(0,0,0,0)')).toBe('rgb(117,117,117)');
-    expect(text('#fbfbfb')('rgba(0,0,0,0)')).toBe('rgb(115,115,115)');
-  });
-
-  it('is keyed on the theme: a function per theme, each with its own result', () => {
-    const light = getPillTextColorFn(
-      getTextColorForBackground,
-      pillField(LIGHT, { textColor: AUTOMATIC }),
-      LIGHT,
-      '#ffffff'
-    );
-    const dark = getPillTextColorFn(
-      getTextColorForBackground,
-      pillField(DARK, { textColor: AUTOMATIC }),
-      DARK,
-      '#181b1f'
-    );
-    expect(light('#56A64B')).toBe('rgb(27,51,23)');
-    expect(dark('#56A64B')).not.toBe(light('#56A64B'));
   });
 });

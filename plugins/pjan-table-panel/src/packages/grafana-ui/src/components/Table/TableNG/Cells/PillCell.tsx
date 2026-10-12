@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/Cells/PillCell.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: none.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/Cells/PillCell.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: the plugin's pill options (src/pjan/styling/pills.ts): each pill's style (fill, text, line, corner radius) from the pill style its text function carries, only when one applies.
 import { css } from '@emotion/css';
 import memoize from 'micro-memoize';
 import { useMemo } from 'react';
@@ -17,9 +17,13 @@ import { FieldColorModeId } from '@grafana/schema';
 import { getActiveCellSelector, isTableCellStylesKeyEqual } from '../styles';
 import { type PillCellProps, type TableCellStyles } from '../types';
 import { inferPills } from '../utils';
+// pjan-table-panel: the plugin's pill options (src/pjan/styling/pills.ts)
+import { getPillStyle } from '../../../../../../../pjan/styling/pills';
 
 export function PillCell({ rowIdx, field, theme, getTextColorForBackground }: PillCellProps) {
   const value = field.values[rowIdx];
+  // pjan-table-panel: the column's pill style, carried by its text function; undefined when no pill option applies
+  const pjanPillStyle = getPillStyle(getTextColorForBackground);
   const pills: Pill[] = useMemo(() => {
     const pillValues = inferPills(value);
     return pillValues.length > 0
@@ -44,7 +48,8 @@ export function PillCell({ rowIdx, field, theme, getTextColorForBackground }: Pi
   return pills.map((pill) => (
     <span
       key={pill.key}
-      style={{
+      // pjan-table-panel: the plugin's style, if any (src/pjan/styling/pills.ts), otherwise core's
+      style={pjanPillStyle?.(pill.bgColor, pill.color, rowIdx) ?? {
         backgroundColor: pill.bgColor,
         color: pill.color,
         border: pill.bgColor === TRANSPARENT ? `1px solid ${theme.colors.border.strong}` : undefined,

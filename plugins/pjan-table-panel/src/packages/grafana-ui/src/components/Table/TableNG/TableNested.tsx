@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/TableNested.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background to getCellColorInlineStylesFactory (rebuilt when transparent changes) and to the column config.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/TableNested.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background to getCellColorInlineStylesFactory (rebuilt when transparent changes) and to the column config; the panel's look (pjanLook prop) to the column config.
 import { clsx } from 'clsx';
 import memoize from 'micro-memoize';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
@@ -94,6 +94,7 @@ export function TableNested(props: TableNGProps & { nestedFramesField: Field<Dat
     sortBy,
     sortByBehavior = 'initial',
     contentAwareWidthsEnabled = false,
+    pjanLook, // pjan-table-panel: the panel's look (options.styling.look)
   } = props;
 
   const uniqueId = useId();
@@ -408,6 +409,7 @@ export function TableNested(props: TableNGProps & { nestedFramesField: Field<Dat
       showTypeIcons,
       timeRange,
       pjanGridBackground, // pjan-table-panel
+      pjanLook, // pjan-table-panel
     }),
     [
       applyToRowBgFn,
@@ -426,6 +428,7 @@ export function TableNested(props: TableNGProps & { nestedFramesField: Field<Dat
       theme,
       timeRange,
       pjanGridBackground, // pjan-table-panel
+      pjanLook, // pjan-table-panel
     ]
   );
 

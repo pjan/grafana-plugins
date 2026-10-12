@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import ts from 'typescript';
 
-import { type FieldConfigOptionsRegistry, PanelPlugin } from '@grafana/data';
+import { type FieldConfigOptionsRegistry, PanelOptionsEditorBuilder, PanelPlugin } from '@grafana/data';
 
 import { plugin } from '../plugins/panel/table/module';
 
@@ -16,9 +16,10 @@ fillEditorRegistry();
 // plugin under one of those keys would be read by core's code as its own, so the plugin's own field options must not
 // use them (its additions go under `custom.styling`, plan decision 6).
 
-// The keys of `TableFieldOptions` in the installed @grafana/schema, which package.json pins to the synced Grafana tag,
-// read with the TypeScript compiler from the package's own type declarations (including the interfaces it extends).
-function tableFieldOptionsKeys(): string[] {
+// The keys of `TableFieldOptions` (or another interface) in the installed @grafana/schema, which package.json pins to
+// the synced Grafana tag, read with the TypeScript compiler from the package's own type declarations (including the
+// interfaces it extends).
+function schemaKeys(name = 'TableFieldOptions'): string[] {
   const packageJson = require.resolve('@grafana/schema/package.json');
   const { version, types } = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
   expect(version).toBe('13.2.3');
@@ -26,7 +27,7 @@ function tableFieldOptionsKeys(): string[] {
   const program = ts.createProgram([entry], { skipLibCheck: true, noEmit: true });
   const checker = program.getTypeChecker();
   const moduleSymbol = checker.getSymbolAtLocation(program.getSourceFile(entry)!)!;
-  const symbol = checker.getExportsOfModule(moduleSymbol).find((s) => s.getName() === 'TableFieldOptions')!;
+  const symbol = checker.getExportsOfModule(moduleSymbol).find((s) => s.getName() === name)!;
   const declared = symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
   const type = checker.getDeclaredTypeOfSymbol(declared);
   return checker
@@ -65,7 +66,7 @@ function ownCustomKeys(registry: FieldConfigOptionsRegistry) {
 }
 
 describe('field option keys', () => {
-  const keys = tableFieldOptionsKeys();
+  const keys = schemaKeys();
 
   it('reads TableFieldOptions’ keys, including those core registers no editor for', () => {
     expect(keys).toEqual(expect.arrayContaining(['align', 'cellOptions', 'footer', 'hideFrom', 'width', 'wrapText']));
@@ -103,5 +104,22 @@ describe('field option keys', () => {
       .filter((item) => item.isCustom && !item.id.startsWith('custom.styling.'))
       .map((item) => item.id);
     expect(ids.sort()).toEqual([...CORE_CUSTOM_IDS_V13_2_3].sort());
+  });
+});
+
+// The same for the panel options (build 2's Look): core's `TableOptions` has no `styling`, so `options.styling` is the
+// plugin's, as in State timeline plus.
+describe('panel option keys', () => {
+  it('TableOptions has no `styling` key, and the plugin’s own panel options are all under it', () => {
+    const keys = schemaKeys('TableOptions');
+    expect(keys).toEqual(expect.arrayContaining(['cellHeight', 'frameIndex', 'showHeader', 'sortBy']));
+    expect(keys).not.toContain('styling');
+    const builder = new PanelOptionsEditorBuilder();
+    plugin.getPanelOptionsSupplier()(builder as never, { data: [] });
+    const own = builder
+      .getItems()
+      .map((item) => item.path)
+      .filter((p) => !keys.includes(p.split('.')[0]));
+    expect(own).toEqual(['styling.look']);
   });
 });

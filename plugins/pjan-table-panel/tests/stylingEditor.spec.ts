@@ -4,16 +4,35 @@ import { type APIRequestContext, expect, type Page, test } from '@grafana/plugin
 import { apiClient, savedPanel } from './helpers';
 import { readDashboard } from './parity';
 
-// Text color and Background color in the panel editor and in the saved JSON: where they sit (right after Cell type, in
-// the field defaults with Cell type Auto, and in the overrides menu), what setting and clearing a value saves (no
-// `custom.styling: {}` left), an override saved as `custom.styling.<key>` and cleared, that opening the editor writes
-// nothing, and that the options and overrides survive saving and reloading the dashboard. Run with --workers=1.
+// Text color and Background color (build 1), the pill options and the Look (build 2) in the panel editor and in the
+// saved JSON: where they sit (right after Cell type, in the field defaults with Cell type Auto, and in the overrides
+// menu; the Look after core's Table options), what setting and clearing a value saves (no `custom.styling: {}` left),
+// that tabbing through the unset sliders saves nothing, an override saved as `custom.styling.<key>` and cleared, that
+// opening the editor writes nothing, and that the options, the look and the overrides survive saving and reloading the
+// dashboard. Run with --workers=1.
 const STYLING = readDashboard('styling.json');
 const NOTHING_SET = STYLING.panels.find((p) => p.title === 'text automatic, background basic: nothing set')!;
 const SET = STYLING.panels.find((p) => p.title === 'override on one column: set')!;
-const OPTIONS = ['Background color', 'Text color'];
+const OPTIONS = [
+  'Background color',
+  'Text color',
+  'Pill fill color',
+  'Pill line color',
+  'Pill line width',
+  'Pill corner radius',
+];
+const PILL_NOTHING_SET = STYLING.panels.find((p) => p.title === 'pill look: nothing set')!;
 
 const editor = (page: Page, name: string) => page.getByTestId(`data-testid Cell options ${name} field property editor`);
+const lookEditor = (page: Page) => page.getByTestId('data-testid Table Look field property editor');
+/** The panel options of the Table category shown in the editor, in order. */
+const tableOptions = (page: Page) =>
+  page.locator('[data-testid$=" field property editor"]').evaluateAll((elements) =>
+    elements
+      .map((el) => el.getAttribute('data-testid')!)
+      .filter((id) => id.startsWith('data-testid Table ') && !id.startsWith('data-testid Table footer'))
+      .map((id) => id.slice('data-testid Table '.length, -' field property editor'.length))
+  );
 
 /** The "Cell options" field options shown in the editor, in order. */
 const cellOptions = (page: Page) =>
@@ -55,6 +74,14 @@ const openPropertyMenu = async (page: Page, name: string) => {
   await page.getByTestId('data-testid Value picker button Add override property').last().click();
 };
 
+/** The row of the last override property added with a slider: the innermost element with its remove button and slider. */
+const lastSliderRow = (page: Page) =>
+  page
+    .locator('div')
+    .filter({ has: page.getByRole('button', { name: 'Remove property' }) })
+    .filter({ has: page.getByRole('slider') })
+    .last();
+
 /** The row of the last override property added: the innermost element with its remove button and its select. */
 const lastPropertyRow = (page: Page) =>
   page
@@ -63,7 +90,7 @@ const lastPropertyRow = (page: Page) =>
     .filter({ has: page.getByRole('combobox') })
     .last();
 
-test.describe('Text color and Background color in the editor and the saved JSON', () => {
+test.describe('Text color, Background color, the pill options and the Look in the editor and the saved JSON', () => {
   test.describe.configure({ mode: 'default' });
   let api: APIRequestContext;
   const created: string[] = [];
@@ -103,20 +130,44 @@ test.describe('Text color and Background color in the editor and the saved JSON'
     await expect.poll(() => cellOptions(page)).toEqual(expect.arrayContaining(['Cell type', ...OPTIONS]));
     const shown = await cellOptions(page);
     const at = shown.indexOf('Cell type');
-    expect(shown.slice(at, at + 4)).toEqual(['Cell type', 'Background color', 'Text color', 'Cell value inspect']);
+    expect(shown.slice(at, at + 8)).toEqual(['Cell type', ...OPTIONS, 'Cell value inspect']);
     // the field defaults' Cell type is Auto: the options show anyway (no cell-type showIf)
     await expect(editor(page, 'Cell type').getByRole('combobox')).toHaveValue('Auto');
     // unset, the placeholder says what is drawn (Text color as Stat plus's: Automatic on a fill the plugin draws)
     const placeholders: Record<string, string> = {
       'Background color': 'As Grafana',
-      'Text color': 'Automatic on a Background color, otherwise as Grafana',
+      'Text color': 'Automatic on a Background or Pill fill color or the Pill look, otherwise as Grafana',
+      'Pill fill color': 'As Grafana',
+      'Pill line color': 'Pill color',
     };
-    for (const name of OPTIONS) {
+    for (const [name, placeholder] of Object.entries(placeholders)) {
       await expect(editor(page, name)).toBeVisible();
-      await expect(editor(page, name).getByRole('combobox')).toHaveAttribute('placeholder', placeholders[name]);
+      await expect(editor(page, name).getByRole('combobox')).toHaveAttribute('placeholder', placeholder);
+    }
+    // the unset sliders show what unset draws: a 1 px line (when one is drawn), the theme's 6 px radius
+    await expect(editor(page, 'Pill line width').getByRole('slider')).toHaveAttribute('aria-valuenow', '1');
+    await expect(editor(page, 'Pill corner radius').getByRole('slider')).toHaveAttribute('aria-valuenow', '6');
+    for (const name of ['Pill line width', 'Pill corner radius']) {
+      await expect(editor(page, name).getByRole('button', { name: 'Clear value' })).toHaveCount(0);
+    }
+    // the Look: after core's Table panel options (Page size is hidden without its flag and with pagination off; the
+    // Table field options follow), nothing chosen; as State timeline plus's Look after its category's core options
+    await expect.poll(() => tableOptions(page)).toEqual(expect.arrayContaining(['Enable pagination', 'Look']));
+    expect((await tableOptions(page)).slice(0, 6)).toEqual([
+      'Show table header',
+      'Frozen columns',
+      'Cell height',
+      'Max row height',
+      'Enable pagination',
+      'Look',
+    ]);
+    for (const label of ['Grafana', 'Pill']) {
+      await expect(lookEditor(page).getByRole('radio', { name: label })).not.toBeChecked();
     }
     // a new panel saves nothing of them
-    expect(((await savedPanel(page))?.fieldConfig.defaults.custom ?? {}) as object).not.toHaveProperty('styling');
+    const saved = await savedPanel(page);
+    expect((saved?.fieldConfig.defaults.custom ?? {}) as object).not.toHaveProperty('styling');
+    expect(saved?.options ?? {}).not.toHaveProperty('styling');
   });
 
   test('they are in the "Add override property" menu, under Cell options', async ({ page }) => {
@@ -126,11 +177,7 @@ test.describe('Text color and Background color in the editor and the saved JSON'
     const properties = (await page.getByRole('option').allInnerTexts()).map((text) => text.split('\n')[0]);
     const cell = properties.filter((p) => p.startsWith('Cell options > '));
     const at = cell.indexOf('Cell options > Cell type');
-    expect(cell.slice(at, at + 3)).toEqual([
-      'Cell options > Cell type',
-      'Cell options > Background color',
-      'Cell options > Text color',
-    ]);
+    expect(cell.slice(at, at + 7)).toEqual(['Cell options > Cell type', ...OPTIONS.map((o) => `Cell options > ${o}`)]);
   });
 
   test('a value set in the field defaults is saved; cleared, its key goes, and no empty `styling` is left', async ({
@@ -167,6 +214,84 @@ test.describe('Text color and Background color in the editor and the saved JSON'
     expect(await custom(page, 1)).toHaveProperty('minWidth', 70);
   });
 
+  test('the pill options: set and cleared in the field defaults, no `styling: {}` left', async ({ page }) => {
+    await createDashboard('pjan-table-styling-pill-edit', { ...PILL_NOTHING_SET, id: 1 });
+    await openEditor(page, 'pjan-table-styling-pill-edit');
+    await expect.poll(() => custom(page, 1)).toHaveProperty('minWidth', 70);
+    const preview = page.getByTestId('data-testid panel content');
+    const upPill = preview.getByRole('gridcell', { name: 'Up', exact: true }).first().locator('span[style]');
+
+    await choose(page, editor(page, 'Pill fill color'), 'Softer');
+    await choose(page, editor(page, 'Pill line color'), 'Base');
+    const width = editor(page, 'Pill line width').getByRole('textbox');
+    await width.fill('2');
+    await width.blur();
+    const radius = editor(page, 'Pill corner radius').getByRole('textbox');
+    await radius.fill('4');
+    await radius.blur();
+    const styling = {
+      fillColor: { mode: 'shade', shade: 'softer' },
+      lineColor: { mode: 'shade', shade: 'base' },
+      lineWidth: 2,
+      cornerRadius: 4,
+    };
+    await expect.poll(async () => (await custom(page, 1)).styling).toEqual(styling);
+    // the preview draws it (Grafana's default dark theme: Softer green #37872D, a Base #73BF69 line)
+    await expect(upPill).toHaveCSS('background-color', 'rgb(55, 135, 45)');
+    await expect(upPill).toHaveCSS('box-shadow', 'rgb(115, 191, 105) 0px 0px 0px 2px inset');
+    await expect(upPill).toHaveCSS('border-top-left-radius', '4px');
+
+    for (const name of ['Pill fill color', 'Pill line color', 'Pill line width']) {
+      await editor(page, name).getByRole('button', { name: 'Clear value' }).click();
+    }
+    await expect.poll(async () => (await custom(page, 1)).styling).toEqual({ cornerRadius: 4 });
+    await editor(page, 'Pill corner radius').getByRole('button', { name: 'Clear value' }).click();
+    await expect.poll(() => custom(page, 1)).not.toHaveProperty('styling');
+    expect(await custom(page, 1)).toHaveProperty('minWidth', 70);
+    await expect(upPill).toHaveCSS('box-shadow', 'none');
+    await expect(upPill).toHaveCSS('border-top-left-radius', '6px');
+  });
+
+  test('tabbing through the unset sliders saves nothing', async ({ page }) => {
+    await createDashboard('pjan-table-styling-sliders', { ...PILL_NOTHING_SET, id: 1 });
+    await openEditor(page, 'pjan-table-styling-sliders');
+    await expect.poll(() => custom(page, 1)).toHaveProperty('minWidth', 70);
+    const before = await savedPanel(page, 1);
+    for (const name of ['Pill line width', 'Pill corner radius']) {
+      const input = editor(page, name).getByRole('textbox');
+      await input.scrollIntoViewIfNeeded();
+      await input.focus();
+      await page.keyboard.press('Tab');
+    }
+    for (let t = 0; t < 2000; t += 250) {
+      expect(await savedPanel(page, 1)).toEqual(before);
+      await page.waitForTimeout(250);
+    }
+    expect(before?.fieldConfig.defaults.custom ?? {}).not.toHaveProperty('styling');
+  });
+
+  test('the Look: Pill is saved and drawn; back to Grafana, the pills are core’s again', async ({ page }) => {
+    await createDashboard('pjan-table-styling-look', { ...PILL_NOTHING_SET, id: 1 });
+    await openEditor(page, 'pjan-table-styling-look');
+    await expect.poll(async () => (await savedPanel(page, 1))?.options).toHaveProperty('cellHeight');
+    const preview = page.getByTestId('data-testid panel content');
+    const upPill = preview.getByRole('gridcell', { name: 'Up', exact: true }).first().locator('span[style]');
+    await expect(upPill).toHaveCSS('background-color', 'rgb(115, 191, 105)'); // core's green (dark)
+
+    await lookEditor(page).scrollIntoViewIfNeeded();
+    await lookEditor(page).getByRole('radio', { name: 'Pill' }).click();
+    await expect.poll(async () => (await savedPanel(page, 1))?.options.styling).toEqual({ look: 'pill' });
+    await expect(upPill).toHaveCSS('background-color', 'rgb(55, 135, 45)'); // Softer
+    await expect(upPill).toHaveCSS('box-shadow', 'rgb(115, 191, 105) 0px 0px 0px 1px inset'); // Base, 1 px
+    // the field options don't change
+    expect((await custom(page, 1)) as object).not.toHaveProperty('styling');
+
+    await lookEditor(page).getByRole('radio', { name: 'Grafana' }).click();
+    await expect.poll(async () => (await savedPanel(page, 1))?.options.styling).toEqual({ look: 'grafana' });
+    await expect(upPill).toHaveCSS('background-color', 'rgb(115, 191, 105)');
+    await expect(upPill).toHaveCSS('box-shadow', 'none');
+  });
+
   test('an override property is saved as `custom.styling.<key>`; cleared, it keeps no value', async ({ page }) => {
     await createDashboard('pjan-table-styling-override', { ...NOTHING_SET, id: 1 });
     await openEditor(page, 'pjan-table-styling-override');
@@ -190,6 +315,19 @@ test.describe('Text color and Background color in the editor and the saved JSON'
     // the overrides before it and the defaults are untouched
     expect((await overrides(page, 1))?.slice(0, -1)).toEqual(before.overrides);
     expect((await savedPanel(page, 1))?.fieldConfig.defaults).toEqual(before.defaults);
+
+    // a slider: Pill line width on one field
+    await addOverrideProperty(page, 'state', 'Cell options > Pill line width');
+    const width = lastSliderRow(page).getByRole('textbox');
+    await width.fill('3');
+    await width.blur();
+    await expect
+      .poll(async () => (await overrides(page, 1))?.at(-1))
+      .toEqual({ matcher, properties: [{ id: 'custom.styling.lineWidth', value: 3 }] });
+    await lastSliderRow(page).getByRole('button', { name: 'Clear value' }).click();
+    await expect
+      .poll(async () => (await overrides(page, 1))?.at(-1))
+      .toEqual({ matcher, properties: [{ id: 'custom.styling.lineWidth' }] });
   });
 
   test('opening the editor of a styled panel writes nothing', async ({ page }) => {
@@ -212,16 +350,25 @@ test.describe('Text color and Background color in the editor and the saved JSON'
     await openEditor(page, 'pjan-table-styling-reload');
     await choose(page, editor(page, 'Background color'), 'Softer');
     await choose(page, editor(page, 'Text color'), 'Stronger');
+    await choose(page, editor(page, 'Pill line color'), 'Strong');
+    const radius = editor(page, 'Pill corner radius').getByRole('textbox');
+    await radius.fill('3');
+    await radius.blur();
+    await lookEditor(page).scrollIntoViewIfNeeded();
+    await lookEditor(page).getByRole('radio', { name: 'Pill' }).click();
     await addOverrideProperty(page, 'state', 'Cell options > Background color');
     await choose(page, lastPropertyRow(page), 'Base');
     const styling = {
       backgroundColor: { mode: 'shade', shade: 'softer' },
       textColor: { mode: 'shade', shade: 'stronger' },
+      lineColor: { mode: 'shade', shade: 'strong' },
+      cornerRadius: 3,
     };
     await expect.poll(async () => (await custom(page, 1)).styling).toEqual(styling);
     await expect
       .poll(async () => (await overrides(page, 1))?.at(-1)?.properties)
       .toEqual([{ id: 'custom.styling.backgroundColor', value: { mode: 'shade', shade: 'base' } }]);
+    await expect.poll(async () => (await savedPanel(page, 1))?.options.styling).toEqual({ look: 'pill' });
     const edited = (await savedPanel(page, 1))!.fieldConfig;
 
     // Save as a user does, then load the dashboard again
@@ -230,13 +377,19 @@ test.describe('Text color and Background color in the editor and the saved JSON'
     await expect
       .poll(async () => {
         const response = await api.get('/api/dashboards/uid/pjan-table-styling-reload');
-        const json = (await response.json()) as { dashboard: { panels: Array<{ fieldConfig: unknown }> } };
-        return json.dashboard.panels[0].fieldConfig;
+        const json = (await response.json()) as {
+          dashboard: { panels: Array<{ fieldConfig: unknown; options: { styling?: unknown } }> };
+        };
+        return [json.dashboard.panels[0].fieldConfig, json.dashboard.panels[0].options.styling];
       })
-      .toEqual(edited);
+      .toEqual([edited, { look: 'pill' }]);
     await openEditor(page, 'pjan-table-styling-reload');
     await expect.poll(async () => (await savedPanel(page, 1))?.fieldConfig).toEqual(edited);
     await expect(editor(page, 'Background color').getByRole('combobox')).toHaveValue('Softer');
     await expect(editor(page, 'Text color').getByRole('combobox')).toHaveValue('Stronger');
+    await expect(editor(page, 'Pill line color').getByRole('combobox')).toHaveValue('Strong');
+    await expect(editor(page, 'Pill corner radius').getByRole('slider')).toHaveAttribute('aria-valuenow', '3');
+    expect((await savedPanel(page, 1))?.options.styling).toEqual({ look: 'pill' });
+    await expect(lookEditor(page).getByRole('radio', { name: 'Pill' })).toBeChecked();
   });
 });

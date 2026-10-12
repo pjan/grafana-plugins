@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/TablePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; onFieldConfigChange to useApplyFieldConfigChangedInPlace from @pjan/grafana-panel-utils (applies the field config again after the panel-change handler restored it in place).
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/TablePanel.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; onFieldConfigChange to useApplyFieldConfigChangedInPlace from @pjan/grafana-panel-utils (applies the field config again after the panel-change handler restored it in place); the panel's look (options.styling.look) to TableNG as pjanLook.
 import { getFrameDisplayName, type PanelProps, type SelectableValue } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import { PanelDataErrorView } from '@grafana/runtime';
@@ -16,6 +16,8 @@ import { getCurrentFrameIndex, onColumnResize, onSortByChange } from 'features/t
 import { hasDeprecatedParentRowIndex, migrateFromParentRowIndexToNestedFrames } from './migrations';
 // pjan-table-panel: applies the field config again after the panel-change handler restored it (shared package).
 import { useApplyFieldConfigChangedInPlace } from '@pjan/grafana-panel-utils';
+// pjan-table-panel: the panel's look (src/pjan/styling/), options.styling.look
+import { getTableLook } from '../../../pjan/styling/options';
 
 interface Props extends PanelProps<TableOptions> {
   initialRowIndex?: number;
@@ -85,6 +87,7 @@ export function TablePanel(props: Props) {
       getActions={getActions}
       structureRev={data.structureRev}
       transparent={transparent}
+      pjanLook={getTableLook(options)} // pjan-table-panel
     />
   );
 
