@@ -28,6 +28,7 @@ export {
   toCanvasColor,
   toFillColor,
 } from './canvasColors';
+export { ClearableSelectEditor, type ClearableSelectSettings } from './ClearableSelectEditor';
 export { ClearableSliderEditor, type ClearableSliderSettings } from './ClearableSliderEditor';
 export {
   getStylingColorOptions,

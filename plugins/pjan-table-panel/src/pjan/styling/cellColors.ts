@@ -17,7 +17,7 @@ import {
 // The copied table's cell options type (its union includes the Custom cell type)
 import { type TableCellOptions } from '../../packages/grafana-ui/src/components/Table/types';
 
-import { BACKGROUND_COLOR_MODES, getFieldStyling, TEXT_COLOR_MODES } from './options';
+import { BACKGROUND_COLOR_MODES, getFieldStyling, TEXT_COLOR_MODES, validTextWeight } from './options';
 
 // Background color and Text color (`custom.styling.backgroundColor`, `custom.styling.textColor`, plan step 7, build 1).
 // Hooked into the copied TableNG's getCellColorInlineStylesFactory (utils.ts), marked `pjan-table-panel:` (UPSTREAM.md,
@@ -98,13 +98,15 @@ const toPx = (theme: GrafanaTheme2, size: string | number): number =>
 
 /**
  * The font a column's text is drawn in, the one place the size and weight Automatic measures come from: cells in the
- * grid's body font (14 px), pills in `bodySmall` (PillCell's `getStyles`, 12 px), both at the theme's regular weight.
- * Text weight (a later addition) sets the weight here, from the field's styling.
+ * grid's body font (14 px), pills in `bodySmall` (PillCell's `getStyles`, 12 px), at the column's Text weight
+ * (`custom.styling.textWeight`, build 3; the callers are the cell types it applies to), otherwise the theme's regular
+ * weight. A row coloured by Apply to entire row takes the weight of the field that colours it (its other cells keep
+ * their own weight; at 14 px every weight needs the same contrast, so the row's text colour doesn't depend on it).
  */
-export function getTextFont(theme: GrafanaTheme2, element: TextElement, _field: Field): TextFont {
+export function getTextFont(theme: GrafanaTheme2, element: TextElement, field: Field): TextFont {
   return {
     size: element === 'pill' ? toPx(theme, theme.typography.bodySmall.fontSize) : theme.typography.fontSize,
-    weight: theme.typography.fontWeightRegular,
+    weight: validTextWeight(getFieldStyling(field.config.custom).textWeight) ?? theme.typography.fontWeightRegular,
   };
 }
 

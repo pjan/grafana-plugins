@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/utils.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): getCellColorInlineStylesFactory takes the table background and its styles function the field (and what Colored text is drawn on); getApplyToRowBgFn passes the row's field.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/utils.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): getCellColorInlineStylesFactory takes the table background and its styles function the field (and what Colored text is drawn on); getApplyToRowBgFn passes the row's field. Text weight hooks (src/pjan/styling/textWeight.ts): createTypographyContext records its font size; buildCellHeightMeasurers gives a column at a Text weight its own measurer at it, and computeContentAwareColWidths measures its content at it.
 import memoize from 'micro-memoize';
 import { type CSSProperties } from 'react';
 import tinycolor from 'tinycolor2';
@@ -40,6 +40,8 @@ import { CELL_HORIZONTAL_CHROME, COLUMN, HEADER_ICON_SPACE, TABLE } from './cons
 import { type TextAlign } from './styles';
 // pjan-table-panel: Background color and Text color (src/pjan/styling/), custom.styling.*
 import { getCellColorsFactory } from '../../../../../../pjan/styling/cellColors';
+// pjan-table-panel: Text weight (src/pjan/styling/textWeight.ts), custom.styling.textWeight
+import { getMeasuredTextWeight, getWeightedTypographyCtx } from '../../../../../../pjan/styling/textWeight';
 
 import {
   type TableRow,
@@ -234,6 +236,7 @@ export function createTypographyContext(
     avgCharWidth,
     estimateHeight: getTextHeightEstimator(avgCharWidth),
     measureHeight: getTextHeightMeasurerFromUwrapCount(count),
+    pjanFontSize: fontSize, // pjan-table-panel: for the same context at a Text weight (getWeightedTypographyCtx)
   };
 }
 
@@ -436,6 +439,31 @@ export function buildCellHeightMeasurers(
       wrappedFields++;
 
       const cellType = getCellOptions(field).type;
+      // pjan-table-panel: a column at a Text weight (Colored text, Colored background, Pill; src/pjan/styling/textWeight.ts)
+      // gets a measurer of its own per weight, made as core's below with core's context at that weight; core's own
+      // measurers and its other columns are unchanged
+      const pjanWeight = getMeasuredTextWeight(field, cellType);
+      if (pjanWeight !== undefined) {
+        const pjanPill = cellType === TableCellDisplayMode.Pill;
+        const pjanKey = `${pjanPill ? TableCellDisplayMode.Pill : TableCellDisplayMode.Auto}|${pjanWeight}`;
+        if (!result[pjanKey]) {
+          const pjanCtx = pjanPill
+            ? createTypographyContext(PILLS_FONT_SIZE, typographyCtx.fontFamily, typographyCtx.letterSpacing, pjanWeight)
+            : getWeightedTypographyCtx(typographyCtx, pjanWeight, createTypographyContext);
+          result[pjanKey] = {
+            measure: clampByMaxHeight(
+              pjanPill
+                ? getPillCellHeightMeasurer((value) => pjanCtx.ctx.measureText(value).width)
+                : pjanCtx.measureHeight,
+              maxHeight
+            ),
+            estimate: pjanPill ? undefined : clampByMaxHeight(pjanCtx.estimateHeight, maxHeight),
+            fieldIdxs: [],
+          };
+        }
+        result[pjanKey].fieldIdxs.push(fieldIdx);
+        continue;
+      }
       if (cellType === TableCellDisplayMode.DataLinks) {
         setupMeasurerForIdx(TableCellDisplayMode.DataLinks, fieldIdx);
       } else if (cellType === TableCellDisplayMode.Pill) {
@@ -1593,7 +1621,13 @@ export function computeContentAwareColWidths(
     // registered measurer wins.
     const rendersAsJson = cellType === TableCellDisplayMode.JSONView || field.type === FieldType.other;
     const measure = COL_WIDTH_MEASURERS[resolvedType] ?? (rendersAsJson ? measureJsonColWidth : measureTextColWidth);
-    const cellWidth = measure(field, effectiveSampleSize, measureCtx);
+    // pjan-table-panel: the column's content at its Text weight, if set and it applies (textWeight.ts)
+    const pjanWeight = getMeasuredTextWeight(field, cellType);
+    const pjanMeasureCtx =
+      pjanWeight === undefined
+        ? measureCtx
+        : { ...measureCtx, typographyCtx: getWeightedTypographyCtx(typographyCtx, pjanWeight, createTypographyContext) };
+    const cellWidth = measure(field, effectiveSampleSize, pjanMeasureCtx); // pjan-table-panel: was measureCtx
     const footerWidth = measureFooterWidth(field, headerTypographyCtx);
 
     const floor = Math.max(COLUMN.MIN_WIDTH, field.config.custom?.minWidth ?? 0);

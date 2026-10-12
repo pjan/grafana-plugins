@@ -7,10 +7,9 @@ import {
 } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import { type ComboboxOption } from '@grafana/ui';
+import { ClearableSelectEditor, type ClearableSelectSettings } from '@pjan/grafana-styling';
 
 import { getXAnnotationFrames } from '../../plugins/panel/timeseries/plugins/utils';
-
-import { RowAnnotationsComboboxEditor, type RowAnnotationsComboboxSettings } from './RowAnnotationsComboboxEditor';
 
 /** What a row is matched by, unless its "Annotation key" field option is set. */
 export type RowKeySource = 'displayName' | 'label';
@@ -106,7 +105,7 @@ export function addRowAnnotationOptions<T>(builder: PanelOptionsEditorBuilder<T>
       ),
       showIf: (_, __, annotations) => hasAnnotations(annotations),
     })
-    .addCustomEditor<RowAnnotationsComboboxSettings, string>({
+    .addCustomEditor<ClearableSelectSettings, string>({
       id: 'rowAnnotations.field',
       path: 'rowAnnotations.field',
       category,
@@ -115,7 +114,7 @@ export function addRowAnnotationOptions<T>(builder: PanelOptionsEditorBuilder<T>
         'pjan.row-annotations.field-desc',
         'Compared with the row key. For a list field such as tags, any of its values can match'
       ),
-      editor: RowAnnotationsComboboxEditor,
+      editor: ClearableSelectEditor,
       settings: {
         placeholder: DEFAULT_ROW_ANNOTATION_FIELD,
         getOptions: (context) => getAnnotationFieldOptions(context.annotations),
@@ -123,7 +122,7 @@ export function addRowAnnotationOptions<T>(builder: PanelOptionsEditorBuilder<T>
       },
       showIf: (options, __, annotations) => isEnabled(options, annotations),
     })
-    .addCustomEditor<RowAnnotationsComboboxSettings, RowKeySource>({
+    .addCustomEditor<ClearableSelectSettings, RowKeySource>({
       id: 'rowAnnotations.rowKey',
       path: 'rowAnnotations.rowKey',
       category,
@@ -132,7 +131,7 @@ export function addRowAnnotationOptions<T>(builder: PanelOptionsEditorBuilder<T>
         'pjan.row-annotations.row-key-desc',
         'What the annotation field is compared with. A row’s "Annotation key" override replaces it'
       ),
-      editor: RowAnnotationsComboboxEditor,
+      editor: ClearableSelectEditor,
       settings: {
         placeholder: t('pjan.row-annotations.row-key-display-name', 'Display name'),
         getOptions: () => [
@@ -142,13 +141,13 @@ export function addRowAnnotationOptions<T>(builder: PanelOptionsEditorBuilder<T>
       },
       showIf: (options, __, annotations) => isEnabled(options, annotations),
     })
-    .addCustomEditor<RowAnnotationsComboboxSettings, string>({
+    .addCustomEditor<ClearableSelectSettings, string>({
       id: 'rowAnnotations.label',
       path: 'rowAnnotations.label',
       category,
       name: t('pjan.row-annotations.label-name', 'Label'),
       description: t('pjan.row-annotations.label-desc', 'The row label whose value is the row key'),
-      editor: RowAnnotationsComboboxEditor,
+      editor: ClearableSelectEditor,
       settings: {
         placeholder: t('pjan.row-annotations.label-placeholder', 'Choose a label'),
         getOptions: (context) => getRowLabelOptions(context.data),

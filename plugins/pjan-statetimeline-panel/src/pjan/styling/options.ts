@@ -7,6 +7,8 @@ import {
 import { t } from '@grafana/i18n';
 import { VisibilityMode } from '@grafana/schema';
 import {
+  ClearableSelectEditor,
+  type ClearableSelectSettings,
   ClearableSliderEditor,
   type ClearableSliderSettings,
   type StylingColor,
@@ -14,11 +16,6 @@ import {
   type StylingColorEditorSettings,
   type StylingColorMode,
 } from '@pjan/grafana-styling';
-
-import {
-  RowAnnotationsComboboxEditor,
-  type RowAnnotationsComboboxSettings,
-} from '../rowAnnotations/RowAnnotationsComboboxEditor';
 
 export type TimelineLook = 'grafana' | 'pill';
 export type ValueOverflow = 'truncate' | 'hide';
@@ -153,7 +150,7 @@ export function addFillAndTextColorFieldConfig<T>(builder: FieldConfigEditorBuil
  * the look (truncate, or hide with Pill), and clearing it goes back to that.
  */
 export function addValueOverflowOption<T>(builder: PanelOptionsEditorBuilder<T>) {
-  builder.addCustomEditor<RowAnnotationsComboboxSettings, ValueOverflow>({
+  builder.addCustomEditor<ClearableSelectSettings, ValueOverflow>({
     id: 'styling.valueOverflow',
     path: 'styling.valueOverflow',
     name: t('pjan.styling.value-overflow-name', 'Value overflow'),
@@ -162,7 +159,7 @@ export function addValueOverflowOption<T>(builder: PanelOptionsEditorBuilder<T>)
       'A value wider than its box is truncated, or hidden. Not set: as the look (Pill hides)'
     ),
     category: getCategory(),
-    editor: RowAnnotationsComboboxEditor,
+    editor: ClearableSelectEditor,
     settings: {
       placeholder: t('pjan.styling.value-overflow-placeholder', 'As the look'),
       getOptions: () => [

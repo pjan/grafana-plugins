@@ -1,5 +1,6 @@
 // Generates provisioning/dashboards/styling.json: the cases of tests/styling.spec.ts for Text color and Background
-// color (build 1) and the pill options and the Pill look (build 2; custom.styling.*, options.styling.look), one row per
+// color (build 1), the pill options and the Pill look (build 2) and Text weight (build 3; custom.styling.*,
+// options.styling.look), one row per
 // case with three panels of the same width and the same data: core's table ("<case>: core"), Table plus with nothing
 // set ("<case>: nothing set") and Table plus with the case's styling ("<case>: set"; the look, if the case has one, in
 // its panel options). Run with `node scripts/generate-styling-dashboard.mjs` after changing a case.
@@ -120,6 +121,27 @@ const pills = () => [
   field('flags', 'string', FLAGS, { mappings: STATE_MAPPINGS }),
   field('power', 'string', POWER_VALUES, { mappings: POWER_MAPPINGS }),
   field('tier', 'string', ['gold', 'silver', 'gold', 'bronze'], { color: { mode: 'fixed', fixedColor: 'purple' } }),
+];
+
+// Wrapped text (Text weight, build 3): Grafana declares Inter at 400 and 500 only, so 600 is drawn from the 500
+// face (in Chrome a synthesised bold with the 500 face's advances): at 14 px NOTE is 339.2 px wide at 400 and 342.6 px
+// at 500 and 600, at 12 px the eight TAGS pills 479.3 px at 400 and 484.6 px from 500 (with their 12 px padding and 4 px
+// gaps; measured in Chrome, job tmp table-plan/build3/probe). The columns are sized so that their content (the width less
+// 13 px of padding and border) fits on one line at 400 and not from 500: NOTE in 341 px, TAGS in 482 px.
+export const NOTE = 'Degraded service on the primary database cluster';
+export const TAGS = 'degraded,primary,replica,backup,archive,standby,cluster,storage';
+export const WRAPPED_WIDTHS = { note: 354, msg: 354, tags: 495 };
+// r4: only its pills wrap (from 500), so its height comes from the pill measurer alone
+const wrappedFrame = () => [
+  field('host', 'string', ['r1', 'r2', 'r3', 'r4']),
+  field('note', 'string', [NOTE, 'ok', 'Replication lag above the threshold on the standby node', 'ok']),
+  field('msg', 'string', [NOTE, 'ok', 'Backups delayed: the archive volume is nearly full again', 'ok']),
+  field('tags', 'string', [TAGS, 'primary', 'degraded,backup', TAGS]),
+];
+const WRAPPED_OVERRIDES = [
+  override('note', { ...TEXT, 'custom.width': WRAPPED_WIDTHS.note, 'custom.wrapText': true }),
+  override('msg', { ...BASIC, 'custom.width': WRAPPED_WIDTHS.msg, 'custom.wrapText': true }),
+  override('tags', { ...PILL, 'custom.width': WRAPPED_WIDTHS.tags, 'custom.wrapText': true }),
 ];
 
 const AUTOMATIC = { mode: 'automatic' };
@@ -481,6 +503,124 @@ export const CASES = [
     look: 'pill',
   },
 
+  // Text weight (build 3), set once in the field defaults unless a case says otherwise: on each cell type it applies
+  // to, with Automatic text (the same colours as at 400: 14 and 12 px are never large text), with the Pill look, on a
+  // row colored by Apply to entire row, in nested sub-tables and in Tooltip from field
+  {
+    title: 'text weight 600, colored text',
+    kind: 'text',
+    column: 'level',
+    overrides: [override('level', TEXT)],
+    styling: { textWeight: 600 },
+  },
+  {
+    title: 'text weight 600, text automatic, background basic',
+    kind: 'fill',
+    column: 'state',
+    overrides: [override('state', BASIC)],
+    styling: { textWeight: 600, textColor: AUTOMATIC },
+  },
+  {
+    title: 'text weight 500, background gradient',
+    kind: 'fill',
+    column: 'state',
+    overrides: [override('state', GRADIENT)],
+    styling: { textWeight: 500 },
+  },
+  {
+    title: 'text weight 600, pills',
+    kind: 'pill',
+    column: 'state',
+    frames: [pills()],
+    wide: true,
+    overrides: ALL_PILLS,
+    styling: { textWeight: 600 },
+  },
+  {
+    title: 'text weight 500, pill look',
+    kind: 'pill',
+    column: 'state',
+    frames: [pills()],
+    wide: true,
+    overrides: ALL_PILLS,
+    styling: { textWeight: 500 },
+    look: 'pill',
+  },
+  {
+    title: 'text weight on a row colored by apply to entire row: 600 on the row field, 500 on colored text',
+    kind: 'row',
+    column: 'state',
+    overrides: [
+      override('state', { ...ROW_BASIC, 'custom.styling.textWeight': 600 }),
+      override('level', { ...TEXT, 'custom.styling.textWeight': 500 }),
+    ],
+    styling: {},
+  },
+  {
+    title: 'nested table: text weight 600 in the sub-tables',
+    kind: 'nested',
+    column: 'state',
+    frames: [[field('stack', 'string', ['web', 'web', 'db', 'db']), ...services()]],
+    transformations: [
+      {
+        id: 'groupToNestedTable',
+        options: {
+          expandAllRows: true,
+          fields: { stack: { aggregations: [], operation: 'groupby' } },
+        },
+      },
+    ],
+    overrides: [override('state', BASIC, 'nested'), override('level', TEXT, 'nested')],
+    styling: { textWeight: 600 },
+    h: 13,
+  },
+  {
+    title: 'tooltip from field: text weight 600',
+    kind: 'tooltip',
+    column: 'level',
+    overrides: [
+      override('host', { 'custom.tooltip.field': 'level', 'custom.tooltip.placement': 'right' }),
+      override('level', TEXT),
+    ],
+    styling: { textWeight: 600 },
+  },
+  // Wrapped text at each weight: Colored text, Colored background and Pill columns sized so that the first row fits one
+  // line at 400 and needs two from 500 (above)
+  ...[400, 500, 600].map((textWeight) => ({
+    title: `wrapped text, text weight ${textWeight}`,
+    kind: 'wrapped',
+    column: 'note',
+    frames: [wrappedFrame()],
+    wide: true,
+    overrides: WRAPPED_OVERRIDES,
+    styling: { textWeight },
+    h: 10,
+  })),
+  // A saved weight that isn't one of the three (700: not offered, Grafana draws it as 600) draws as core
+  {
+    title: 'text weight 700 saved (not offered): as core',
+    kind: 'text',
+    column: 'level',
+    overrides: [override('level', TEXT)],
+    styling: { textWeight: 700 },
+  },
+  // Content-aware column widths (the table.autoColumnWidths flag, tests/styling.spec.ts): two weighted Colored text
+  // columns with NOTE in a panel too narrow for their content, so each column keeps its content width
+  {
+    title: 'content widths, text weight 600',
+    kind: 'text',
+    column: 'note',
+    frames: [
+      [
+        field('host', 'string', ['r1', 'r2']),
+        field('note', 'string', [NOTE, 'ok']),
+        field('msg', 'string', [NOTE, 'ok']),
+      ],
+    ],
+    overrides: [override('note', TEXT), override('msg', TEXT)],
+    styling: { textWeight: 600 },
+  },
+
   // An override styles only its column: Text color Automatic in the defaults, Fixed on level
   {
     title: 'override on one column',
@@ -537,7 +677,7 @@ CASES.forEach((c, i) => {
 
 const dashboard = {
   uid: 'pjan-table-styling',
-  title: 'Table plus styling (Text color, Background color, pill options and Look)',
+  title: 'Table plus styling (Text color, Background color, pill options and Look, Text weight)',
   tags: ['pjan-table-panel'],
   editable: true,
   schemaVersion: 42,

@@ -12,7 +12,7 @@ import { getRelativeShadeColor, getShadeColor, type RelativeShade } from '../../
 
 import { type Dashboard, panelContent, readDashboard, serialise, SQUARE_FRAMES, switchThemeLive } from './parity';
 
-// Text color and Background color (build 1), the pill options and the Pill look (build 2) on
+// Text color and Background color (build 1), the pill options and the Pill look (build 2) and Text weight (build 3) on
 // provisioning/dashboards/styling.json (scripts/generate-styling-dashboard.mjs): one row per case, core's table, Table
 // plus with nothing set and Table plus with the case's styling (and look), with the same data.
 // Per case:
@@ -23,7 +23,11 @@ import { type Dashboard, panelContent, readDashboard, serialise, SQUARE_FRAMES, 
 //   worked out here with @pjan/grafana-styling from the column's cell type and styling as saved in the panel, at the
 //   font size and weight the cell is drawn in; a basic fill also in the screenshot's pixels; a few cases also against
 //   colours worked out by hand (HAND); and set differs from core where the option applies (Fixed on gradient cells:
-//   equal, it doesn't apply).
+//   equal, it doesn't apply);
+// - Text weight: each cell's (and pill's) computed weight is the column's where it applies (Colored text, Colored
+//   background, Pill; on a row colored by Apply to entire row, the row field's own cells only), core's elsewhere; the
+//   header keeps core's; wrapped text fits its cell at every weight (rows grow where a heavier weight takes another
+//   line: hand-computed heights); content-aware widths (flag) measure at the weight.
 // In the light and the dark theme, dark after a live switch from light, at pixel ratio 1 and 2. After a live switch
 // Grafana keeps drawing the value colours of the first theme (core's, the same in all three panels) until the data is
 // refreshed: the rules then apply to those colours in the new theme, and the hand-computed colours (which assume the
@@ -43,6 +47,7 @@ interface Styling {
   lineColor?: StylingColor;
   lineWidth?: number;
   cornerRadius?: number;
+  textWeight?: number;
 }
 interface CellOptions {
   type: string;
@@ -232,6 +237,8 @@ interface DrawnCell {
   pills: DrawnPill[];
   /** CSS pixels, relative to the panel content */
   box: { x: number; y: number; width: number; height: number };
+  /** The top and bottom of what the cell draws (its text and pills, overflowing or not), CSS pixels as `box` */
+  content?: { top: number; bottom: number };
 }
 
 const readCells = (page: Page, id: number): Promise<DrawnCell[]> =>
@@ -254,6 +261,9 @@ const readCells = (page: Page, id: number): Promise<DrawnCell[]> =>
         for (const cell of rowCells) {
           const style = getComputedStyle(cell);
           const box = cell.getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(cell);
+          const content = range.getBoundingClientRect();
           cells.push({
             grid: g,
             column: headers.get(cell.getAttribute('aria-colindex')) ?? '',
@@ -289,6 +299,8 @@ const readCells = (page: Page, id: number): Promise<DrawnCell[]> =>
                 };
               }),
             box: { x: box.x - rootBox.x, y: box.y - rootBox.y, width: box.width, height: box.height },
+            content:
+              content.height > 0 ? { top: content.top - rootBox.y, bottom: content.bottom - rootBox.y } : undefined,
           });
         }
       }
@@ -458,6 +470,22 @@ function sourceOf(column: string, text: string): { name?: string; position?: num
   }
 }
 
+// --- Text weight (build 3) -----------------------------------------------------------------------------------------
+
+const WEIGHTED_CELL_TYPES = ['color-text', 'color-background', 'pill'];
+/** A column's Text weight where it applies (its cell type, one of the three weights), else undefined. */
+const weightOf = (config: { cellOptions: CellOptions; styling: Styling }) =>
+  WEIGHTED_CELL_TYPES.includes(config.cellOptions.type) && [400, 500, 600].includes(config.styling.textWeight!)
+    ? config.styling.textWeight
+    : undefined;
+
+// The wrapped cases' first row (r1) and fourth (r4), worked out by hand from the generator's widths (which come from
+// Inter's measured widths): one line at 400 (the row keeps cellHeight sm's 36 px); from 500 r1's NOTE takes two lines
+// (44 px) and its TAGS pills two (2 × 22 + 4 px), so the row is 48 + 12 px of padding (TABLE.CELL_PADDING × 2) = 60 px;
+// r4 has only the TAGS pills (its note and msg are "ok"), so its 60 px come from the pill measurer alone. Core measures
+// at 400: 36 px.
+const WRAPPED_ROW = { regular: 36, heavier: 60 };
+
 // --- Pills (build 2) ----------------------------------------------------------------------------------------------
 
 // State timeline plus's Pill look: for the pill options left unset
@@ -505,7 +533,14 @@ interface WantPill {
  * A pill as the rules draw it, from core's pill of the same cell: its colour (`name`: its Grafana colour name, if any)
  * and text, and `behind`, what the pill is drawn on (the row's fill, the table's or the tooltip's background).
  */
-function pillOf(ctx: Context, s: Styling, core: DrawnPill, name: string | undefined, behind: string[]): WantPill {
+function pillOf(
+  ctx: Context,
+  s: Styling,
+  core: DrawnPill,
+  name: string | undefined,
+  behind: string[],
+  weight = 400
+): WantPill {
   const value = core.background;
   const part = (setting: StylingColor, noHue: string) =>
     setting.mode === 'fixed'
@@ -514,8 +549,8 @@ function pillOf(ctx: Context, s: Styling, core: DrawnPill, name: string | undefi
   const fill = s.fillColor ? part(s.fillColor, value) : value;
   const stops = tinycolor(fill).getAlpha() < 1 ? behind.map((b) => composite(fill, b)) : [fill];
   const text =
-    textOf(ctx, s.textColor, value, name, stops, { size: 12, weight: 400 }) ??
-    (s.fillColor ? automatic(ctx, stops, 12, 400) : core.color);
+    textOf(ctx, s.textColor, value, name, stops, { size: 12, weight }) ??
+    (s.fillColor ? automatic(ctx, stops, 12, weight) : core.color);
   const width = s.lineWidth ?? (s.lineColor ? 1 : undefined);
   // core's border (on its transparent pill in dark) is the pill's edge: it stays unless a line replaces it
   const coreBorder = core.border.width > 0;
@@ -583,6 +618,8 @@ function handOf(title: string, mode: 'light' | 'dark', cell: DrawnCell) {
     switch (title) {
       case 'text automatic, background basic':
       case 'row: text automatic, basic':
+      // at 600 too: 14 px is never large text, so Automatic is the colour worked out for 400
+      case 'text weight 600, text automatic, background basic':
         return { color: hand.basic[state] };
       case 'text automatic, background gradient':
         return { color: hand.gradient[state] };
@@ -713,6 +750,23 @@ for (const scale of [1, 2]) {
             const config = columnConfig(c.set, cell.column, cell.grid > 0);
             const { name, position } = sourceOf(cell.column, cell.text);
             const font = { size: cell.fontSize, weight: cell.fontWeight };
+            // Text weight: the column's where it applies (on a coloured row, the row field's own cells only), core's
+            // elsewhere
+            const weight = weightOf(config);
+            expect(cell.fontWeight, `${label}: the weight`).toBe(weight ?? coreCell.fontWeight);
+            if (weight !== undefined) {
+              applies++;
+              differs += cell.fontWeight !== coreCell.fontWeight ? 1 : 0;
+            }
+            if (c.title.startsWith('wrapped') && cell.content) {
+              // drawn inside the cell, not cut off by it
+              expect(cell.content.top, `${label}: the text fits the cell (top)`).toBeGreaterThanOrEqual(
+                cell.box.y - 0.5
+              );
+              expect(cell.content.bottom, `${label}: the text fits the cell (bottom)`).toBeLessThanOrEqual(
+                cell.box.y + cell.box.height + 0.5
+              );
+            }
             // The row's fill and text (Apply to entire row): from the field that colours the row (state)
             const rowConfig = columnConfig(c.set, 'state', cell.grid > 0);
             const rowCell = set.find((x) => x.grid === cell.grid && x.row === cell.row && x.column === 'state');
@@ -728,9 +782,18 @@ for (const scale of [1, 2]) {
                 { size: rowCell.fontSize, weight: rowCell.fontWeight },
                 undefined
               );
+              // Colored text on the row: its Text color, or without one core's value colour
               const text =
                 config.cellOptions.type === 'color-text'
-                  ? textOf(ctx, config.styling.textColor, coreCell.color, name, row.fill.stops, font, coreCell.color)
+                  ? (textOf(
+                      ctx,
+                      config.styling.textColor,
+                      coreCell.color,
+                      name,
+                      row.fill.stops,
+                      font,
+                      coreCell.color
+                    ) ?? coreCell.color)
                   : undefined;
               want = { color: text ? rgb(text) : row.color, background: row.background };
             } else if (config.cellOptions.type === 'color-background' && coreCell.background) {
@@ -760,7 +823,13 @@ for (const scale of [1, 2]) {
                 const pillLabel = `${label}: pill ${pill.text}`;
                 expect(pill.text, pillLabel).toBe(corePill.text);
                 expect(pill.fontSize, `${pillLabel}: pills are drawn at 12 px`).toBe(12);
-                expect(pill.box.width, `${pillLabel}: the pill keeps core's size`).toBeCloseTo(corePill.box.width, 1);
+                expect(pill.fontWeight, `${pillLabel}: the cell's weight`).toBe(weight ?? corePill.fontWeight);
+                if (weight === undefined || weight === 400) {
+                  expect(pill.box.width, `${pillLabel}: the pill keeps core's size`).toBeCloseTo(corePill.box.width, 1);
+                } else {
+                  // heavier text is drawn from Inter's 500 face, a little wider
+                  expect(pill.box.width, `${pillLabel}: wider text`).toBeGreaterThan(corePill.box.width);
+                }
                 expect(pill.box.height, `${pillLabel}: the pill keeps core's size`).toBeCloseTo(corePill.box.height, 1);
                 const name = pillNameOf(cell.column, pill.text);
                 const drawn = drawnPill(pill);
@@ -768,7 +837,7 @@ for (const scale of [1, 2]) {
                   expect(drawn, `${pillLabel}: as core`).toEqual(drawnPill(corePill));
                   continue;
                 }
-                const want = pillOf(ctx, settings, corePill, name, behind);
+                const want = pillOf(ctx, settings, corePill, name, behind, pill.fontWeight);
                 expect(drawn, pillLabel).toEqual(want);
                 applies++;
                 differs += JSON.stringify(drawn) !== JSON.stringify(drawnPill(corePill)) ? 1 : 0;
@@ -809,7 +878,9 @@ for (const scale of [1, 2]) {
                   pill.box.x + pill.box.width <= setSize.width &&
                   pill.box.y + pill.box.height <= setSize.height;
                 if (inView && tinycolor(want.background).getAlpha() === 1 && (want.ring?.width ?? 0) <= 3) {
-                  expect(setPixel(pill.box.x + 5, mid), `${pillLabel}: the fill as drawn`).toBe(want.background);
+                  // (a heavier weight's bold reaches a little further into the 6 px padding)
+                  const fillX = pill.box.x + (weight !== undefined && weight > 400 ? 4 : 5);
+                  expect(setPixel(fillX, mid), `${pillLabel}: the fill as drawn`).toBe(want.background);
                 }
                 if (
                   inView &&
@@ -890,9 +961,35 @@ for (const scale of [1, 2]) {
           }
           if (c.title === 'background fixed, gradient (ignored)') {
             expect(differs, 'Fixed doesn’t apply to gradient cells: as core').toBe(0);
+          } else if (c.title === 'wrapped text, text weight 400') {
+            expect(applies, 'cells the case’s options apply to').toBeGreaterThan(0);
+            expect(differs, 'Text weight 400 draws as core').toBe(0);
+          } else if (c.title === 'text weight 700 saved (not offered): as core') {
+            expect(applies, 'a weight that isn’t one of the three applies nowhere').toBe(0);
+            expect(differs, 'a weight that isn’t one of the three draws as core').toBe(0);
           } else {
             expect(applies, 'cells the case’s options apply to').toBeGreaterThan(0);
             expect(differs, 'set differs from core').toBeGreaterThan(0);
+          }
+
+          // Text weight: the header keeps core's weight; wrapped rows grow where the weight takes another line
+          if (c.title.includes('text weight')) {
+            const headerWeights = (id: number) =>
+              panelContent(page, id).evaluate((root) =>
+                Array.from(root.querySelectorAll('[role="columnheader"]')).map((h) => getComputedStyle(h).fontWeight)
+              );
+            expect(await headerWeights(c.set.id), 'the header’s weight').toEqual(await headerWeights(c.core.id));
+          }
+          if (c.title.startsWith('wrapped')) {
+            const height = (cells: DrawnCell[], row: string) =>
+              cells.find((x) => x.row === row && x.column === 'note')!.box.height;
+            const weight = c.set.fieldConfig.defaults.custom!.styling!.textWeight!;
+            for (const row of ['r1', 'r4']) {
+              expect(height(core, row), `core’s ${row}: one line`).toBe(WRAPPED_ROW.regular);
+              expect(height(set, row), `${row} at the weight (hand-computed)`).toBe(
+                weight >= 500 ? WRAPPED_ROW.heavier : WRAPPED_ROW.regular
+              );
+            }
           }
 
           // A transparent panel: the table is drawn on the dashboard's canvas, and Automatic is measured against it
@@ -996,6 +1093,78 @@ for (const scale of [1, 2]) {
           expect(rgb(set.color)).toBe(HAND[mode].textOnPrimary.green);
         }
       });
+
+      test('tooltip from field: the tooltip field’s Text weight on the tooltip’s content', async ({ page }) => {
+        const c = CASES.find((x) => x.title === 'tooltip from field: text weight 600')!;
+        await page.goto(`/d/${UID}?orgId=1&theme=${state.load}`);
+        for (const id of [c.core.id, c.set.id]) {
+          await drawnCells(page, id, false);
+        }
+        if (state.live) {
+          await switchThemeLive(page, state.live);
+        }
+        const tooltipText = async (id: number) => {
+          await page.mouse.move(0, 0);
+          const caret = panelContent(page, id).getByRole('button', { name: 'Toggle tooltip' }).first();
+          await caret.scrollIntoViewIfNeeded();
+          await caret.hover();
+          const wrapper = page.getByTestId(selectors.components.Panels.Visualization.TableNG.Tooltip.Wrapper);
+          await expect(wrapper).toBeVisible();
+          return wrapper.evaluate((el) => {
+            // the innermost element holding the tooltip field's value
+            const value = [el, ...Array.from(el.querySelectorAll<HTMLElement>('*'))]
+              .filter((x) => x.textContent?.trim() === '10')
+              .pop()!;
+            return { text: value.textContent!.trim(), weight: getComputedStyle(value).fontWeight };
+          });
+        };
+        expect(await tooltipText(c.core.id)).toEqual({ text: '10', weight: '400' });
+        expect(await tooltipText(c.set.id)).toEqual({ text: '10', weight: '600' });
+      });
     });
   }
 }
+
+// Content-aware column widths (the table.autoColumnWidths flag, read from a localStorage override as Grafana's
+// feature-toggle tooling sets it): a weighted column's content is measured at its weight. The bound is worked out from
+// Inter's average character width in core's sample as measured in Chrome (not by hand, and not by the code under test:
+// 7.113 px at 400, 7.183 px from 500, plus 0.15 px of letter spacing; job tmp table-plan/build3/probe): NOTE's 48
+// characters are 348.6 px at 400 and 352.0 px at 600, so the plugin's column is 3 or 4 px wider than core's (rounding),
+// and nothing set is core's.
+test.describe('Text weight with content-aware column widths (the table.autoColumnWidths flag)', () => {
+  const FLAG = 'grafana.openfeature.table.autoColumnWidths';
+  test.afterEach(async ({ page }) => {
+    await page.evaluate((key) => localStorage.removeItem(key), FLAG);
+  });
+
+  test('a weighted column is measured at its weight; nothing set is core', async ({ page }) => {
+    const c = CASES.find((x) => x.title === 'content widths, text weight 600')!;
+    await page.goto(`/d/${UID}?orgId=1`);
+    await page.evaluate((key) => localStorage.setItem(key, 'true'), FLAG);
+    await page.goto(`/d/${UID}?orgId=1`);
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    const widths = async (id: number) => {
+      await drawnCells(page, id, false);
+      return panelContent(page, id).evaluate((root) =>
+        getComputedStyle(root.querySelector('[role="grid"]')!).gridTemplateColumns.split(' ').map(parseFloat)
+      );
+    };
+    const [core, unset, set] = [await widths(c.core.id), await widths(c.unset.id), await widths(c.set.id)];
+    expect(unset, 'nothing set: core’s widths').toEqual(core);
+    // host, note and msg (Colored text): content widths, wider than the panel (no growth), as core's
+    expect(core).toHaveLength(3);
+    expect(core.reduce((a, b) => a + b, 0)).toBeGreaterThan(await contentSize(page, c.core.id).then((x) => x.width));
+    expect(set[0], 'host (Auto): core’s').toBe(core[0]);
+    for (const k of [1, 2]) {
+      expect(set[k] - core[k], `column ${k}: 3 or 4 px wider (from Inter's measured widths)`).toBeGreaterThanOrEqual(3);
+      expect(set[k] - core[k], `column ${k}: 3 or 4 px wider (from Inter's measured widths)`).toBeLessThanOrEqual(4);
+    }
+    // the weighted text isn't cut off (no ellipsis): it fits its cell
+    const cut = await panelContent(page, c.set.id).evaluate((root) =>
+      Array.from(root.querySelectorAll<HTMLElement>('[role="gridcell"]'))
+        .filter((cell) => getComputedStyle(cell).fontWeight === '600')
+        .map((cell) => cell.scrollWidth > cell.clientWidth)
+    );
+    expect(cut).toEqual([false, false, false, false]);
+  });
+});

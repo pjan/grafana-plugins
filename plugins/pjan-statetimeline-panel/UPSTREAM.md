@@ -392,8 +392,10 @@ Opt-in ("Show on matching rows", off by default; user documentation in `src/READ
   only; its `shouldApply` skips the time field). Field options mirror the panel options (see "Field-option storage"
   under the styling).
   - None has a default value, so a panel that never used them saves no `rowAnnotations` (e2e: a new panel's options).
-    Unset `field` is `tags`, unset `rowKey` the display name; the selects (`RowAnnotationsComboboxEditor.tsx`, a
-    `Combobox`) show that as their placeholder, which the builder's `addSelect` editor can't.
+    Unset `field` is `tags`, unset `rowKey` the display name; the selects (a clearable `Combobox`) show that as their
+    placeholder, which the builder's `addSelect` editor can't. The select is `@pjan/grafana-styling`'s
+    `ClearableSelectEditor` (this plugin's `RowAnnotationsComboboxEditor`, moved there for Table plus's Text weight and
+    imported from it directly, unchanged in behaviour).
   - Set back to `state-timeline`, core keeps the `rowAnnotations` panel options (and ignores them), but drops the
     `rowAnnotations.annotationKey` field option and its override properties when it loads the panel (`getPanelOptionsWithDefaults`
     in `@grafana/data` removes custom field options and override properties its own registry lacks).
@@ -467,7 +469,7 @@ dayBoundaries, dayBoundaryColor}`; `'styling'` is in `TimelineChart`'s `propsToD
     "saved JSON").
   - None has a default value, so a panel that never used them saves none (unit test and e2e). Look and Day boundaries
     are radios with no default (Grafana and Off mean unset); Value overflow is a clearable select (the
-    `RowAnnotationsComboboxEditor`), because unset follows the look; the colours are clearable pickers and selects. Field options sit in the group after the panel options (Grafana puts a
+    `ClearableSelectEditor`), because unset follows the look; the colours are clearable pickers and selects. Field options sit in the group after the panel options (Grafana puts a
     group's panel options first), so "Value color" can't sit right next to the panel option "Show values".
 - **Colour names** (`colorNames.ts`): the display processor gives resolved colours, so each field gets a reverse
   lookup colour -> Grafana name from its own colour sources (mappings, thresholds, fixed colour, booleans, classic

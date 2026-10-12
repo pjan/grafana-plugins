@@ -1,6 +1,6 @@
 # Table plus
 
-Grafana's table panel, as a separate panel plugin. With nothing configured, it looks and behaves like the core **Table** panel of Grafana 13.2.3: same options, defaults, migrations, cell types, colours, sorting, filtering, column widths, pagination, footer, cell inspect, data links and actions, tooltips and nested tables. It starts from Grafana's own code. On top, opt-in options that change nothing until you set them: the text and background colours of coloured cells, and the fill, line and corners of pills, one at a time or with the Pill look (below).
+Grafana's table panel, as a separate panel plugin. With nothing configured, it looks and behaves like the core **Table** panel of Grafana 13.2.3: same options, defaults, migrations, cell types, colours, sorting, filtering, column widths, pagination, footer, cell inspect, data links and actions, tooltips and nested tables. It starts from Grafana's own code. On top, opt-in options that change nothing until you set them: the text and background colours of coloured cells, the fill, line and corners of pills, one at a time or with the Pill look, and the weight of their text (below).
 
 ## Using it
 
@@ -59,6 +59,25 @@ Four field options in **Cell options**, after **Text color**, for **Pill** cells
 - **After switching the theme live,** pills follow the same rule as cells (above): Grafana keeps the previous theme's mapping colors until the data is refreshed, and the options apply the new theme's shades and contrast to the colors Grafana draws.
 
 **Per field and by override:** saved as `custom.styling.fillColor`, `custom.styling.lineColor`, `custom.styling.lineWidth` and `custom.styling.cornerRadius` (override properties with the same ids; the same keys as State timeline plus's fill and line colors and corner radius, with two differences: there **Corner radius** is a panel option for every box, unset meaning square, and **Line color** draws only with a line width or the Pill look, where Table plus's Pill line color alone draws a 1 px line), and the look as `styling.look` in the panel options. Nothing is saved until you set one; clearing a field option (the clear button) removes it. The Look is a radio, as in State timeline plus: once chosen, Grafana or Pill stays saved. **An override property left without a value clears the option for its columns**, including a value set in the field defaults: remove the property instead of clearing it to fall back to the defaults.
+
+## Text weight
+
+One field option in **Cell options**, right after **Text color**. Empty, every cell draws as core. Like the other options, it shows for every column whatever its cell type, and does nothing on cell types it doesn't apply to.
+
+| Option          | Applies to                                                                                                        | Choices                                     | Empty                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------- |
+| **Text weight** | the text of Colored text, Colored background and Pill cells, and of Tooltip from field when it shows such a field | Regular (400), Medium (500), Semibold (600) | as Grafana: regular (400) |
+
+- **Saved as numbers.** Grafana's theme calls 500 "bold" (the same as Medium), so the choices are the weights themselves, with their names.
+- **Grafana loads its font, Inter, at 400 and 500 only.** The browser draws 600 by emboldening the 500 face, as wide as 500 (about 1 % wider than 400). There is no 700: it would draw exactly as 600. Whatever the browser draws, Table plus measures it (below).
+- **Apply to entire row:** the weight of the field that colors the row applies to that field's own cells, not to the row's other cells; each column keeps its own weight (a Colored text column on the row takes its own Text weight).
+- **Pills** take their column's weight. The header keeps Grafana's weight.
+- **Automatic** text is measured at the weight. At table sizes (cells 14 px, pills 12 px) every weight needs 4.5:1 (large text, 3:1, starts at 24 px, or 18.66 px bold), so a weight changes no color.
+- **Wrapped text** (Wrap text) is measured at the column's weight: a row grows when the heavier text takes another line, so nothing is cut off. Max row height still limits the row, as in core. With content-aware column widths (Grafana's `table.autoColumnWidths` feature flag), a column's content is measured at its weight too.
+- **Styling from field** still wins: a `fontWeight` in its CSS replaces the Text weight.
+- A saved value other than the three (700, or one edited into the JSON) draws as Grafana; the editor still shows it, as Grafana's select shows any saved value, so clear it there.
+
+**Per field and by override:** saved as `custom.styling.textWeight` (a number; override property `custom.styling.textWeight`). Nothing is saved until you set it, and clearing it (the clear button) removes it. **An override property left without a value clears the option for its columns**, including a value set in the field defaults: remove the property instead of clearing it to fall back to the defaults.
 
 ## Differences from core Table
 

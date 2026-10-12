@@ -7,6 +7,8 @@ import {
 import { t } from '@grafana/i18n';
 import { config } from '@grafana/runtime';
 import {
+  ClearableSelectEditor,
+  type ClearableSelectSettings,
   ClearableSliderEditor,
   type ClearableSliderSettings,
   type StylingColor,
@@ -23,6 +25,8 @@ import {
 export interface FieldStyling {
   backgroundColor?: StylingColor;
   textColor?: StylingColor;
+  /** Colored text, Colored background and Pill cells: one of TEXT_WEIGHTS */
+  textWeight?: number;
   /** Pill cells (plan decision 10): the pill's fill, State timeline plus's key for a box's fill */
   fillColor?: StylingColor;
   /** Pill cells: a line inside the pill's edge, State timeline plus's key for a box's line */
@@ -56,6 +60,16 @@ export const MAX_PILL_LINE_WIDTH = 3;
 /** Pill corner radius's range, in CSS pixels (State timeline plus's Corner radius: 0 to 12). */
 export const MAX_PILL_CORNER_RADIUS = 12;
 
+/**
+ * Text weight's values, saved as numbers: Grafana's theme calls 500 "bold" (`fontWeightBold`, the same as
+ * `fontWeightMedium`), so the values are explicit rather than names.
+ */
+// No 700: Grafana 13.2.3 ships Inter at 400 and 500 only, so 600 and 700 both draw as an emboldened Medium (500), the
+// same pixels. A weight added later (when Grafana ships the faces) is harmless; one removed later would unset every
+// panel that saved it (pjan, 2026-10-12).
+export const TEXT_WEIGHTS = [400, 500, 600] as const;
+export type TextWeight = (typeof TEXT_WEIGHTS)[number];
+
 const NO_FIELD_STYLING: FieldStyling = Object.freeze({});
 
 /**
@@ -71,6 +85,10 @@ export const getFieldStyling = (custom: unknown): FieldStyling =>
  */
 export const validNumber = (value: unknown, min: number, max: number): number | undefined =>
   typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : undefined;
+
+/** A Text weight: one of the three values (TEXT_WEIGHTS), otherwise undefined (anything else counts as unset). */
+export const validTextWeight = (value: unknown): TextWeight | undefined =>
+  (TEXT_WEIGHTS as readonly unknown[]).includes(value) ? (value as TextWeight) : undefined;
 
 type ColorFieldOption<T> = FieldConfigPropertyItem<T, StylingColor | undefined, StylingColorEditorSettings>;
 type SliderFieldOption<T> = FieldConfigPropertyItem<T, number | undefined, ClearableSliderSettings>;
@@ -162,6 +180,49 @@ export const textColorFieldOption = <T>(category: string[]): ColorFieldOption<T>
       'Automatic on a Background or Pill fill color or the Pill look, otherwise as Grafana'
     )
   );
+
+/** Text weight's choices: the numbers saved, with their names (Grafana's "bold" is 500). */
+export const getTextWeightOptions = () => [
+  { value: 400, label: t('pjan.table-styling.text-weight-400', 'Regular (400)') },
+  {
+    value: 500,
+    label: t('pjan.table-styling.text-weight-500', 'Medium (500)'),
+    description: t('pjan.table-styling.text-weight-500-desc', 'What Grafana’s theme calls bold'),
+  },
+  {
+    value: 600,
+    label: t('pjan.table-styling.text-weight-600', 'Semibold (600)'),
+    description: t(
+      'pjan.table-styling.text-weight-600-desc',
+      'Grafana ships its font at 400 and 500 only: drawn as an emboldened Medium'
+    ),
+  },
+];
+
+/**
+ * "Text weight" (`custom.styling.textWeight`), right after Text color: the shared clearable select, numbers saved, no
+ * default. Colored text, Colored background and Pill cells only (src/pjan/styling/textWeight.ts).
+ */
+export const textWeightFieldOption = <T>(
+  category: string[]
+): FieldConfigPropertyItem<T, number | undefined, ClearableSelectSettings<number>> => ({
+  id: 'styling.textWeight',
+  path: 'styling.textWeight',
+  name: t('pjan.table-styling.text-weight-name', 'Text weight'),
+  description: t(
+    'pjan.table-styling.text-weight-desc',
+    'The weight of the text of Colored text, Colored background and Pill cells (with Apply to entire row: of the column’s own cells, not the row’s); other cell types are not changed. Wrapped text is measured at it, so rows grow to fit. Automatic text is measured at it too (at table sizes it needs the same contrast at every weight). Not set: as Grafana, regular (400)'
+  ),
+  category,
+  editor: ClearableSelectEditor<number>,
+  override: ClearableSelectEditor<number>,
+  process: identityOverrideProcessor,
+  shouldApply: () => true,
+  settings: {
+    placeholder: t('pjan.table-styling.as-grafana', 'As Grafana'),
+    getOptions: getTextWeightOptions,
+  },
+});
 
 const pillShadeGroup = () => t('pjan.table-styling.pill-shade-group', 'Shade of the pill color');
 

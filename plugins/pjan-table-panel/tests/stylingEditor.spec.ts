@@ -4,8 +4,8 @@ import { type APIRequestContext, expect, type Page, test } from '@grafana/plugin
 import { apiClient, savedPanel } from './helpers';
 import { readDashboard } from './parity';
 
-// Text color and Background color (build 1), the pill options and the Look (build 2) in the panel editor and in the
-// saved JSON: where they sit (right after Cell type, in the field defaults with Cell type Auto, and in the overrides
+// Text color and Background color (build 1), the pill options and the Look (build 2) and Text weight (build 3) in the
+// panel editor and in the saved JSON: where they sit (right after Cell type, in the field defaults with Cell type Auto, and in the overrides
 // menu; the Look after core's Table options), what setting and clearing a value saves (no `custom.styling: {}` left),
 // that tabbing through the unset sliders saves nothing, an override saved as `custom.styling.<key>` and cleared, that
 // opening the editor writes nothing, and that the options, the look and the overrides survive saving and reloading the
@@ -16,6 +16,7 @@ const SET = STYLING.panels.find((p) => p.title === 'override on one column: set'
 const OPTIONS = [
   'Background color',
   'Text color',
+  'Text weight',
   'Pill fill color',
   'Pill line color',
   'Pill line width',
@@ -130,13 +131,14 @@ test.describe('Text color, Background color, the pill options and the Look in th
     await expect.poll(() => cellOptions(page)).toEqual(expect.arrayContaining(['Cell type', ...OPTIONS]));
     const shown = await cellOptions(page);
     const at = shown.indexOf('Cell type');
-    expect(shown.slice(at, at + 8)).toEqual(['Cell type', ...OPTIONS, 'Cell value inspect']);
+    expect(shown.slice(at, at + 9)).toEqual(['Cell type', ...OPTIONS, 'Cell value inspect']);
     // the field defaults' Cell type is Auto: the options show anyway (no cell-type showIf)
     await expect(editor(page, 'Cell type').getByRole('combobox')).toHaveValue('Auto');
     // unset, the placeholder says what is drawn (Text color as Stat plus's: Automatic on a fill the plugin draws)
     const placeholders: Record<string, string> = {
       'Background color': 'As Grafana',
       'Text color': 'Automatic on a Background or Pill fill color or the Pill look, otherwise as Grafana',
+      'Text weight': 'As Grafana',
       'Pill fill color': 'As Grafana',
       'Pill line color': 'Pill color',
     };
@@ -177,7 +179,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
     const properties = (await page.getByRole('option').allInnerTexts()).map((text) => text.split('\n')[0]);
     const cell = properties.filter((p) => p.startsWith('Cell options > '));
     const at = cell.indexOf('Cell options > Cell type');
-    expect(cell.slice(at, at + 7)).toEqual(['Cell options > Cell type', ...OPTIONS.map((o) => `Cell options > ${o}`)]);
+    expect(cell.slice(at, at + 8)).toEqual(['Cell options > Cell type', ...OPTIONS.map((o) => `Cell options > ${o}`)]);
   });
 
   test('a value set in the field defaults is saved; cleared, its key goes, and no empty `styling` is left', async ({
@@ -250,6 +252,68 @@ test.describe('Text color, Background color, the pill options and the Look in th
     expect(await custom(page, 1)).toHaveProperty('minWidth', 70);
     await expect(upPill).toHaveCSS('box-shadow', 'none');
     await expect(upPill).toHaveCSS('border-top-left-radius', '6px');
+  });
+
+  test('Text weight: a weight is saved as a number and drawn; cleared, no `styling: {}` is left', async ({ page }) => {
+    await createDashboard('pjan-table-styling-weight', { ...NOTHING_SET, id: 1 });
+    await openEditor(page, 'pjan-table-styling-weight');
+    await expect.poll(() => custom(page, 1)).toHaveProperty('minWidth', 70);
+    const state = page.getByTestId('data-testid panel content').getByRole('gridcell', { name: 'Up' });
+    const host = page.getByTestId('data-testid panel content').getByRole('gridcell', { name: 'api' });
+    await expect(state).toHaveCSS('font-weight', '400');
+
+    // the choices: the three weights by name and number (no 700), Grafana's "bold" named as such
+    const combobox = editor(page, 'Text weight').getByRole('combobox');
+    await combobox.scrollIntoViewIfNeeded();
+    await combobox.click();
+    expect((await page.getByRole('option').allInnerTexts()).map((t) => t.split('\n')[0])).toEqual([
+      'Regular (400)',
+      'Medium (500)',
+      'Semibold (600)',
+    ]);
+    await page.keyboard.press('Escape');
+
+    await choose(page, editor(page, 'Text weight'), 'Semibold');
+    await expect.poll(async () => (await custom(page, 1)).styling).toEqual({ textWeight: 600 });
+    await expect(combobox).toHaveValue('Semibold (600)');
+    // the preview: the Colored background state cell at 600; the Auto host cell stays at 400
+    await expect(state).toHaveCSS('font-weight', '600');
+    await expect(host).toHaveCSS('font-weight', '400');
+
+    await choose(page, editor(page, 'Text weight'), 'Medium');
+    await expect.poll(async () => (await custom(page, 1)).styling).toEqual({ textWeight: 500 });
+    await expect(state).toHaveCSS('font-weight', '500');
+
+    await editor(page, 'Text weight').getByRole('button', { name: 'Clear value' }).click();
+    await expect.poll(() => custom(page, 1)).not.toHaveProperty('styling');
+    expect(await custom(page, 1)).toHaveProperty('minWidth', 70);
+    await expect(combobox).toHaveValue('');
+    await expect(combobox).toHaveAttribute('placeholder', 'As Grafana');
+    await expect(state).toHaveCSS('font-weight', '400');
+  });
+
+  test('Text weight by override: saved as `custom.styling.textWeight`; cleared, it keeps no value', async ({
+    page,
+  }) => {
+    await createDashboard('pjan-table-styling-weight-override', { ...NOTHING_SET, id: 1 });
+    await openEditor(page, 'pjan-table-styling-weight-override');
+    const before = (await savedPanel(page, 1))!.fieldConfig;
+    await addOverrideProperty(page, 'state', 'Cell options > Text weight');
+    await choose(page, lastPropertyRow(page), 'Medium');
+    const matcher = expect.objectContaining({ id: 'byName', options: 'state' });
+    await expect
+      .poll(async () => (await overrides(page, 1))?.at(-1))
+      .toEqual({ matcher, properties: [{ id: 'custom.styling.textWeight', value: 500 }] });
+    await expect(page.getByTestId('data-testid panel content').getByRole('gridcell', { name: 'Up' })).toHaveCSS(
+      'font-weight',
+      '500'
+    );
+    await lastPropertyRow(page).getByRole('button', { name: 'Clear value' }).click();
+    await expect
+      .poll(async () => (await overrides(page, 1))?.at(-1))
+      .toEqual({ matcher, properties: [{ id: 'custom.styling.textWeight' }] });
+    expect((await overrides(page, 1))?.slice(0, -1)).toEqual(before.overrides);
+    expect((await savedPanel(page, 1))?.fieldConfig.defaults).toEqual(before.defaults);
   });
 
   test('tabbing through the unset sliders saves nothing', async ({ page }) => {
@@ -350,6 +414,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
     await openEditor(page, 'pjan-table-styling-reload');
     await choose(page, editor(page, 'Background color'), 'Softer');
     await choose(page, editor(page, 'Text color'), 'Stronger');
+    await choose(page, editor(page, 'Text weight'), 'Medium');
     await choose(page, editor(page, 'Pill line color'), 'Strong');
     const radius = editor(page, 'Pill corner radius').getByRole('textbox');
     await radius.fill('3');
@@ -361,6 +426,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
     const styling = {
       backgroundColor: { mode: 'shade', shade: 'softer' },
       textColor: { mode: 'shade', shade: 'stronger' },
+      textWeight: 500,
       lineColor: { mode: 'shade', shade: 'strong' },
       cornerRadius: 3,
     };
@@ -387,6 +453,7 @@ test.describe('Text color, Background color, the pill options and the Look in th
     await expect.poll(async () => (await savedPanel(page, 1))?.fieldConfig).toEqual(edited);
     await expect(editor(page, 'Background color').getByRole('combobox')).toHaveValue('Softer');
     await expect(editor(page, 'Text color').getByRole('combobox')).toHaveValue('Stronger');
+    await expect(editor(page, 'Text weight').getByRole('combobox')).toHaveValue('Medium (500)');
     await expect(editor(page, 'Pill line color').getByRole('combobox')).toHaveValue('Strong');
     await expect(editor(page, 'Pill corner radius').getByRole('slider')).toHaveAttribute('aria-valuenow', '3');
     expect((await savedPanel(page, 1))?.options.styling).toEqual({ look: 'pill' });

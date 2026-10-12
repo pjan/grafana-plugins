@@ -142,7 +142,19 @@ describe('fonts measured for Automatic', () => {
     expect(getTextFont(LIGHT, 'pill', field)).toEqual({ size: 12, weight: 400 });
   });
 
-  it('the measurement takes the font it is given (where Text weight will plug in)', () => {
+  it('at the column’s Text weight (build 3), the regular weight when unset or not one of the three', () => {
+    for (const weight of [400, 500, 600]) {
+      const field = numberField(LIGHT, BASIC, { textWeight: weight });
+      expect(getTextFont(LIGHT, 'cell', field)).toEqual({ size: 14, weight });
+      expect(getTextFont(LIGHT, 'pill', field)).toEqual({ size: 12, weight });
+    }
+    for (const textWeight of [550, 700, 900, '600', 'bold']) {
+      const field = numberField(LIGHT, BASIC, { textWeight } as unknown as FieldStyling);
+      expect(getTextFont(LIGHT, 'cell', field)).toEqual({ size: 14, weight: 400 });
+    }
+  });
+
+  it('the measurement takes the font it is given (where Text weight plugs in)', () => {
     const fill = { stops: ['#56A64B'], drawnByPlugin: true };
     const at = (size: number, weight: number) =>
       getTextOnFill(LIGHT, undefined, '#56A64B', 'green', fill, { size, weight }, '#ffffff');
@@ -150,6 +162,43 @@ describe('fonts measured for Automatic', () => {
     expect(at(12, 400)).toBe('rgb(27,51,23)');
     expect(at(18.66, 700)).not.toBe(at(18.66, 400)); // large text from 18.66 px bold: 3:1
     expect(at(24, 400)).toBe(at(18.66, 700));
+  });
+});
+
+describe('Text weight and Automatic (build 3)', () => {
+  // Hand-computed (the oracle of this file, above): at 14 px (cells) and 12 px (pills) text is never large, whatever
+  // the weight (large: 24 px, or 18.66 px at 700), so every weight needs 4.5:1 and Automatic picks the same colour.
+  // Grafana light green #56A64B: rgb(27,51,23), 4.52:1; red #E02F44: rgb(11,2,3); Grafana dark green #73BF69:
+  // rgb(46,70,48); on dark's green gradient: rgb(37,53,39); Colored text green against white: rgb(68,131,59).
+  const WEIGHTS = [undefined, 400, 500, 600] as const;
+
+  it('the minimum contrast is 4.5:1 at 12 and 14 px at every weight (3:1 only from 18.66 px at 700, or 24 px)', () => {
+    const fill = { stops: ['#56A64B'], drawnByPlugin: true };
+    for (const size of [12, 14]) {
+      for (const weight of [400, 500, 600, 700]) {
+        expect(getTextOnFill(LIGHT, undefined, '#56A64B', 'green', fill, { size, weight }, '#ffffff')).toBe(
+          'rgb(27,51,23)'
+        );
+      }
+    }
+  });
+
+  it.each(WEIGHTS)('Automatic on cells is the same at weight %s (hand-computed)', (textWeight) => {
+    const styling = { textColor: AUTOMATIC, ...(textWeight ? { textWeight } : {}) };
+    expect(styles(LIGHT, numberField(LIGHT, BASIC, styling), 0).plugin.color).toBe('rgb(27,51,23)');
+    expect(styles(LIGHT, numberField(LIGHT, BASIC, styling), 1).plugin.color).toBe('rgb(11,2,3)');
+    expect(styles(DARK, numberField(DARK, BASIC, styling), 0).plugin.color).toBe('rgb(46,70,48)');
+    expect(styles(DARK, numberField(DARK, GRADIENT, styling), 0).plugin.color).toBe('rgb(37,53,39)');
+    expect(styles(LIGHT, numberField(LIGHT, COLOR_TEXT, styling), 0).plugin.color).toBe('rgb(68,131,59)');
+  });
+
+  it('the colour styles carry no weight (render-hooks puts it on the cell), and a weight alone changes no colour', () => {
+    const bold = styles(LIGHT, numberField(LIGHT, BASIC, { textColor: AUTOMATIC, textWeight: 600 }), 0).plugin;
+    expect(bold).not.toHaveProperty('fontWeight');
+    for (const cellOptions of [BASIC, GRADIENT, COLOR_TEXT] as const) {
+      const { core, plugin } = styles(LIGHT, numberField(LIGHT, cellOptions, { textWeight: 600 }), 0);
+      expect(plugin).toEqual(core);
+    }
   });
 });
 

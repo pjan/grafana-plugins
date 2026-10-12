@@ -266,6 +266,35 @@ describe('each setting changes only its own part (Stat plus’s rule)', () => {
   });
 });
 
+describe('Text weight on pills (build 3)', () => {
+  it('a weight alone sets no pill style: the pills are core’s, and inherit the cell’s weight', () => {
+    const column = {
+      field: pillField(LIGHT, { textWeight: 600 }),
+      theme: LIGHT,
+      look: undefined,
+      background: '#ffffff',
+      applyToRowBgFn: undefined,
+    };
+    expect(getPillStyleFn(column)).toBeUndefined();
+    expect(withPillStyle(getTextColorForBackground, column)).toBe(getTextColorForBackground);
+  });
+
+  it.each([undefined, 400, 500, 600])(
+    'Automatic at the pills’ 12 px is the same at weight %s (hand-computed; 4.5:1 at every weight)',
+    (textWeight) => {
+      const weight = textWeight ? { textWeight } : {};
+      expect(styler(LIGHT, { textColor: AUTOMATIC, ...weight })('#56A64B').color).toBe('rgb(27,51,23)');
+      expect(styler(DARK, { textColor: AUTOMATIC, ...weight })('#73BF69').color).toBe('rgb(46,70,48)');
+      expect(styler(LIGHT, { ...weight }, { look: 'pill' })('#56A64B').color).toBe('rgb(63,91,59)');
+      expect(styler(DARK, { ...weight }, { look: 'pill' })('#F2495C').color).toBe('rgb(246,218,221)');
+    }
+  );
+
+  it('the pill style carries no weight of its own', () => {
+    expect(styler(LIGHT, { fillColor: SOFTER, textWeight: 600 })('#56A64B')).not.toHaveProperty('fontWeight');
+  });
+});
+
 describe('the Pill look (panel option)', () => {
   it('fills only the unset pill options: Softer fill, Base 1 px line, Automatic text, no radius', () => {
     expect(getPillSettings(pillField(LIGHT), 'pill')).toEqual({

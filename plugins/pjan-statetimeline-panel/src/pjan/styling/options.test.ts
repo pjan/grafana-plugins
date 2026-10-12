@@ -6,11 +6,9 @@ import {
   PanelOptionsEditorBuilder,
 } from '@grafana/data';
 import { omit } from 'lodash';
-import { ClearableSliderEditor } from '@pjan/grafana-styling';
+import { ClearableSelectEditor, ClearableSliderEditor } from '@pjan/grafana-styling';
 
 import { plugin } from '../../plugins/panel/state-timeline/module';
-
-import { RowAnnotationsComboboxEditor } from '../rowAnnotations/RowAnnotationsComboboxEditor';
 
 import {
   FILL_COLOR_MODES,
@@ -86,7 +84,7 @@ describe('the styling options of the plugin', () => {
     const builder = new PanelOptionsEditorBuilder();
     plugin.getPanelOptionsSupplier()(builder as never, { data: [] });
     const item = builder.getItems().find((i) => i.id === 'styling.valueOverflow')!;
-    expect(item.editor).toBe(RowAnnotationsComboboxEditor);
+    expect(item.editor).toBe(ClearableSelectEditor);
     expect(item.defaultValue).toBeUndefined();
   });
 

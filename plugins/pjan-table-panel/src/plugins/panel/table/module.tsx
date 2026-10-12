@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Pill fill color, Pill line color, Pill line width and Pill corner radius (custom.styling.backgroundColor, textColor, fillColor, lineColor, lineWidth, cornerRadius, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options.
+// Copied from grafana/grafana v13.2.3: public/app/plugins/panel/table/module.tsx. AGPL-3.0 (Copyright Grafana Labs). Changes: imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Text weight, Pill fill color, Pill line color, Pill line width and Pill corner radius (custom.styling.backgroundColor, textColor, textWeight, fillColor, lineColor, lineWidth, cornerRadius, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options.
 import { identityOverrideProcessor, FieldConfigProperty, PanelPlugin, standardEditorsRegistry } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import {
@@ -26,6 +26,7 @@ import {
   pillLineColorFieldOption,
   pillLineWidthFieldOption,
   textColorFieldOption,
+  textWeightFieldOption,
 } from '../../../pjan/styling/options';
 
 function getTableNoValuePlaceholder(): string {
@@ -85,6 +86,7 @@ export const plugin = new PanelPlugin<Options, FieldConfig>(TablePanel)
         })
         .addCustomEditor(backgroundColorFieldOption(cellCategory)) // pjan-table-panel
         .addCustomEditor(textColorFieldOption(cellCategory)) // pjan-table-panel
+        .addCustomEditor(textWeightFieldOption(cellCategory)) // pjan-table-panel
         .addCustomEditor(pillFillColorFieldOption(cellCategory)) // pjan-table-panel
         .addCustomEditor(pillLineColorFieldOption(cellCategory)) // pjan-table-panel
         .addCustomEditor(pillLineWidthFieldOption(cellCategory)) // pjan-table-panel

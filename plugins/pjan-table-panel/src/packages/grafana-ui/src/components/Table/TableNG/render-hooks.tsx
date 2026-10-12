@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background in ColumnBuildConfig; the cell's and the tooltip's field, and the row's fill they are drawn on, passed to getCellColorInlineStyles; each column's (and a tooltip field's) getTextColorForBackground from withPillStyle, carrying the pill style (pill options, the Pill look from ColumnBuildConfig.pjanLook, Text color) to PillCell.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background in ColumnBuildConfig; the cell's and the tooltip's field, and the row's fill they are drawn on, passed to getCellColorInlineStyles; each column's (and a tooltip field's) getTextColorForBackground from withPillStyle, carrying the pill style (pill options, the Pill look from ColumnBuildConfig.pjanLook, Text color) to PillCell. Text weight (src/pjan/styling/textWeight.ts): a column's Text weight on its cells and on Tooltip from field's content.
 import { clsx } from 'clsx';
 import {
   type CSSProperties,
@@ -44,6 +44,8 @@ import { getRowFill, getTooltipBackground } from '../../../../../../pjan/styling
 // pjan-table-panel: the pill options and the Pill look (src/pjan/styling/pills.ts)
 import { type TableLook } from '../../../../../../pjan/styling/options';
 import { withPillStyle } from '../../../../../../pjan/styling/pills';
+// pjan-table-panel: Text weight (src/pjan/styling/textWeight.ts), custom.styling.textWeight
+import { getTextWeight } from '../../../../../../pjan/styling/textWeight';
 
 import { getCellRenderer, getCellSpecificStyles } from './Cells/renderers';
 import { HeaderCell } from './components/HeaderCell';
@@ -340,6 +342,8 @@ function buildColumnsFromFields(
       background: pjanGridBackground,
       applyToRowBgFn,
     });
+    // pjan-table-panel: the column's Text weight (Colored text, Colored background and Pill cells), undefined when unset
+    const pjanTextWeight = getTextWeight(field, cellType);
 
     // TODO: in future extend this to ensure a non-classic color scheme is set with AutoCell
 
@@ -379,6 +383,11 @@ function buildColumnsFromFields(
           getRowFill(style)
         );
         Object.assign(style, cellColorStyles);
+      }
+      // pjan-table-panel: the column's Text weight on its own cells (not on the row of Apply to entire row: the row's
+      // other cells keep theirs); before Styling from field, which still wins
+      if (pjanTextWeight !== undefined) {
+        style.fontWeight = pjanTextWeight;
       }
       if (hasValidStyleField) {
         style = { ...style, ...parseStyleJson(props.row[styleFieldName!]) };
@@ -467,6 +476,8 @@ function buildColumnsFromFields(
           background: getTooltipBackground(theme),
           applyToRowBgFn,
         });
+        // pjan-table-panel: the tooltip field's Text weight, on the tooltip's content
+        const pjanTooltipTextWeight = getTextWeight(tooltipField, tooltipCellOptions.type);
 
         const tooltipCellStyleOptions = {
           textAlign: getAlignment(tooltipField),
@@ -528,6 +539,10 @@ function buildColumnsFromFields(
               getRowFill(tooltipStyle) ?? getTooltipBackground(theme) // pjan-table-panel: what Colored text is drawn on
             );
             Object.assign(tooltipStyle, tooltipCellColorStyles);
+          }
+          // pjan-table-panel: the tooltip field's Text weight
+          if (pjanTooltipTextWeight !== undefined) {
+            tooltipStyle.fontWeight = pjanTooltipTextWeight;
           }
 
           return (

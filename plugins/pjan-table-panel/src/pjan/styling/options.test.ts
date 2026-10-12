@@ -16,6 +16,7 @@ import {
 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
+  ClearableSelectEditor,
   ClearableSliderEditor,
   type ClearableSliderSettings,
   getStylingColorOptions,
@@ -33,18 +34,21 @@ import {
   PILL_FILL_COLOR_MODES,
   PILL_LINE_COLOR_MODES,
   TEXT_COLOR_MODES,
+  TEXT_WEIGHTS,
   unsetPillCornerRadius,
+  validTextWeight,
 } from './options';
 
 fillEditorRegistry();
 
 const TEXT = 'custom.styling.textColor';
+const WEIGHT = 'custom.styling.textWeight';
 const BG = 'custom.styling.backgroundColor';
 const FILL = 'custom.styling.fillColor';
 const LINE = 'custom.styling.lineColor';
 const WIDTH = 'custom.styling.lineWidth';
 const RADIUS = 'custom.styling.cornerRadius';
-const ALL = [BG, TEXT, FILL, LINE, WIDTH, RADIUS];
+const ALL = [BG, TEXT, WEIGHT, FILL, LINE, WIDTH, RADIUS];
 const SLIDERS = [WIDTH, RADIUS];
 const PILL = [FILL, LINE, WIDTH, RADIUS];
 const AUTOMATIC = { mode: 'automatic' };
@@ -57,13 +61,14 @@ describe('the field options as registered', () => {
   it('sit in "Cell options" right after Cell type, in order, then core’s Cell value inspect', () => {
     const ids = plugin.fieldConfigRegistry.list().map((i) => i.id);
     const at = ids.indexOf('custom.cellOptions');
-    expect(ids.slice(at, at + 8)).toEqual(['custom.cellOptions', ...ALL, 'custom.inspect']);
+    expect(ids.slice(at, at + 9)).toEqual(['custom.cellOptions', ...ALL, 'custom.inspect']);
     for (const id of ALL) {
       expect(item(id).category).toEqual(['Cell options']);
     }
     expect(ALL.map((id) => item(id).name)).toEqual([
       'Background color',
       'Text color',
+      'Text weight',
       'Pill fill color',
       'Pill line color',
       'Pill line width',
@@ -74,6 +79,7 @@ describe('the field options as registered', () => {
   it.each([
     [BG, 'styling.backgroundColor'],
     [TEXT, 'styling.textColor'],
+    [WEIGHT, 'styling.textWeight'],
     [FILL, 'styling.fillColor'],
     [LINE, 'styling.lineColor'],
     [WIDTH, 'styling.lineWidth'],
@@ -93,6 +99,45 @@ describe('the field options as registered', () => {
     expect(
       getStylingColorOptions(item(TEXT).settings.modes, item(TEXT).settings.shadeGroup).map((o) => o.value)
     ).toEqual(['automatic', 'value', 'softer', 'soft', 'base', 'strong', 'stronger', 'fixed']);
+  });
+
+  it('Text weight: the shared clearable select of three numbers with their names (no 700: drawn as 600)', () => {
+    expect(item(WEIGHT).editor).toBe(ClearableSelectEditor);
+    expect(item(WEIGHT).override).toBe(ClearableSelectEditor);
+    expect(item(WEIGHT).settings.placeholder).toBe('As Grafana');
+    expect(item(WEIGHT).settings.getOptions({ data: [] })).toEqual([
+      { value: 400, label: 'Regular (400)' },
+      { value: 500, label: 'Medium (500)', description: 'What Grafana’s theme calls bold' },
+      {
+        value: 600,
+        label: 'Semibold (600)',
+        description: 'Grafana ships its font at 400 and 500 only: drawn as an emboldened Medium',
+      },
+    ]);
+    expect(TEXT_WEIGHTS).toEqual([400, 500, 600]);
+    // the theme's names for them: regular 400, and "bold" the same as medium, 500
+    expect(config.theme2.typography.fontWeightRegular).toBe(400);
+    expect(config.theme2.typography.fontWeightMedium).toBe(500);
+    expect(config.theme2.typography.fontWeightBold).toBe(500);
+  });
+
+  it('Text weight: only the three numbers count; anything else is unset', () => {
+    for (const weight of TEXT_WEIGHTS) {
+      expect(validTextWeight(weight)).toBe(weight);
+    }
+    // 700 included: not offered (Grafana draws it as 600); a 700 saved anyway is unset
+    for (const value of [undefined, null, 0, 300, 450, 700, 800, '600', 'bold', Number.NaN, {}]) {
+      expect(validTextWeight(value)).toBeUndefined();
+    }
+  });
+
+  it('Text weight says which cell types it applies to, the row, measurement, and ends with "Not set: …"', () => {
+    const description = item(WEIGHT).description!;
+    expect(description).toMatch(/^The weight of the text of Colored text, Colored background and Pill cells/);
+    expect(description).toMatch(/with Apply to entire row: of the column’s own cells, not the row’s/);
+    expect(description).toMatch(/other cell types are not changed/);
+    expect(description).toMatch(/Wrapped text is measured at it, so rows grow to fit/);
+    expect(description).toMatch(/Not set: as Grafana, regular \(400\)$/);
   });
 
   it('Background color: the five shades and Fixed (Value is core’s fill; no None)', () => {
@@ -195,7 +240,7 @@ describe('the field options as registered', () => {
   it.each(ALL)(
     '%s: no default value, no cell-type showIf (review M3), applies to every field as core’s cell options',
     (id) => {
-      const value = SLIDERS.includes(id) ? 3 : SOFT;
+      const value = SLIDERS.includes(id) ? 3 : id === WEIGHT ? 600 : SOFT;
       expect(item(id).defaultValue).toBeUndefined();
       expect(item(id).showIf).toBeUndefined();
       expect(item(id).shouldApply({ type: FieldType.time } as never)).toBe(true);
@@ -323,6 +368,34 @@ describe('the field options as saved', () => {
     const none = load({ defaults: { custom }, overrides: [] }).defaults.custom;
     expect(none).not.toHaveProperty('styling');
     expect(none).toHaveProperty('minWidth', 70);
+  });
+
+  it('Text weight: a number kept; cleared, no key and no `styling: {}` left; with the others, only its key goes', () => {
+    expect(
+      load({ defaults: { custom: { styling: { textWeight: 600 } } }, overrides: [] }).defaults.custom.styling
+    ).toEqual({ textWeight: 600 });
+    const alone = load({
+      defaults: { custom: omit({ minWidth: 70, styling: { textWeight: 600 } }, 'styling.textWeight') },
+      overrides: [],
+    }).defaults.custom;
+    expect(alone).not.toHaveProperty('styling');
+    expect(alone).toHaveProperty('minWidth', 70);
+    const withColor = load({
+      defaults: { custom: omit({ styling: { textWeight: 600, textColor: AUTOMATIC } }, 'styling.textWeight') },
+      overrides: [],
+    }).defaults.custom;
+    expect(withColor.styling).toEqual({ textColor: AUTOMATIC });
+  });
+
+  it('Text weight by override: kept as `custom.styling.textWeight`, a number, styling its field only', () => {
+    expect(load(onB([{ id: WEIGHT, value: 600 }])).overrides[0].properties).toEqual([{ id: WEIGHT, value: 600 }]);
+    expect(process(onB([{ id: WEIGHT, value: 600 }], { styling: { textWeight: 500 } }))).toEqual([
+      { textWeight: 500 },
+      { textWeight: 500 },
+      { textWeight: 600 },
+    ]);
+    // cleared in the editor (no value): unset for its field, defaults included (the override-cleared caveat)
+    expect(process(onB([{ id: WEIGHT }], { styling: { textWeight: 500 } }))[2]?.textWeight).toBeUndefined();
   });
 
   it('drops keys it doesn’t know under `styling`', () => {

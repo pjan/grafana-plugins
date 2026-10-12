@@ -1,6 +1,6 @@
 {
   "uid": "pjan-table-styling",
-  "title": "Table plus styling (Text color, Background color, pill options and Look)",
+  "title": "Table plus styling (Text color, Background color, pill options and Look, Text weight)",
   "tags": ["pjan-table-panel"],
   "editable": true,
   "schemaVersion": 42,
@@ -3730,7 +3730,7 @@
     {
       "id": 390,
       "type": "table",
-      "title": "override on one column: core",
+      "title": "text weight 600, colored text: core",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -3745,10 +3745,6 @@
         "defaults": { "custom": { "minWidth": 70 } },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "state" },
-            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
-          },
-          {
             "matcher": { "id": "byName", "options": "level" },
             "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
           }
@@ -3759,7 +3755,7 @@
     {
       "id": 391,
       "type": "pjan-table-panel",
-      "title": "override on one column: nothing set",
+      "title": "text weight 600, colored text: nothing set",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
       "targets": [
         {
@@ -3770,6 +3766,1328 @@
         }
       ],
       "gridPos": { "x": 8, "y": 475, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 392,
+      "type": "pjan-table-panel",
+      "title": "text weight 600, colored text: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 475, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 600 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 400,
+      "type": "table",
+      "title": "text weight 600, text automatic, background basic: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 482, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 401,
+      "type": "pjan-table-panel",
+      "title": "text weight 600, text automatic, background basic: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 482, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 402,
+      "type": "pjan-table-panel",
+      "title": "text weight 600, text automatic, background basic: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 482, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "minWidth": 70, "styling": { "textWeight": 600, "textColor": { "mode": "automatic" } } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 410,
+      "type": "table",
+      "title": "text weight 500, background gradient: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 489, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 411,
+      "type": "pjan-table-panel",
+      "title": "text weight 500, background gradient: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 489, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 412,
+      "type": "pjan-table-panel",
+      "title": "text weight 500, background gradient: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 489, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 500 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 420,
+      "type": "table",
+      "title": "text weight 600, pills: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 496, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 421,
+      "type": "pjan-table-panel",
+      "title": "text weight 600, pills: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 503, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 422,
+      "type": "pjan-table-panel",
+      "title": "text weight 600, pills: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 510, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 600 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 430,
+      "type": "table",
+      "title": "text weight 500, pill look: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 517, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 431,
+      "type": "pjan-table-panel",
+      "title": "text weight 500, pill look: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 524, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 432,
+      "type": "pjan-table-panel",
+      "title": "text weight 500, pill look: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}},{\"name\":\"flags\",\"type\":\"string\",\"values\":[\"Up,Info\",\"Degraded\",\"Down,Up\",\"Info,Degraded,Down\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"power\",\"type\":\"string\",\"values\":[\"On\",\"Off\",\"On\",\"Off\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"On\":{\"color\":\"blue\",\"index\":0},\"Off\":{\"color\":\"transparent\",\"index\":1}}}]}},{\"name\":\"tier\",\"type\":\"string\",\"values\":[\"gold\",\"silver\",\"gold\",\"bronze\"],\"config\":{\"color\":{\"mode\":\"fixed\",\"fixedColor\":\"purple\"}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 531, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 500 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "flags" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "power" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tier" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "pill" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true, "styling": { "look": "pill" } }
+    },
+    {
+      "id": 440,
+      "type": "table",
+      "title": "text weight on a row colored by apply to entire row: 600 on the row field, 500 on colored text: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 538, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "basic", "applyToRow": true }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 441,
+      "type": "pjan-table-panel",
+      "title": "text weight on a row colored by apply to entire row: 600 on the row field, 500 on colored text: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 538, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "basic", "applyToRow": true }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 442,
+      "type": "pjan-table-panel",
+      "title": "text weight on a row colored by apply to entire row: 600 on the row field, 500 on colored text: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 538, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background", "mode": "basic", "applyToRow": true }
+              },
+              { "id": "custom.styling.textWeight", "value": 600 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.styling.textWeight", "value": 500 }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 450,
+      "type": "table",
+      "title": "nested table: text weight 600 in the sub-tables: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 0, "y": 545, "w": 8, "h": 13 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 451,
+      "type": "pjan-table-panel",
+      "title": "nested table: text weight 600 in the sub-tables: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 8, "y": 545, "w": 8, "h": 13 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 452,
+      "type": "pjan-table-panel",
+      "title": "nested table: text weight 600 in the sub-tables: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"stack\",\"type\":\"string\",\"values\":[\"web\",\"web\",\"db\",\"db\"],\"config\":{}},{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "groupToNestedTable",
+          "options": { "expandAllRows": true, "fields": { "stack": { "aggregations": [], "operation": "groupby" } } }
+        }
+      ],
+      "gridPos": { "x": 16, "y": 545, "w": 8, "h": 13 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 600 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level", "scope": "nested" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 460,
+      "type": "table",
+      "title": "tooltip from field: text weight 600: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 558, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "level" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 461,
+      "type": "pjan-table-panel",
+      "title": "tooltip from field: text weight 600: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 558, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "level" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 462,
+      "type": "pjan-table-panel",
+      "title": "tooltip from field: text weight 600: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 558, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 600 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "custom.tooltip.field", "value": "level" },
+              { "id": "custom.tooltip.placement", "value": "right" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 470,
+      "type": "table",
+      "title": "wrapped text, text weight 400: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 565, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 471,
+      "type": "pjan-table-panel",
+      "title": "wrapped text, text weight 400: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 575, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 472,
+      "type": "pjan-table-panel",
+      "title": "wrapped text, text weight 400: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 585, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 400 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 480,
+      "type": "table",
+      "title": "wrapped text, text weight 500: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 595, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 481,
+      "type": "pjan-table-panel",
+      "title": "wrapped text, text weight 500: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 605, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 482,
+      "type": "pjan-table-panel",
+      "title": "wrapped text, text weight 500: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 615, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 500 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 490,
+      "type": "table",
+      "title": "wrapped text, text weight 600: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 625, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 491,
+      "type": "pjan-table-panel",
+      "title": "wrapped text, text weight 600: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 635, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 492,
+      "type": "pjan-table-panel",
+      "title": "wrapped text, text weight 600: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\",\"r3\",\"r4\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Replication lag above the threshold on the standby node\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\",\"Backups delayed: the archive volume is nearly full again\",\"ok\"],\"config\":{}},{\"name\":\"tags\",\"type\":\"string\",\"values\":[\"degraded,primary,replica,backup,archive,standby,cluster,storage\",\"primary\",\"degraded,backup\",\"degraded,primary,replica,backup,archive,standby,cluster,storage\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 645, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 600 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } },
+              { "id": "custom.width", "value": 354 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tags" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "pill" } },
+              { "id": "custom.width", "value": 495 },
+              { "id": "custom.wrapText", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 500,
+      "type": "table",
+      "title": "text weight 700 saved (not offered): as core: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 655, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 501,
+      "type": "pjan-table-panel",
+      "title": "text weight 700 saved (not offered): as core: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 655, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 502,
+      "type": "pjan-table-panel",
+      "title": "text weight 700 saved (not offered): as core: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 655, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 700 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 510,
+      "type": "table",
+      "title": "content widths, text weight 600: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 662, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 511,
+      "type": "pjan-table-panel",
+      "title": "content widths, text weight 600: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 662, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 512,
+      "type": "pjan-table-panel",
+      "title": "content widths, text weight 600: set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"r1\",\"r2\"],\"config\":{}},{\"name\":\"note\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\"],\"config\":{}},{\"name\":\"msg\",\"type\":\"string\",\"values\":[\"Degraded service on the primary database cluster\",\"ok\"],\"config\":{}}]}]"
+        }
+      ],
+      "gridPos": { "x": 16, "y": 662, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70, "styling": { "textWeight": 600 } } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "note" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "msg" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 520,
+      "type": "table",
+      "title": "override on one column: core",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 669, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70 } },
         "overrides": [
@@ -3786,7 +5104,36 @@
       "options": { "cellHeight": "sm", "showHeader": true }
     },
     {
-      "id": 392,
+      "id": 521,
+      "type": "pjan-table-panel",
+      "title": "override on one column: nothing set",
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 669, "w": 8, "h": 7 },
+      "fieldConfig": {
+        "defaults": { "custom": { "minWidth": 70 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "state" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "level" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      },
+      "options": { "cellHeight": "sm", "showHeader": true }
+    },
+    {
+      "id": 522,
       "type": "pjan-table-panel",
       "title": "override on one column: set",
       "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
@@ -3798,7 +5145,7 @@
           "rawFrameContent": "[{\"fields\":[{\"name\":\"host\",\"type\":\"string\",\"values\":[\"api\",\"web\",\"db\",\"queue\"],\"config\":{}},{\"name\":\"state\",\"type\":\"string\",\"values\":[\"Up\",\"Degraded\",\"Down\",\"Info\"],\"config\":{\"mappings\":[{\"type\":\"value\",\"options\":{\"Up\":{\"color\":\"green\",\"index\":0},\"Degraded\":{\"color\":\"yellow\",\"index\":1},\"Down\":{\"color\":\"red\",\"index\":2},\"Info\":{\"color\":\"blue\",\"index\":3}}}]}},{\"name\":\"level\",\"type\":\"number\",\"values\":[10,45,90,60],\"config\":{\"thresholds\":{\"mode\":\"absolute\",\"steps\":[{\"value\":null,\"color\":\"green\"},{\"value\":40,\"color\":\"orange\"},{\"value\":75,\"color\":\"dark-red\"}]}}}]}]"
         }
       ],
-      "gridPos": { "x": 16, "y": 475, "w": 8, "h": 7 },
+      "gridPos": { "x": 16, "y": 669, "w": 8, "h": 7 },
       "fieldConfig": {
         "defaults": { "custom": { "minWidth": 70, "styling": { "textColor": { "mode": "automatic" } } } },
         "overrides": [

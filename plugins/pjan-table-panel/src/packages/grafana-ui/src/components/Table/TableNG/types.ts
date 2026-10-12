@@ -1,4 +1,4 @@
-// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/types.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: BaseTableProps.pjanLook, the panel's look (options.styling.look, src/pjan/styling/), for Pill cells.
+// Copied from grafana/grafana v13.2.3: packages/grafana-ui/src/components/Table/TableNG/types.ts. Apache-2.0 (Copyright Grafana Labs, see UPSTREAM.md). Changes: BaseTableProps.pjanLook, the panel's look (options.styling.look, src/pjan/styling/), for Pill cells; TypographyCtx.pjanFontSize, the size a context measures at, for Text weight (src/pjan/styling/textWeight.ts).
 import { type FC, type SyntheticEvent } from 'react';
 
 import {
@@ -295,6 +295,7 @@ export interface TypographyCtx {
   avgCharWidth: number;
   estimateHeight: MeasureCellHeight;
   measureHeight: MeasureCellHeight;
+  pjanFontSize?: number; // pjan-table-panel: the size it measures at, for the same font at a Text weight (textWeight.ts)
 }
 
 export type MeasureCellHeight = (

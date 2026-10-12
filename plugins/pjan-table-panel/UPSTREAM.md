@@ -192,6 +192,7 @@ No other plugin has a stand-in or copy at these paths, so the copy check compare
 | `features/query/state/PanelQueryRunner.ts` | State timeline plus's partial copy (`getNextRequestId` only), shared byte for byte.                                                                                                                                          | See "Stand-ins and partial copies for core app modules".                                                                                                                                          |
 | `plugins/panel/table/module.tsx`           | The field options Background color and Text color (`.addCustomEditor`, marked, with their import) right after Cell type.                                                                                                     | Plugin addition: Text color and Background color (below).                                                                                                                                         |
 | Four `TableNG/` files                      | `utils.ts`, `render-hooks.tsx`, `TableFlat.tsx`, `TableNested.tsx`: the Text color and Background color hooks (marked), listed in "Plugin addition: Text color and Background color".                                        | The opt-in options; with nothing set the copied code returns core's own objects.                                                                                                                  |
+| `module.tsx`, three `TableNG/` files | `utils.ts`, `render-hooks.tsx`, `types.ts`; the Text weight option (`.addCustomEditor`, marked) after Text color, and its hooks (marked): the weight on the cells and on Tooltip from field's content, wrapped row heights and content-aware widths measured at it; listed in "Plugin addition: Text weight". | The opt-in option; with nothing set the copied code gives core's result. |
 
 Nothing else in the copied files differs from upstream: every other copy (the panel, its helpers and editors, the rest
 of `TableNG`, the shared `Table/` files, `ActionButton`, `cellUtils.ts`, `TableRT/styles.ts`, the ported tests, the three
@@ -377,8 +378,8 @@ inherit` whenever the cell can be coloured. **The hover cell-action buttons** (i
 
 ### Hooks (all marked `pjan-table-panel:`)
 
-| Copied file                                        | Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Copied file                                        | Hook                                                                                                                                                                                                                                                                                                                 |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `plugins/panel/table/module.tsx`                   | `.addCustomEditor(backgroundColorFieldOption(cellCategory))` and `.addCustomEditor(textColorFieldOption(cellCategory))` right after Cell type, with their import                                                                                                                                                                                                                                                                                                                                               |
 | `TableNG/utils.ts`                                 | `getCellColorInlineStylesFactory(theme, pjanGridBackground?)`; its styles function takes `(cellOptions, displayValue, hasApplyToRow, pjanField?, pjanDrawnOn?)` and, only with a field, returns `getCellColorsFactory`'s result for core's `result` (core's object itself when the field sets neither option), with core's `gradientBg` and the display value's `percent`. `getApplyToRowBgFn` passes the row's field                                                                                          |
 | `TableNG/render-hooks.tsx`                         | `ColumnBuildConfig.pjanGridBackground`; the cell passes `field` and the row's fill (`getRowFill(style)`: the row's styles are already in the cell's); Tooltip from field passes `tooltipField` and the row's fill or the tooltip's background; each column (and a tooltip's field) hands its cells `getPillTextColorFn(getTextColorForBackground, field, theme, background)` instead of core's function (core's function itself when unset); **build 2: `withPillStyle`, which replaced `getPillTextColorFn`** |
@@ -463,8 +464,8 @@ addition: pill options and Look".)
 Jest (2026-10-10, `src/pjan/styling/` and `fieldOptionKeys.test.ts`, 102 tests; with the shared package's 140 where its
 code was broken), each broken on purpose by a script (job tmp `table-plan/build1/controls/run.py`), then restored:
 
-| Broken on purpose                                                                      | Result (Jest)                      |
-| -------------------------------------------------------------------------------------- | ---------------------------------- |
+| Broken on purpose                                                                            | Result (Jest)                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | module.tsx: Background color not registered                                            | 9 failed                           |
 | module.tsx: Text color before Background color                                         | 1 failed                           |
 | utils.ts: the styles function returns core's result (hook off)                         | 42 failed                          |
@@ -509,8 +510,8 @@ After the build 1 review (2026-10-11, the same script, `run_review.py`):
 End to end (2026-10-10, each broken, the plugin rebuilt, the named tests run with `--workers=1`, then restored and
 rebuilt; job tmp `table-plan/build1/controls/run_e2e.py`):
 
-| Broken on purpose                                                                        | Run                                                | Result                                                                                                                                                            |
-| ---------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Broken on purpose                                                                                     | Run                                            | Result                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `render-hooks.tsx`: the cell's field not passed                                          | `styling.spec.ts`, light, pixel ratio 1 (26 tests) | 20 fail: every case with a coloured cell; the pill cases and the tooltip hover test pass, as expected (pills and tooltips have their own hooks)                   |
 | `TableFlat.tsx`: the table background ignores `transparent`                              | the transparent and tooltip cases (light, 1)       | both transparent cases fail ("colored text, transparent panel", "tooltip from field" on the table)                                                                |
 | `render-hooks.tsx`: Tooltip from field's Colored text not given the tooltip's background | the tooltip tests (light, 1)                       | the hover test fails; the table case passes, as expected                                                                                                          |
@@ -756,8 +757,8 @@ too, on the nested look going back to Grafana. `types.ts`' `pjanLook` is a type:
 End to end (2026-10-11, each broken, the plugin rebuilt, the named tests run with `--workers=1`, then restored and
 rebuilt; job tmp `table-plan/build2/controls/run_e2e.py`):
 
-| Broken on purpose                                                                          | Run                                                                                                | Result                                                                                                                                       |
-| ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Broken on purpose                                                                                     | Run                                            | Result                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PillCell.tsx`: the plugin's style not applied                                             | `styling.spec.ts`, light, pixel ratio 1, the pill and Tooltip from field tests (21 with the setup) | 18 fail: every pill case (build 1's three included) and the tooltip pill test; the two Colored text tooltip tests pass, as expected          |
 | `TablePanel.tsx`: the look not passed to `TableNG`                                         | the pill tests, light, 1 (19)                                                                      | the 8 look tests fail (7 cases and the tooltip test); the option cases pass, as expected                                                     |
 | `TableFlat.tsx`: the look not in the column config                                         | the look tests, light, 1 (9)                                                                       | 7 fail; "pill look, nested table" passes, as expected (its sub-tables are `TableNested`'s)                                                   |
@@ -768,6 +769,219 @@ rebuilt; job tmp `table-plan/build2/controls/run_e2e.py`):
 | `module.tsx`: the Look registered before core's Table options (first in the category)      | `stylingEditor.spec.ts`, `optionsEditor.spec.ts`                                                   | 2 fail: the placement test and the comparison with core's editor (re-run after the review moved the Look)                                    |
 | `module.tsx`: Pill line width before Pill line color                                       | the same                                                                                           | 3 fail: placement, the overrides menu, the comparison with core's editor                                                                     |
 | shared `ClearableSliderEditor`: leaving the text box not recognised                        | `stylingEditor.spec.ts -g tabbing`                                                                 | fails: tabbing through the unset sliders saves a value                                                                                       |
+
+## Plugin addition: Text weight
+
+Step 7, build 3 of `plans/atlas-table-panel.md` (branch `feature/text-weight` from `main` at `7e828ba`, builds 1 and 2,
+2026-10-12). The spike on `spike/text-color` (`41276de`, reference only, not merged) prototyped it: a local clearable
+select of four weights with their names, the weight fed into Automatic's font (`getTextFont`), a `fontWeight` in the
+colour styles, and a note that row heights are measured at the regular weight, so heavier wrapped text can be cut off.
+Taken from it: the values and labels (less 700, below), the select's idea, `getTextFont` as the one place Automatic's
+weight comes from. Re-done for this build: the select is the shared `ClearableSelectEditor` (State timeline plus's
+clearable Combobox, moved into `@pjan/grafana-styling`); the weight goes on the column's cells in `render-hooks.tsx`, not
+into the colour styles (those reach the whole row on Apply to entire row, and only cells with a colour); pills inherit
+it from their cell instead of carrying it in the pill style; the measurement is hooked (below) instead of documented as
+a limit. Opt-in: with it unset every cell draws and measures as core, and a table that doesn't use it saves nothing
+new. Code in `src/pjan/styling/` (`options.ts`, `textWeight.ts`; `cellColors.ts`' `getTextFont`).
+
+### The option (`options.ts`)
+
+**Text weight** at `custom.styling.textWeight`, in "Cell options" right after Text color (`module.tsx`, one chained
+`.addCustomEditor`, marked): the text options together, before the Pill-only options, as it applies to the same cell types
+as Text color. Values saved as numbers, **400, 500, 600** (`TEXT_WEIGHTS`), labelled Regular (400), Medium (500,
+described as what Grafana's theme calls bold: `createTypography.ts` sets `fontWeightBold` to 500, the same as
+`fontWeightMedium`) and Semibold (600, described as drawn as an emboldened Medium: Grafana ships its font at 400 and 500
+only). `validTextWeight`: anything else (700, a number in between, a string) counts as unset; the editor still shows
+such a saved value as Grafana's Combobox shows any value outside its choices. The shared **clearable select**
+(`ClearableSelectEditor<number>`, editor and override; no typed-in values on a number option) with the placeholder "As
+Grafana" (key `pjan.table-styling.as-grafana`); no default value, no cell-type `showIf`, `process:
+identityOverrideProcessor`, `shouldApply: () => true`, i18n keys `pjan.table-styling.text-weight-*`; the description says
+it applies to Colored text, Colored background and Pill cells (on Apply to entire row, the column's own cells), that
+wrapped text is measured at it and Automatic too, and ends with "Not set: as Grafana, regular (400)". A cleared value
+leaves no key and no `styling: {}` (Grafana's own field-config cleanup, as for build 1's options).
+
+### What it draws (`textWeight.ts`, `render-hooks.tsx`)
+
+- **Where:** `getTextWeight(field, cellType)` gives the column's weight when it is set (one of the three) and the
+  column's configured cell type (as core reads it, `getCellOptions(field).type`) is Colored text, Colored background or
+  Pill; otherwise undefined, and the column draws and measures as core. Each column reads it once when its cells'
+  renderers are built.
+- **Cells:** an inline `font-weight` on the cell (the grid cell's style, after the colours and before Styling from
+  field's CSS, which still wins). The cell's text, links and pills inherit it (PillCell's pill spans set size and line
+  height, not weight); the cell-action buttons keep Grafana's own weight. Nothing on other cell types, and nothing at all
+  with it unset (the style object is core's). An explicit 400 is put on the cell too (it overrides an inherited weight).
+- **Apply to entire row:** the row-colouring field's own cells take its weight; the row's other cells don't (each column
+  keeps its own: a Colored text cell on the row takes its own weight). Kept by pjan (2026-10-12).
+- **Tooltip from field:** the tooltip field's weight on the tooltip's content (as build 1 colours it there).
+- **Automatic** is measured at the weight (`getTextFont(theme, element, field)`: the field's weight, else
+  `fontWeightRegular`). Cells are 14 px and pills 12 px, so text is never large (`getMinTextContrast`: 24 px, or 18.66
+  px at 700): every weight needs 4.5:1 and Automatic picks the same colour; the colour caches key on size and weight
+  anyway. On a coloured row the row's text is measured at the row field's weight (at 14 px the same).
+- **The font Grafana draws:** Grafana 13.2.3 declares Inter at 400 and 500 only (and italics; `GlobalStyles/fonts.ts`,
+  and `document.fonts` on the dev server). The browser draws 600 from the 500 face, emboldened (font synthesis), with
+  the 500 face's advances (about 1 % wider than 400: "Degraded service on the primary database cluster" is 339.2 px at
+  400 and 342.6 px at 500 and 600, canvas and DOM alike; job tmp `table-plan/build3/probe/`). 700 draws exactly as 600.
+  The Atlas theme (atlas-theme-app 4.2.0) adds no font faces. The measurement doesn't depend on it: it measures with the
+  browser's own font at the weight.
+
+### Measurement (row heights and widths)
+
+Core measures text on a canvas (`createTypographyContext` in `TableNG/utils.ts`, at the body font's size and family and
+no weight, the regular one; pills at 12 px) for two things:
+
+- **Row heights of wrapped columns** (`useRowHeight` → `buildCellHeightMeasurers` → `getRowHeight`): uwrap counts each
+  wrapped cell's lines at the column's width (estimated first with `avgCharWidth`), and the row takes the tallest cell;
+  pills are laid out from each pill's measured width. **Heavier text can be cut off:** a line that fits at 400 can wrap at
+  500 and 600, the row stays at its measured height, and the grid cell clips what overflows. Shown in the browser
+  (`styling.spec.ts`, the wrapped cases, with the hook taken out): at 500 and 600 the Colored text cell's two lines
+  overflow its 36 px row (the first failing check: the text's top 2.5 px above the cell's); with only the pill
+  measurer at the regular weight, the fourth row (only its pills wrap: 484.6 px in 482 px) stays 36 px instead of 60.
+- **Content-aware column widths** (`computeContentAwareColWidths`, only with Grafana's `table.autoColumnWidths` feature
+  flag): a column's content width is estimated from `avgCharWidth` (and pill and link runs from it), so a heavier
+  column is estimated too narrow by the face's extra width.
+
+**The fix (hooks in `utils.ts`):** a column at a Text weight other than 400 (`getMeasuredTextWeight`: 400 is what core
+measures at, so it shares core's measurers and contexts) is measured with core's own `createTypographyContext` at that
+weight: the body context's size (recorded by `createTypographyContext` as `pjanFontSize`, a new optional field of
+`TypographyCtx` in `types.ts`), family and letter spacing, made once per base context and weight
+(`getWeightedTypographyCtx`, a `WeakMap`; making one measures a few thousand strings); a pill column's 12 px context at
+the weight. In `buildCellHeightMeasurers` core's measurer factory and `setupMeasurerForIdx` stay as they are: one
+marked block at the top of the loop gives a column at a weight a measurer entry of its own per kind and weight
+(`auto|500`, `pill|600`, …, clamped by Max row height as core's) and skips core's branches; every other column goes
+through core's code. In `computeContentAwareColWidths` a weighted column measures its content with the weighted
+context. Unset (or 400), the measurers and widths are core's (the same context objects, the same keys). A row with
+`dynamicHeight` (CSS `min-content`) needs no measurement. The header (its own medium-weight context) and the footer are
+not affected: Text weight doesn't reach them. Markdown and the other cell types are not affected. **The cost:** one
+inserted block and one width line in `utils.ts`, `pjanFontSize` in `createTypographyContext` and `types.ts`; the
+alternative, documenting the limit (the spike's), leaves wrapped Colored text, Colored background and pill columns cut
+off at any weight above 400.
+
+### Hooks (all marked `pjan-table-panel:`)
+
+| Copied file | Hook |
+| --- | --- |
+| `plugins/panel/table/module.tsx` | `.addCustomEditor(textWeightFieldOption(cellCategory))` after Text color, with its import |
+| `TableNG/render-hooks.tsx` | `const pjanTextWeight = getTextWeight(field, cellType)` per column; in the cell root renderer `style.fontWeight = pjanTextWeight` when set, after the colours and before Styling from field; for Tooltip from field `getTextWeight(tooltipField, tooltipCellOptions.type)` and `tooltipStyle.fontWeight`; with the import |
+| `TableNG/utils.ts` | `createTypographyContext` returns `pjanFontSize: fontSize`; `buildCellHeightMeasurers`: one inserted block at the top of its loop (`getMeasuredTextWeight(field, cellType)`; when set, the entry `${kind}\|${weight}` with the weighted Auto context or `createTypographyContext(PILLS_FONT_SIZE, …, weight)` for pills, then `continue`), core's factory and setup unchanged; `computeContentAwareColWidths` measures a weighted column with the weighted context; with the import |
+| `TableNG/types.ts` | `TypographyCtx.pjanFontSize?: number` |
+
+### Decisions
+
+1. **The weight on the cell, not in the colour styles** (the spike put it into `getCellColorInlineStylesFactory`'s
+   result): the colour styles reach the whole row on Apply to entire row and only exist for cells with a colour; a
+   Colored text cell without a value colour, or a transparent cell on a coloured row, is still a Colored text or Colored
+   background cell. One hook in the cell root, one in the tooltip, from the column's config.
+2. **Not on the row** (Apply to entire row): the row's other cells are usually Auto, which Text weight can't reach; a
+   row-wide weight would restyle columns that have no option of their own, and need every other column measured at it.
+   Fill and text colour are the row's because the fill is. Kept by pjan (2026-10-12).
+3. **Pills inherit** the cell's weight: no change in `PillCell.tsx` or the pill style; a weight alone doesn't make a
+   column's pill style (so PillCell keeps core's style object).
+4. **Measure at the weight** (above) rather than document a limit, with core's measurer code left as it is (the build 3
+   review, n5: the first version changed four of `setupMeasurerForIdx`'s lines; one inserted block merges more easily
+   at a re-sync).
+5. **400, 500 and 600; no 700** (pjan, 2026-10-12, after the build 3 review): Grafana 13.2.3 has no 600 or 700 face, so
+   both draw the same emboldened Medium; a choice that draws nothing different is a trap. Adding 700 later (when Grafana
+   ships the faces) is harmless; removing a value later would unset every panel that saved it. 600 is the value
+   CONVENTIONS names. A saved 700 counts as unset, as any other value outside the three.
+6. **The shared select moved** (`ClearableSelectEditor` in `@pjan/grafana-styling`, now used by two plugins: the
+   package's rule), generic over string and number values; typed-in values (`createCustomValue`) only where the choices
+   are strings, so a number option never saves a string. State timeline plus imports it directly (its
+   `RowAnnotationsComboboxEditor.tsx` is gone; pjan, 2026-10-12).
+
+### Depends on (check at each re-sync)
+
+- `render-hooks.tsx`: the cell root renderer building `style` from the row's styles and the cell's colours before Styling
+  from field (`parseStyleJson`), and Tooltip from field's `tooltipStyle`; `cellType` read per column.
+- `utils.ts`: `createTypographyContext(fontSize, fontFamily, letterSpacing, fontWeight?)` and its returned object;
+  `buildCellHeightMeasurers`' loop, its `result` entries (`measure`, `estimate`, `fieldIdxs`) and `clampByMaxHeight`,
+  that Colored text and Colored background columns reach the Auto measurer (`AutoCellRenderer`), `PILLS_FONT_SIZE` and
+  `getPillCellHeightMeasurer`; `computeContentAwareColWidths`' `measureCtx` and `COL_WIDTH_MEASURERS`; `useTypographyCtx`
+  making the body context per theme (the `WeakMap`'s key).
+- `PillCell.tsx`'s `getStyles` not setting a weight on the pill spans (they inherit the cell's).
+- Grafana's Inter faces (`GlobalStyles/fonts.ts`, 400 and 500 in 13.2.3): if a later Grafana ships 600 (and 700), 600
+  draws lighter than today and 700 can be offered; the measurement follows. Inter Medium is loaded before a weighted
+  context is first made (panel titles use it); a context made earlier would measure the fallback font until the theme
+  changes, as core's header context would.
+
+### Tests
+
+- **Jest** (`src/pjan/`): `styling/textWeight.test.tsx` (31: `getTextWeight` per cell type and value, 700 unset; the
+  weighted context (core's `createTypographyContext` with the size, family, letter spacing and weight, cached per
+  context and weight, the base without a size); the measurement with a canvas whose characters widen with the weight and
+  a uwrap stand-in that breaks lines with the context it is given (the copied tests stub uwrap): measurers per weight, an
+  explicit 400 sharing core's measurers with no context of its own, wrapped Colored text and Colored background at 400
+  and 600 (one line, two lines), wrapped pills at 400, 500, 600 and a saved 700, nothing set equal to no styling, Max row
+  height still clamping, content-aware widths 42 px wider at 600 for 30 characters, core's for other cell types and for
+  700; the copied `TableNG` in jsdom: the weight on Colored text, Colored background and Pill cells (pills inheriting)
+  and on nothing else (a saved 700 included), Styling from field winning, nothing set as core's styles, Apply to entire
+  row (the row field's own cells only), nested sub-tables, Tooltip from field), `styling/options.test.ts` (the place
+  after Text color, the shared select with its numbers, labels, descriptions and placeholder, only the three values
+  valid, the description, saved and cleared with no `styling: {}`, by override on one field and cleared),
+  `styling/cellColors.test.ts` (Automatic at each weight, hand-computed, the same colour at 12 and 14 px; `getTextFont` at
+  the weight; colour styles without a weight), `styling/pills.test.ts` (a weight alone sets no pill style; Automatic on
+  pills and with the look the same at each weight, hand-computed). `@pjan/grafana-styling`'s
+  `ClearableSelectEditor.test.tsx` (8: unset, a number shown and saved as a number, 0 a value, cleared, choices from the
+  context, typed-in strings, none on a number option). State timeline plus's tests unchanged but for the one import.
+- **End to end:** `tests/styling.spec.ts`, `tests/stylingEditor.spec.ts`, `tests/optionsEditor.spec.ts` ("End to end").
+
+### Negative controls
+
+Jest (2026-10-12, after the build 3 review and pjan's answers; job tmp `table-plan/build3/controls/run.py`), each broken
+on purpose by a script (every pattern must be found once, so no control is a typo), Table plus's `src/pjan` suites run
+(263 tests) and, for the shared select, also `@pjan/grafana-styling`'s (160), then restored (both pass again); the
+failing tests read from `jest --json` (`assertionResults[].status`):
+
+| # | Broken on purpose | Failed: the failing tests |
+| --- | --- | --- |
+| J1 | module.tsx: Text weight not registered | Table plus `src/pjan`, 263 tests: **7**: the field options as registered > sit in "Cell options" right after Cell type, in order, then core’s Cell value inspect; the field options as registered > custom.styling.textWeight: stored at custom.styling.textWeight with that override id, in the field defaults and the overrides; the field options as registered > Text weight: the shared clearable select of three numbers with their names (no 700: drawn as 600); the field options as registered > Text weight says which cell types it applies to, the row, measurement, and ends with "Not set: …"; the field options as registered > custom.styling.textWeight: no default value, no cell-type showIf (review M3), applies to every field as core’s cell options; the field options as saved > Text weight: a number kept; cleared, no key and no `styling: {}` left; with the others, only its key goes; the field options as saved > Text weight by override: kept as `custom.styling.textWeight`, a number, styling its field only |
+| J2 | module.tsx: Text weight before Text color | Table plus `src/pjan`, 263 tests: **1**: the field options as registered > sit in "Cell options" right after Cell type, in order, then core’s Cell value inspect |
+| J3 | utils.ts: createTypographyContext doesn't record its size | Table plus `src/pjan`, 263 tests: **5**: measurement at the Text weight (utils.ts hooks) > getWeightedTypographyCtx > at a weight: core’s createTypographyContext with the same size, family and letter spacing, made once; measurement at the Text weight (utils.ts hooks) > getWeightedTypographyCtx > a context that doesn’t say its size (made outside createTypographyContext): the context itself; measurement at the Text weight (utils.ts hooks) > wrapped Colored text and Colored background: more lines at a heavier weight (row heights grow); measurement at the Text weight (utils.ts hooks) > the Text weight’s measurement still stops at Max row height; measurement at the Text weight (utils.ts hooks) > content-aware column widths (the table.autoColumnWidths flag) > a Colored text, Colored background or Pill column’s content is measured at its weight |
+| J4 | utils.ts: wrapped text (Auto measurer) at core's context, not the weighted one | Table plus `src/pjan`, 263 tests: **2**: measurement at the Text weight (utils.ts hooks) > wrapped Colored text and Colored background: more lines at a heavier weight (row heights grow); measurement at the Text weight (utils.ts hooks) > the Text weight’s measurement still stops at Max row height |
+| J5 | utils.ts: wrapped pills measured at the regular weight | Table plus `src/pjan`, 263 tests: **1**: measurement at the Text weight (utils.ts hooks) > wrapped pills: measured at their 12 px and the column’s weight (the pills wrap to a second line) |
+| J6 | utils.ts: one measurer per cell type (not per weight) | Table plus `src/pjan`, 263 tests: **2**: measurement at the Text weight (utils.ts hooks) > columns at a Text weight get a measurer of their own per weight; other columns share core’s; measurement at the Text weight (utils.ts hooks) > wrapped Colored text and Colored background: more lines at a heavier weight (row heights grow) |
+| J7 | utils.ts: the column's weight not read for the row heights | Table plus `src/pjan`, 263 tests: **4**: measurement at the Text weight (utils.ts hooks) > columns at a Text weight get a measurer of their own per weight; other columns share core’s; measurement at the Text weight (utils.ts hooks) > wrapped Colored text and Colored background: more lines at a heavier weight (row heights grow); measurement at the Text weight (utils.ts hooks) > wrapped pills: measured at their 12 px and the column’s weight (the pills wrap to a second line); measurement at the Text weight (utils.ts hooks) > the Text weight’s measurement still stops at Max row height |
+| J8 | utils.ts: content-aware widths at the regular weight | Table plus `src/pjan`, 263 tests: **1**: measurement at the Text weight (utils.ts hooks) > content-aware column widths (the table.autoColumnWidths flag) > a Colored text, Colored background or Pill column’s content is measured at its weight |
+| J21 | textWeight.ts: an explicit 400 measured with a context of its own | Table plus `src/pjan`, 263 tests: **1**: measurement at the Text weight (utils.ts hooks) > an explicit 400 is measured as core (core measures at the regular weight): core’s measurers, no context of its own |
+| J9 | render-hooks.tsx: the weight not put on the cells | Table plus `src/pjan`, 263 tests: **4**: Text weight in the copied TableNG > on Colored text, Colored background and Pill cells (their pills inherit it), and on nothing else; Text weight in the copied TableNG > Styling from field’s CSS still wins over it; Text weight in the copied TableNG > Apply to entire row: on the row-colouring column’s own cells, not on the row’s other cells; Text weight in the copied TableNG > in nested sub-tables |
+| J10 | render-hooks.tsx: the weight after Styling from field (it would win) | Table plus `src/pjan`, 263 tests: **1**: Text weight in the copied TableNG > Styling from field’s CSS still wins over it |
+| J11 | render-hooks.tsx: the row field's weight on the whole row (as the spike did) | Table plus `src/pjan`, 263 tests: **1**: Text weight in the copied TableNG > Apply to entire row: on the row-colouring column’s own cells, not on the row’s other cells |
+| J12 | render-hooks.tsx: the tooltip field's weight not on the tooltip | Table plus `src/pjan`, 263 tests: **1**: Text weight in the copied TableNG > Tooltip from field: the tooltip field’s weight on the tooltip’s content |
+| J13 | textWeight.ts: the weight on every cell type | Table plus `src/pjan`, 263 tests: **14**: getTextWeight: the cells it applies to > auto: nothing, set or not; getTextWeight: the cells it applies to > json-view: nothing, set or not; getTextWeight: the cells it applies to > markdown: nothing, set or not; getTextWeight: the cells it applies to > data-links: nothing, set or not; getTextWeight: the cells it applies to > actions: nothing, set or not; getTextWeight: the cells it applies to > image: nothing, set or not; getTextWeight: the cells it applies to > gauge: nothing, set or not; getTextWeight: the cells it applies to > sparkline: nothing, set or not; getTextWeight: the cells it applies to > geo: nothing, set or not; getTextWeight: the cells it applies to > custom: nothing, set or not; measurement at the Text weight (utils.ts hooks) > columns at a Text weight get a measurer of their own per weight; other columns share core’s; measurement at the Text weight (utils.ts hooks) > an explicit 400 is measured as core (core measures at the regular weight): core’s measurers, no context of its own; measurement at the Text weight (utils.ts hooks) > content-aware column widths (the table.autoColumnWidths flag) > other cell types, and nothing set: core’s widths; Text weight in the copied TableNG > on Colored text, Colored background and Pill cells (their pills inherit it), and on nothing else |
+| J14 | textWeight.ts: the weighted context made without the weight | Table plus `src/pjan`, 263 tests: **4**: measurement at the Text weight (utils.ts hooks) > getWeightedTypographyCtx > at a weight: core’s createTypographyContext with the same size, family and letter spacing, made once; measurement at the Text weight (utils.ts hooks) > wrapped Colored text and Colored background: more lines at a heavier weight (row heights grow); measurement at the Text weight (utils.ts hooks) > the Text weight’s measurement still stops at Max row height; measurement at the Text weight (utils.ts hooks) > content-aware column widths (the table.autoColumnWidths flag) > a Colored text, Colored background or Pill column’s content is measured at its weight |
+| J15 | textWeight.ts: a new context each time (no cache) | Table plus `src/pjan`, 263 tests: **1**: measurement at the Text weight (utils.ts hooks) > getWeightedTypographyCtx > at a weight: core’s createTypographyContext with the same size, family and letter spacing, made once |
+| J16 | options.ts: any number is a weight | Table plus `src/pjan`, 263 tests: **6**: getTextWeight: the cells it applies to > unset, or anything but the three weights (700 included): nothing (as core); measurement at the Text weight (utils.ts hooks) > wrapped pills: measured at their 12 px and the column’s weight (the pills wrap to a second line); measurement at the Text weight (utils.ts hooks) > content-aware column widths (the table.autoColumnWidths flag) > other cell types, and nothing set: core’s widths; Text weight in the copied TableNG > on Colored text, Colored background and Pill cells (their pills inherit it), and on nothing else; the field options as registered > Text weight: only the three numbers count; anything else is unset; fonts measured for Automatic > at the column’s Text weight (build 3), the regular weight when unset or not one of the three |
+| J17 | cellColors.ts: getTextFont ignores the weight | Table plus `src/pjan`, 263 tests: **1**: fonts measured for Automatic > at the column’s Text weight (build 3), the regular weight when unset or not one of the three |
+| J18 | options.ts: Text weight with a default value (400) | Table plus `src/pjan`, 263 tests: **11**: the field options as registered > custom.styling.textWeight: no default value, no cell-type showIf (review M3), applies to every field as core’s cell options; the field options as saved > a new panel saves no `styling` (no defaults); the field options as saved > set values are kept when the panel loads; the field options as saved > a cleared value leaves no key and no empty `styling` object; the field options as saved > a cleared Background color leaves Text color alone, and both cleared leave no `styling`; the field options as saved > the pill options: set values kept; each cleared leaves the others; all cleared leave no `styling`; the field options as saved > Text weight: a number kept; cleared, no key and no `styling: {}` left; with the others, only its key goes; the field options as saved > drops keys it doesn’t know under `styling`; the field options as saved > an override styles its field only, over the defaults; the field options as saved > pill options by override: kept as `custom.styling.<key>`, styling their field only; the field options as saved > an override property without a value (cleared in the editor) unsets it for its field, defaults included |
+| J19 | options.ts: the weights saved as strings | Table plus `src/pjan`, 263 tests: **1**: the field options as registered > Text weight: the shared clearable select of three numbers with their names (no 700: drawn as 600) |
+| J22 | options.ts: 700 a weight again | Table plus `src/pjan`, 263 tests: **7**: fonts measured for Automatic > at the column’s Text weight (build 3), the regular weight when unset or not one of the three; getTextWeight: the cells it applies to > unset, or anything but the three weights (700 included): nothing (as core); measurement at the Text weight (utils.ts hooks) > wrapped pills: measured at their 12 px and the column’s weight (the pills wrap to a second line); measurement at the Text weight (utils.ts hooks) > content-aware column widths (the table.autoColumnWidths flag) > other cell types, and nothing set: core’s widths; Text weight in the copied TableNG > on Colored text, Colored background and Pill cells (their pills inherit it), and on nothing else; the field options as registered > Text weight: the shared clearable select of three numbers with their names (no 700: drawn as 600); the field options as registered > Text weight: only the three numbers count; anything else is unset |
+| J20 | options.ts: no placeholder (what unset draws) | Table plus `src/pjan`, 263 tests: **1**: the field options as registered > Text weight: the shared clearable select of three numbers with their names (no 700: drawn as 600) |
+| S1 | shared ClearableSelectEditor: a cleared select saves an empty value instead of unsetting | Table plus `src/pjan`, 263 tests: **0** — `@pjan/grafana-styling`, 160 tests: **1**: ClearableSelectEditor > clearing unsets the option |
+| S6 | shared ClearableSelectEditor: typed values offered on a number option | Table plus `src/pjan`, 263 tests: **0** — `@pjan/grafana-styling`, 160 tests: **1**: ClearableSelectEditor > a number option can’t take typed-in values: nothing typed is offered or saved |
+| S2 | shared ClearableSelectEditor: not clearable | Table plus `src/pjan`, 263 tests: **0** — `@pjan/grafana-styling`, 160 tests: **1**: ClearableSelectEditor > clearing unsets the option |
+| S3 | shared ClearableSelectEditor: values saved as strings | Table plus `src/pjan`, 263 tests: **0** — `@pjan/grafana-styling`, 160 tests: **2**: ClearableSelectEditor > a choice saves its value as given: a number stays a number; ClearableSelectEditor > a number 0 is a value like any other (not unset) |
+| S4 | shared ClearableSelectEditor: no placeholder | Table plus `src/pjan`, 263 tests: **0** — `@pjan/grafana-styling`, 160 tests: **2**: ClearableSelectEditor > unset: empty, showing what an unset option means; ClearableSelectEditor > offers the choices of its context, and saves strings |
+| S5 | shared ClearableSelectEditor: no custom values | Table plus `src/pjan`, 263 tests: **0** — `@pjan/grafana-styling`, 160 tests: **1**: ClearableSelectEditor > with createCustomValue, a value typed in is saved |
+
+None passed vacuously. The shared select's controls (S1 to S6) fail only in `@pjan/grafana-styling`'s suite, as
+expected: Table plus's Jest checks that its option uses the shared editor, not the editor's behaviour (that is the
+package's test and the editor e2e's). `types.ts`' `pjanFontSize` is a type: without it the typecheck fails.
+
+End to end (2026-10-12, after the build 3 review and pjan's answers; each broken, the plugin rebuilt, the named tests
+run with `--workers=1`, then restored and rebuilt; job tmp `table-plan/build3/controls/run_e2e.py`; "light, 1":
+`styling.spec.ts` in light at pixel ratio 1):
+
+| Broken on purpose | Run | Result |
+| --- | --- | --- |
+| `utils.ts`: wrapped text measured at the regular weight (the height block off) | the wrapped cases, light, 1 (3) | 500 and 600 fail on "the text fits the cell (top)" (r1's Colored text above its 36 px cell); 400 passes, as expected |
+| `utils.ts`: wrapped pills measured at the regular weight (only the pill measurer) | the wrapped cases, light, 1 (3) | 500 and 600 fail on r4's pills: "the text fits the cell (top)" (175.5 px, the cell's top at 181.5: r4 stays 36 px); 400 passes |
+| `utils.ts`: content-aware widths at the regular weight (the width hook off) | the flag test | fails: "column 1: 3 or 4 px wider (from Inter's measured widths)", 0 px |
+| `render-hooks.tsx`: the weight not put on the cells | the weight and wrapped cases, light, 1 (14) | 11 fail on "the weight" (every case with a weight above 400); wrapped 400, the saved 700 and the tooltip hover test pass, as expected |
+| `render-hooks.tsx`: the row field's weight on the whole row (as the spike did; injected only where the row field sets a weight) | the coloured-row case, light, 1 | fails on "0/api/host (api): the weight" (an Auto cell of the row); "nothing set equals core" passes (build 3 review, m2) |
+| `render-hooks.tsx`: the tooltip field's weight not on the tooltip | the tooltip weight test, light, 1 | fails: the tooltip's value at 400, not 600 |
+| `textWeight.ts`: the weight on every cell type | the weight and wrapped cases, light, 1 (14) | 10 fail on "the weight" of an Auto column (host, level, stack); the coloured-row case (weights by override only), wrapped 400, the saved 700 and the tooltip hover test pass, as expected |
+| `module.tsx`: Text weight before Text color | `stylingEditor.spec.ts`, `optionsEditor.spec.ts` | 3 fail: the placement test, the overrides menu, the comparison with core's editor |
+| shared `ClearableSelectEditor`: a cleared select saves an empty value | `stylingEditor.spec.ts -g "Text weight"` | the override test fails (the property keeps `""`); the field-defaults test passes, because Grafana's editor drops an empty default value itself |
+| the same, on State timeline plus (its dev server, `styling.spec.ts -g "saved JSON"`; run before the shim was deleted) | 3 tests | "opening the editor writes nothing; a set value is saved, a cleared one removes its key" fails: Value overflow keeps `""` |
 
 ## Pruned and left off
 
@@ -1003,8 +1217,9 @@ Own tests (`src/pjan/`):
   (`disableSanitizeHtml`); `defaultSparklineCellConfig` has core's values; the e2e selector values equal
   `@grafana/e2e-selectors`'.
 - `styling/options.test.ts`, `styling/cellColors.test.ts`, `styling/tableColors.test.tsx`, `styling/pills.test.ts`,
-  `styling/look.test.tsx`: Text color and Background color ("Plugin addition: Text color and Background color"), the pill
-  options and the Look ("Plugin addition: pill options and Look").
+  `styling/look.test.tsx`, `styling/textWeight.test.tsx`: Text color and Background color ("Plugin addition: Text color
+  and Background color"), the pill options and the Look ("Plugin addition: pill options and Look"), Text weight
+  ("Plugin addition: Text weight").
 - `featureFlags.test.tsx` (the scaffold's) and `buildConfig.test.ts` (the build, and the built `module.js` asks Grafana for
   no `/unstable` or `/internal` entry point).
 
@@ -1060,8 +1275,9 @@ Own tests (`src/pjan/`):
   with a server value answered 3 s late, and localStorage before the server, core and plugin alike in their drawing
   (page size 2 only with `table.paginationPageSize`; content-aware column widths only with `table.autoColumnWidths`,
   the plugin's widths equal to core's), in their editors ("Page size" shown only with the flag) and in core's own client.
-- **`styling.spec.ts`** (247 with its setup: 41 tests × light, dark and dark after a live switch from light × pixel ratio
-  1 and 2), on `provisioning/dashboards/styling.json` (generated by `scripts/generate-styling-dashboard.mjs`): 39 cases,
+- **`styling.spec.ts`** (332 with its setup: 55 tests × light, dark and dark after a live switch from light × pixel ratio
+  1 and 2, and one test with the `table.autoColumnWidths` flag), on `provisioning/dashboards/styling.json` (generated by
+  `scripts/generate-styling-dashboard.mjs`): 52 cases,
   each core's table, Table plus with nothing set and Table plus with the case's styling (and look) with the same data
   and field config (Atlas's pattern: cell types by override, the styling once in the field defaults; `minWidth` 70 so
   every column fits); side by side, or one above the other at full width for the pills frame's six columns. Build 1's
@@ -1075,7 +1291,14 @@ Own tests (`src/pjan/`):
   colour; `host` by string hash): Pill fill color Softer and Fixed, Pill line color Base, Fixed with width 3, Pill line
   width 2 alone, Pill corner radius 2, the CONVENTIONS pill (Softer, Base line, radius 4, Text Automatic); the Pill look
   alone, with a radius and a column's own fill and width, on a transparent panel, with pills on a row coloured by Apply to
-  entire row (basic), with Text Stronger on a gradient row; the look in a nested table and with Tooltip from field. Per
+  entire row (basic), with Text Stronger on a gradient row; the look in a nested table and with Tooltip from field. Build
+  3's (Text weight): 600 on Colored text, 600 with Text color Automatic on basic state cells (hand-computed: the colours
+  worked out for 400), 500 on gradient cells, 600 on every pill of the pills frame, 500 with the Pill look (the look's
+  hand-computed colours at 500), a coloured row with 600 on the row field and 500 on Colored text, 600 in nested
+  sub-tables, Tooltip from field, a saved 700 (not offered: as core); wrapped text at 400, 500 and 600 (a Colored text, a
+  Colored background and a pill column sized from Inter's measured widths so the first row fits one line at 400 and
+  needs two from 500, and a fourth row where only the pills wrap); content widths at 600 (two Colored text columns too
+  wide for the panel). Per
   case: nothing set has core's elements (every attribute, inline styles included, React's ids mapped) and core's pixel
   at every non-gradient cell; each set cell's inline colours, and each pill's fill, text, line (its computed box shadow),
   border and corner radius, are what the rules give for core's colour of the same cell or pill, worked out in the spec
@@ -1085,20 +1308,30 @@ Own tests (`src/pjan/`):
   (pills in view); some cells and pills also against hand-computed colours (job tmp `table-plan/build1/oracle_e2e.py`
   and `table-plan/build2/oracle_e2e_b2.py`: the look on mapped, fixed, string-hash and transparent pills, on the table,
   the canvas and an orange row; without a live switch: core keeps the first theme's value colours until a refresh); set
-  differs from core where the option applies (Fixed on gradient cells: equal); on a transparent panel the grid's
-  background pixel is the canvas. Two more tests hover Tooltip from field: the tooltip's Colored text is measured against
-  the tooltip's background, and the tooltip's pill takes the look (hand-computed too).
-- **`stylingEditor.spec.ts`** (10): the six field options right after Cell type and before Cell value inspect, in order,
+  differs from core where the option applies (Fixed on gradient cells, Text weight 400 and a saved 700: equal); on a transparent
+  panel the grid's background pixel is the canvas. Text weight: every cell's and pill's computed weight is the column's
+  where it applies (on a coloured row, the row field's own cells) and core's elsewhere, Automatic worked out at the drawn
+  weight, the header's weights core's; in the wrapped cases every cell's content (its Range's box) inside the cell, and
+  the first and fourth rows' heights hand-computed from the measured widths (36 px at 400 and in core, 60 px from 500:
+  NOTE's two lines and the pills' two rows, 2 × 22 + 4 + 12; the fourth row from its pills alone). Three more tests hover Tooltip from field: the tooltip's Colored text is measured against the
+  tooltip's background, the tooltip's pill takes the look (hand-computed too), and the tooltip field's Text weight is on
+  the tooltip's content (600; core 400). One more, with the `table.autoColumnWidths` flag (a localStorage override):
+  nothing set has core's column widths; the weighted columns are 3 or 4 px wider than core's (worked out from Inter's
+  average character width at 400 and 600 as measured in Chrome, not by hand), the Auto column unchanged, and the weighted text isn't cut off.
+- **`stylingEditor.spec.ts`** (11): the seven field options right after Cell type and before Cell value inspect, in order,
   in the field defaults with Cell type Auto, with their placeholders and the sliders at their unset values (1 and 6), no
   clear button while unset; the Look after core's Table panel options (after Enable pagination, Page size being hidden; the Table field options follow), nothing chosen; all six in the "Add override property" menu
   after Cell type; Text color and Background color set and cleared to no key and no `styling`; the four pill options set
-  (and drawn in the preview: fill, the line's box shadow, the corner radius), cleared one by one to no `styling`; tabbing
+  (and drawn in the preview: fill, the line's box shadow, the corner radius), cleared one by one to no `styling`; Text
+  weight's three choices by name, a weight saved as a number and drawn in the preview (the state cell, not the Auto
+  host cell), changed and cleared to no `styling`, the placeholder back; Text weight by override saved as
+  `custom.styling.textWeight` (500, drawn) and cleared to a property without a value; tabbing
   through the unset sliders saves nothing; the Look set to Pill (saved, drawn) and back to Grafana (saved `grafana`, core
   drawn again); an override saved as `custom.styling.textColor` and `custom.styling.lineWidth` and cleared to a property
-  without a value; opening the editor of a styled panel writes nothing (3 s); defaults (with pill options), an override
-  and the Look survive saving the dashboard (the editor's Save) and loading it again.
+  without a value; opening the editor of a styled panel writes nothing (3 s); defaults (with pill options and Text
+  weight), an override and the Look survive saving the dashboard (the editor's Save) and loading it again.
 - **`optionsEditor.spec.ts`** (2): core's and the plugin's panel editors on a case without options: the same option
-  groups in the same order, and in them the same options (panel, table, cell and standard options; the plugin's own six
+  groups in the same order, and in them the same options (panel, table, cell and standard options; the plugin's own seven
   right after Cell type and its Look right after core's last Table option, then core's), each with the same elements (labels,
   descriptions, editors; React's ids mapped) and input values (the defaults); the Cell type editor's choices. Waits for
   the preview's data first (a unit set in the data adds a "pre-configured" note to Unit). With a label changed in the
@@ -1110,6 +1343,28 @@ Own tests (`src/pjan/`):
 What has passed, on Grafana 13.2.3 OSS (the dev server of `docker-compose.yaml`), with one browser
 (`npx playwright test --workers=1`), on a loaded machine (load average about 100 to 130):
 
+- **2026-10-12, build 3 after the review and pjan's answers** (weights 400, 500 and 600; core's measurer code
+  untouched; the pills-only wrapped row; the shared select's typed values for strings only; State timeline plus without
+  its re-export): `styling.spec.ts`, `stylingEditor.spec.ts` and `optionsEditor.spec.ts` at one worker, **345 of 345 at
+  the first run** (23.8 minutes; 332 styling with the setup, 11 editor, 2 options-editor), no reruns. An earlier run of
+  the same specs was stopped at test 10 when pjan's answers arrived (not counted). State timeline plus's
+  `rowAnnotations.spec.ts` and saved-JSON tests on its own dev server: 27 of 27 at the first run (the setup, 23 per-row annotation tests, 3 saved JSON). Root checks: typecheck, lint (no
+  errors; warnings as before: Table plus 21), build (`module.js` 351 KiB), copy check OK, `test:scripts` 47 of 47,
+  `test:dist` passed, `npm test` in every workspace at the first run (this plugin 56 suites, 1083 passed, 13 skipped, 1
+  todo; `@pjan/grafana-styling` 160; State timeline plus 579 passed, 3 todo; the other plugins unchanged).
+- **2026-10-12, build 3 (Text weight, commits `133e381`, `31c9a8d`, `41f78e6`): the full suite, 390 of 390 tests
+  passed** in 45.5 minutes at the first run, without reruns (load average about 17 to 26): 332 `styling.spec.ts` (52
+  cases and 3 tooltip tests × light, dark and dark after a live switch × pixel ratio 1 and 2, the flag test, the setup),
+  11 `stylingEditor.spec.ts`, 2 `optionsEditor.spec.ts`, and the port's parity (nothing set, 8 × 74 cases), interaction,
+  hand-computed, saved-JSON, feature-flag and smoke tests. Before it, the new weight tests alone (light, pixel ratio 1):
+  13 of 16 at the first run (three expectations of the spec itself: Colored text without Text color on a coloured row
+  keeps its value colour, a fill pixel sampled on a weighted pill's text, a fill pixel sampled under truncated text; fixed,
+  16 of 16); the editor specs 14 of 14 at the first run. State timeline plus, for the moved select, on its own dev
+  server: `rowAnnotations.spec.ts` and the saved-JSON tests of `styling.spec.ts`, 27 of 27. Root checks on the same code:
+  typecheck, lint (no errors; this plugin's 21 deprecation warnings as before), build (`module.js` 351 KiB), copy check
+  OK (334 copies), `test:scripts` 47 of 47, `test:dist` passed, `npm test` passed in every workspace at the first run
+  (this plugin 56 suites, 1084 passed, 13 skipped, 1 todo; `@pjan/grafana-styling` 160; State timeline plus 579 passed,
+  3 todo, unchanged; the other plugins unchanged).
 - **2026-10-11, the build 2 review's fixes** (the Look after Page size, from `module.tsx`; the minimal PillCell hook; the
   Text color placeholder; a nested-memo test; a hand-computed transparent-pill line in dark and light): `styling.spec.ts`,
   `stylingEditor.spec.ts`, `optionsEditor.spec.ts` and `parity.spec.ts` at one worker, 264 of 266 at the first run
@@ -1184,8 +1439,8 @@ What has passed, on Grafana 13.2.3 OSS (the dev server of `docker-compose.yaml`)
 Each behaviour below was broken on purpose and the named tests failed; then the code was restored (and the plugin
 rebuilt) and they passed (2026-10-05, `npx playwright test --workers=1` on the named tests):
 
-| Broken on purpose                                                                                                                 | Run                                                                                              | Result                                                                                                                                                                                                                                                                                                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Broken on purpose                                                                                     | Run                                            | Result                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Copied `Cells/PillCell.tsx` styles: the pill padding `theme.spacing(0.25, 0.75)` → `(0.25, 1)`                                    | `parity.spec.ts`, light, pixel ratio 1, `PARITY_CASES=pill`                                      | all 4 pill cases fail (about 2,000 to 3,300 pixels differ, and the pill's Emotion class)                                                                                                                                                                                                                                                                                                         |
 | Copied `TableNG/utils.ts`: `CELL_COLOR_DARKENING_MULTIPLIER` 10 → 11                                                              | `parity.spec.ts` (light, ratio 1) on the 8 coloured-background cases, and `handComputed.spec.ts` | the 4 cases with gradient cells fail (gradient, gradient applied to the row, the community form, the hex fills); the 4 basic ones pass, as expected; both hand-computed colour tests fail on the plugin (`rgb(251, 242, 80)` for the computed `rgb(251, 242, 77)` in light mode, `rgb(230, 219, 5)` for `rgb(235, 224, 6)` in dark) after core passed them                                       |
 | Copied `components/HeaderCell.tsx`: an extra attribute on the header's button (`data-negative-control=""`)                        | `parity.spec.ts`, light, pixel ratio 1, all 74 cases                                             | 73 cases fail on the elements; only "no data: no frames" passes, because it draws no grid (so no header button). "layout: header hidden" fails too: with Show table header off, the grid still renders its header cells                                                                                                                                                                          |
@@ -1251,8 +1506,8 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 
 ### Runtime code (AGPL-3.0, from public/app) — 27 files, 2730 lines
 
-| File                                                                 | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File                                                                                           | Changes                  |
+| ---------------------------------------------------------------------------------------------- | ------------------------ |
 | `src/features/actions/analytics.ts`                                  | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `src/features/actions/utils.ts`                                      | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `src/features/alerting/unified/utils/url.ts`                         | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -1269,7 +1524,7 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 | `src/plugins/panel/table/cells/MarkdownCellOptionsEditor.tsx`        | none.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `src/plugins/panel/table/cells/SparklineCellOptionsEditor.tsx`       | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `src/plugins/panel/table/migrations.ts`                              | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `src/plugins/panel/table/module.tsx`                                 | imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Pill fill color, Pill line color, Pill line width and Pill corner radius (custom.styling.backgroundColor, textColor, fillColor, lineColor, lineWidth, cornerRadius, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options. |
+| `src/plugins/panel/table/module.tsx` | imports; setPanelChangeHandler(panelChangedHandler from src/pjan/, which keeps options and field config when switching from core table and otherwise calls tablePanelChangedHandler); panel suggestions (setSuggestionsSupplier/tableSuggestionsSupplier) left off; the field options Background color, Text color, Text weight, Pill fill color, Pill line color, Pill line width and Pill corner radius (custom.styling.backgroundColor, textColor, textWeight, fillColor, lineColor, lineWidth, cornerRadius, src/pjan/styling/) right after Cell type; the panel option Look (options.styling.look) after core's Table options. |
 | `src/plugins/panel/table/panelcfg.gen.ts`                            | none.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `src/plugins/panel/table/suggestions.ts`                             | none.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `src/plugins/panel/table/TableCellOptionEditor.tsx`                  | none.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -1283,8 +1538,8 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 
 ### Runtime code (Apache-2.0, from packages/grafana-ui) — 42 files, 8696 lines
 
-| File                                                                                        | Changes                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File                                                                                           | Changes                  |
+| ---------------------------------------------------------------------------------------------- | ------------------------ |
 | `src/packages/grafana-ui/src/components/Actions/ActionButton.tsx`                           | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/cellUtils.ts`                                 | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/DataLinksActionsTooltip.tsx`                  | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -1317,21 +1572,21 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 | `src/packages/grafana-ui/src/components/Table/TableNG/Filter/FilterPopup.tsx`               | imports only.                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `src/packages/grafana-ui/src/components/Table/TableNG/Filter/utils.ts`                      | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/TableNG/hooks.ts`                             | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `src/packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx`                     | Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background in ColumnBuildConfig; the cell's and the tooltip's field, and the row's fill they are drawn on, passed to getCellColorInlineStyles; each column's (and a tooltip field's) getTextColorForBackground from withPillStyle, carrying the pill style (pill options, the Pill look from ColumnBuildConfig.pjanLook, Text color) to PillCell. |
+| `src/packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx` | Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background in ColumnBuildConfig; the cell's and the tooltip's field, and the row's fill they are drawn on, passed to getCellColorInlineStyles; each column's (and a tooltip field's) getTextColorForBackground from withPillStyle, carrying the pill style (pill options, the Pill look from ColumnBuildConfig.pjanLook, Text color) to PillCell. Text weight (src/pjan/styling/textWeight.ts): a column's Text weight on its cells and on Tooltip from field's content. |
 | `src/packages/grafana-ui/src/components/Table/TableNG/styles.ts`                            | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/TableNG/TableDataGrid.tsx`                    | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/TableNG/TableFlat.tsx`                        | Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background to getCellColorInlineStylesFactory (rebuilt when transparent changes) and to the column config; the panel's look (pjanLook prop) to the column config.                                                                                                                                                                                 |
 | `src/packages/grafana-ui/src/components/Table/TableNG/TableNested.tsx`                      | Background color and Text color hooks (src/pjan/styling/cellColors.ts): the table background to getCellColorInlineStylesFactory (rebuilt when transparent changes) and to the column config; the panel's look (pjanLook prop) to the column config.                                                                                                                                                                                 |
 | `src/packages/grafana-ui/src/components/Table/TableNG/TableNG.tsx`                          | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `src/packages/grafana-ui/src/components/Table/TableNG/types.ts`                             | BaseTableProps.pjanLook, the panel's look (options.styling.look, src/pjan/styling/), for Pill cells.                                                                                                                                                                                                                                                                                                                                |
-| `src/packages/grafana-ui/src/components/Table/TableNG/utils.ts`                             | Background color and Text color hooks (src/pjan/styling/cellColors.ts): getCellColorInlineStylesFactory takes the table background and its styles function the field (and what Colored text is drawn on); getApplyToRowBgFn passes the row's field.                                                                                                                                                                                 |
+| `src/packages/grafana-ui/src/components/Table/TableNG/types.ts` | BaseTableProps.pjanLook, the panel's look (options.styling.look, src/pjan/styling/), for Pill cells; TypographyCtx.pjanFontSize, the size a context measures at, for Text weight (src/pjan/styling/textWeight.ts). |
+| `src/packages/grafana-ui/src/components/Table/TableNG/utils.ts` | Background color and Text color hooks (src/pjan/styling/cellColors.ts): getCellColorInlineStylesFactory takes the table background and its styles function the field (and what Colored text is drawn on); getApplyToRowBgFn passes the row's field. Text weight hooks (src/pjan/styling/textWeight.ts): createTypographyContext records its font size; buildCellHeightMeasurers measures a column's wrapped text, and computeContentAwareColWidths its content, at its Text weight. |
 | `src/packages/grafana-ui/src/components/Table/TableRT/styles.ts`                            | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `src/packages/grafana-ui/src/components/Table/types.ts`                                     | none.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ### Tests (AGPL-3.0) — 17 files, 2660 lines
 
-| File                                                                      | Changes                                                                                                                                                                                                                                                             |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File                                                                                           | Changes                  |
+| ---------------------------------------------------------------------------------------------- | ------------------------ |
 | `src/features/actions/utils.test.ts`                                      | imports; jest.mock for the TimeSrv stand-in; ./analytics mocked with jest.mock instead of jest.spyOn.                                                                                                                                                               |
 | `src/features/alerting/unified/utils/url.test.ts`                         | imports only.                                                                                                                                                                                                                                                       |
 | `src/features/table/hooks.test.tsx`                                       | imports only.                                                                                                                                                                                                                                                       |
@@ -1352,8 +1607,8 @@ Every copy, by its plugin path (the upstream path is the same path under `public
 
 ### Tests and test helpers (Apache-2.0) — 28 files, 11169 lines
 
-| File                                                                                             | Changes |
-| ------------------------------------------------------------------------------------------------ | ------- |
+| File                                                                                           | Changes                  |
+| ---------------------------------------------------------------------------------------------- | ------------------------ |
 | `src/packages/grafana-test-utils/src/jsdom.ts`                                                   | none.   |
 | `src/packages/grafana-ui/src/components/Table/cellUtils.test.ts`                                 | none.   |
 | `src/packages/grafana-ui/src/components/Table/DataLinksActionsTooltip.test.tsx`                  | none.   |
